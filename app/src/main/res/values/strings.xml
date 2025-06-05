@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">OnlineShoesShop</string>
+    <string name="intro_title_1">Step into your <font color="#6033BA">style</font></string>
+    <string name="intro_title_2"><font color="#6033BA">A world of shoes</font></string>
+    <string name="intro_text">Browse the latest styles from the top brands\nGet personalized recommendations\nEnjoy fast, free shipping</string>
+    <string name="intro_signin">Already have an account? <font color="#6033BA">Sign In</font></string>
+    <string name="button_start">Let\'s Get Started</string>
+
+    <string name="intro_signup">New to SoleMate? <font color="#6033BA">Sign Up</font></string>
+    <string name="signup_title_main">Create Your Account</string>
+    <string name="signup_title_sub">Join us to start your journey</string>
+    <string name="signup_description">Please fill in your details to create an account.</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_confirm_password">Confirm password</string>
+    <string name="button_signup">Sign Up</string>
+    <string name="button_signup_with_gg">Sign Up With Google</string>
 </resources>
