@@ -6,7 +6,7 @@
     <string name="intro_signin">Already have an account? <font color="#6033BA">Sign In</font></string>
     <string name="button_start">Let\'s Get Started</string>
 
-    <string name="intro_signup">New to SoleMate? <font color="#6033BA">Sign Up</font></string>
+    <string name="intro_signup">New to Solemate? <font color="#6033BA">Sign Up</font></string>
     <string name="signup_title_main">Create Your Account</string>
     <string name="signup_title_sub">Join us to start your journey</string>
     <string name="signup_description">Please fill in your details to create an account.</string>
@@ -15,4 +15,16 @@
     <string name="hint_confirm_password">Confirm password</string>
     <string name="button_signup">Sign Up</string>
     <string name="button_signup_with_gg">Sign Up With Google</string>
+
+    <string name="error_email_invalid">Please enter a valid email address.</string>
+    <string name="error_password_too_short">Password must be at least %d characters.</string>
+    <string name="error_password_mismatch">Passwords do not match.</string>
+    <string name="error_field_empty">This field cannot be empty.</string>
+    <string name="error_no_spaces_email">Email cannot contain spaces.</string>
+    <string name="error_no_spaces_password">Password cannot contain spaces.</string>
+    <string name="error_no_spaces_confirm_password">Confirm password cannot contain spaces.</string>
+
+    <string name="registration_successful_db_save">Registration successful!</string>
+    <string name="registration_failed_db_save">Registration failed! Please try again</string>
+    <string name="email_already_in_use">This email is already in use.</string>
 </resources>

@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Cửa hàng Giày Online</string>
+    <string name="intro_title_1">Bước vào <font color="#6033BA">phong cách</font> của bạn</string>
+    <string name="intro_title_2"><font color="#6033BA">Thế giới giày dép</font></string>
+    <string name="intro_text">Duyệt qua các mẫu mới nhất từ các thương hiệu hàng đầu\nNhận đề xuất cá nhân hóa\nThưởng thức vận chuyển nhanh chóng, miễn phí</string>
+    <string name="intro_signin">Đã có tài khoản? <font color="#6033BA">Đăng nhập</font></string>
+    <string name="button_start">Bắt đầu ngay</string>
+
+    <string name="intro_signup">Bạn mới đến Solemate? <font color="#6033BA">Đăng ký</font></string>
+    <string name="signup_title_main">Tạo tài khoản của bạn</string>
+    <string name="signup_title_sub">Tham gia cùng chúng tôi để bắt đầu hành trình của bạn</string>
+    <string name="signup_description">Vui lòng điền thông tin của bạn để tạo tài khoản.</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Mật khẩu</string>
+    <string name="hint_confirm_password">Xác nhận mật khẩu</string>
+    <string name="button_signup">Đăng ký</string>
+    <string name="button_signup_with_gg">Đăng ký bằng Google</string>
+
+    <string name="error_email_invalid">Vui lòng nhập địa chỉ email hợp lệ.</string>
+    <string name="error_password_too_short">Mật khẩu phải có ít nhất %d ký tự.</string>
+    <string name="error_password_mismatch">Mật khẩu không khớp.</string>
+    <string name="error_field_empty">Trường này không được để trống.</string>
+    <string name="error_no_spaces_email">Email không được chứa khoảng trắng.</string>
+    <string name="error_no_spaces_password">Mật khẩu không được chứa khoảng trắng.</string>
+    <string name="error_no_spaces_confirm_password">Xác nhận mật khẩu không được chứa khoảng trắng.</string>
+
+    <string name="registration_successful_db_save">Đăng ký tài khoản thành công!</string>
+    <string name="registration_failed_db_save">Đăng ký thất bại! Vui lòng thử lại</string>
+    <string name="email_already_in_use">Email đã được sử dụng bởi tài khoản khác!</string>
+</resources>
