@@ -8,12 +8,17 @@
 
     <string name="intro_signup">Bạn mới đến Solemate? <font color="#6033BA">Đăng ký</font></string>
     <string name="signup_title_main">Tạo tài khoản của bạn</string>
+    <string name="signin_title_main">Đăng nhập</string>
+
+    <string name="signin_title_sub">Hãy bắt đầu hành trình của bạn</string>
     <string name="signup_title_sub">Tham gia cùng chúng tôi để bắt đầu hành trình của bạn</string>
     <string name="signup_description">Vui lòng điền thông tin của bạn để tạo tài khoản.</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Mật khẩu</string>
     <string name="hint_confirm_password">Xác nhận mật khẩu</string>
     <string name="button_signup">Đăng ký</string>
+    <string name="button_signin">Đăng nhập</string>
+    <string name="button_signin_with_gg">Đăng nhập bằng Google</string>
     <string name="button_signup_with_gg">Đăng ký bằng Google</string>
 
     <string name="error_email_invalid">Vui lòng nhập địa chỉ email hợp lệ.</string>
@@ -27,4 +32,6 @@
     <string name="registration_successful_db_save">Đăng ký tài khoản thành công!</string>
     <string name="registration_failed_db_save">Đăng ký thất bại! Vui lòng thử lại</string>
     <string name="email_already_in_use">Email đã được sử dụng bởi tài khoản khác!</string>
+    <string name="login_successful">Chào mừng bạn trở lại</string>
+    <string name="login_failed">Hãy kiểm tra lại thông tin đăng nhập</string>
 </resources>
