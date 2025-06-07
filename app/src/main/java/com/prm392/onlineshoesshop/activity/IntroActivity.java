@@ -10,6 +10,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.prm392.onlineshoesshop.R;
+import com.prm392.onlineshoesshop.SignInActivity;
 import com.prm392.onlineshoesshop.databinding.ActivityIntroBinding;
 
 public class IntroActivity extends AppCompatActivity {
@@ -24,6 +25,10 @@ public class IntroActivity extends AppCompatActivity {
 
         binding.tvIntroSignUp.setOnClickListener(v -> {
             startActivity(new Intent(IntroActivity.this, SignUpActivity.class));
+        });
+
+        binding.btnStart.setOnClickListener(v -> {
+            startActivity(new Intent(IntroActivity.this, SignInActivity.class));
         });
     }
 }

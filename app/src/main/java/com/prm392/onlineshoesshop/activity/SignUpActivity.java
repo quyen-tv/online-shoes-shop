@@ -1,5 +1,6 @@
 package com.prm392.onlineshoesshop.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,6 +24,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.prm392.onlineshoesshop.R;
+import com.prm392.onlineshoesshop.SignInActivity;
 import com.prm392.onlineshoesshop.databinding.ActivitySignUpBinding;
 import com.prm392.onlineshoesshop.model.Address;
 import com.prm392.onlineshoesshop.model.User;
@@ -51,7 +53,9 @@ public class SignUpActivity extends AppCompatActivity {
                 performSignUp();
             }
         });
-
+        binding.tvIntroSignIn.setOnClickListener(v -> {
+            startActivity(new Intent(SignUpActivity.this, SignInActivity.class));
+        });
         setupTextWatchers();
     }
 

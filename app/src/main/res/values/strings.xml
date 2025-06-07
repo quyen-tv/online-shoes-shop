@@ -8,13 +8,17 @@
 
     <string name="intro_signup">New to Solemate? <font color="#6033BA">Sign Up</font></string>
     <string name="signup_title_main">Create Your Account</string>
+    <string name="signin_title_main">Sign In</string>
     <string name="signup_title_sub">Join us to start your journey</string>
+    <string name="signin_title_sub">Solemate lets begin your journey</string>
     <string name="signup_description">Please fill in your details to create an account.</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
     <string name="hint_confirm_password">Confirm password</string>
+    <string name="button_signin">Sign In</string>
     <string name="button_signup">Sign Up</string>
     <string name="button_signup_with_gg">Sign Up With Google</string>
+    <string name="button_signin_with_gg">Sign In With Google</string>
 
     <string name="error_email_invalid">Please enter a valid email address.</string>
     <string name="error_password_too_short">Password must be at least %d characters.</string>
@@ -27,4 +31,6 @@
     <string name="registration_successful_db_save">Registration successful!</string>
     <string name="registration_failed_db_save">Registration failed! Please try again</string>
     <string name="email_already_in_use">This email is already in use.</string>
+    <string name="login_successful">Welcome back, Solemate</string>
+    <string name="login_failed">Please your account information !!</string>
 </resources>
