@@ -21,5 +21,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "OnlineShoesShop"
+rootProject.name = "Solemate"
 include(":app")
