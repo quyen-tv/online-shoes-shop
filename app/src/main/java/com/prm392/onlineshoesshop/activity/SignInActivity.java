@@ -1,4 +1,4 @@
-package com.prm392.onlineshoesshop;
+package com.prm392.onlineshoesshop.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,22 +6,13 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.prm392.onlineshoesshop.activity.MainActivity;
-import com.prm392.onlineshoesshop.activity.SignUpActivity;
+import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.databinding.ActivitySignInBinding;
-import com.prm392.onlineshoesshop.databinding.ActivitySignUpBinding;
 import com.prm392.onlineshoesshop.utils.UiUtils;
 import com.prm392.onlineshoesshop.utils.ValidationUtils;
 
@@ -30,7 +21,6 @@ import java.util.Arrays;
 public class SignInActivity extends AppCompatActivity {
     private ActivitySignInBinding binding;
     private FirebaseAuth mAuth;
-    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +29,6 @@ public class SignInActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         mAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
         binding.btnSignIn.setOnClickListener(v -> {
             if (validateInputs()) {
                 performSignIn();
@@ -50,6 +39,7 @@ public class SignInActivity extends AppCompatActivity {
         });
         setupTextWatchers();
     }
+
     private void showLoading(boolean isLoading) {
         binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
 
@@ -101,6 +91,7 @@ public class SignInActivity extends AppCompatActivity {
 
         return isValid;
     }
+
     private void setupTextWatchers() {
         binding.etEmail.addTextChangedListener(new TextWatcher() {
             @Override
@@ -134,6 +125,7 @@ public class SignInActivity extends AppCompatActivity {
 
 
     }
+
     private void resetForm() {
         binding.etEmail.setText("");
         binding.etPassword.setText("");
@@ -148,15 +140,15 @@ public class SignInActivity extends AppCompatActivity {
 
         showLoading(true);
 
-        mAuth.signInWithEmailAndPassword(email,password)
-                .addOnCompleteListener(this,task -> {
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
                     showLoading(false);
-                    if(task.isSuccessful()) {
+                    if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        if(user != null) {
+                        if (user != null) {
                             startActivity(new Intent(SignInActivity.this, MainActivity.class));
                             resetForm();
-                            UiUtils.showSnackbar(binding.getRoot(),getString(R.string.login_successful),Snackbar.LENGTH_SHORT);
+                            UiUtils.showSnackbar(binding.getRoot(), getString(R.string.login_successful), Snackbar.LENGTH_SHORT);
                         } else {
                             UiUtils.showSnackbar(binding.getRoot(), getString(R.string.login_failed), Snackbar.LENGTH_SHORT);
                         }

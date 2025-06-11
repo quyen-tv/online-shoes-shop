@@ -3,14 +3,7 @@ package com.prm392.onlineshoesshop.activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
-import com.prm392.onlineshoesshop.R;
-import com.prm392.onlineshoesshop.SignInActivity;
 import com.prm392.onlineshoesshop.databinding.ActivityIntroBinding;
 
 public class IntroActivity extends AppCompatActivity {
