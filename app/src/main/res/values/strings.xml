@@ -33,4 +33,13 @@
     <string name="email_already_in_use">This email is already in use.</string>
     <string name="login_successful">Welcome back, Solemate</string>
     <string name="login_failed">Please your account information !!</string>
+    
+    <!-- Google Sign-In related strings -->
+    <string name="google_signin_successful">Successfully signed in with Google!</string>
+    <string name="google_signin_failed">Google sign-in failed. Please try again.</string>
+    <string name="google_signup_successful">Successfully signed up with Google!</string>
+    <string name="google_signup_failed">Google sign-up failed. Please try again.</string>
+    
+    <!-- Google Sign-In Web Client ID - This should be automatically generated when you configure Google Sign-In in Firebase -->
+    <string name="default_web_client_id">283337588836-your-oauth-client-id.apps.googleusercontent.com</string>
 </resources>
