@@ -25,7 +25,7 @@
             android:name=".activity.MainActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.SignInActivity"
+            android:name=".SignInActivity"
             android:exported="false" />
         <activity
             android:name=".activity.SignUpActivity"

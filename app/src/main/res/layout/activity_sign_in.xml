@@ -71,7 +71,17 @@
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"/>
 
-            </com.google.android.material.textfield.TextInputLayout>            <androidx.appcompat.widget.AppCompatButton
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilConfirmPassword"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:hint="@string/hint_confirm_password"/>
+
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnSignIn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
