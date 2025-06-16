@@ -64,42 +64,12 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
         binding.btnSignUpWithGg.setOnClickListener(v -> {
-            // Instantiate a Google sign-in request
-            GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
-                    .setFilterByAuthorizedAccounts(false)
-                    .setServerClientId(getString(R.string.default_web_client_id))
-                    .build();
-
-            // Create the Credential Manager request
-            GetCredentialRequest request = new GetCredentialRequest.Builder()
-                    .addCredentialOption(googleIdOption)
-                    .build();
-
-            // Use 'this' for context since this is an Activity
-            CredentialManager credentialManager = CredentialManager.create(this);
-
-            credentialManager.getCredentialAsync(
-                    this, // Activity context
-                    request, // The request you built above
-                    null, // No cancellation signal
-                    ContextCompat.getMainExecutor(this), // Main thread executor
-                    new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
-                        @Override
-                        public void onResult(GetCredentialResponse result) {
-                            handleGoogleSignIn(result);
-                        }
-
-                        @Override
-                        public void onError(GetCredentialException e) {
-                            Snackbar snackbar = Snackbar.make(binding.getRoot(), "gg: " + e.getMessage(), Snackbar.LENGTH_INDEFINITE)
-                                    .setAction("Dismiss", v1 -> {});
-                            // Ensure the full message is visible
-                            View snackbarView = snackbar.getView();
-                            TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
-                            textView.setMaxLines(10); // or Integer.MAX_VALUE for unlimited lines
-                            snackbar.show();
-                        }
-                    }
+            // Use the shared GoogleAuthHandler for Google sign-up
+            com.prm392.onlineshoesshop.utils.GoogleAuthHandler.startGoogleSignIn(
+                SignUpActivity.this,
+                binding.getRoot(),
+                binding,
+                true // isSignUp = true for sign-up
             );
         });
         binding.tvIntroSignIn.setOnClickListener(v -> {
@@ -156,43 +126,6 @@ public class SignUpActivity extends AppCompatActivity {
         performSignUp(email, password, false);
 
     }
-
-    private void handleGoogleSignIn(GetCredentialResponse result) {
-        // Extract the Google ID token from the credential
-        Credential credential = result.getCredential();
-
-        if (credential instanceof CustomCredential) {
-            if (GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(credential.getType())) {
-                GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(((CustomCredential) credential).getData());
-                String idToken = googleIdTokenCredential.getIdToken();
-
-                // Use the ID token to authenticate with Firebase
-                signInWithGoogleToken(idToken);
-            }
-        }
-    }
-
-    private void signInWithGoogleToken(String idToken) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
-
-        showLoading(true);
-
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
-                    showLoading(false);
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        if (user != null) {
-                            saveNewUserToDatabase(user, true); // true indicates Google account
-                            startActivity(new Intent(SignUpActivity.this, MainActivity.class));
-                            finish();
-                        }
-                    } else {
-                        UiUtils.showSnackbar(binding.getRoot(), "Google authentication failed", Snackbar.LENGTH_LONG);
-                    }
-                });
-    }
-
 
     private void performSignUp(String email, String password, boolean isGoogle) {
 
