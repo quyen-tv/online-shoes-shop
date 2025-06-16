@@ -8,7 +8,9 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.credentials.GetCredentialRequest;
 
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.material.snackbar.Snackbar;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -41,9 +43,27 @@ public class SignUpActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
         binding.btnSignUp.setOnClickListener(v -> {
-            if (validateInputs()) {
-                performSignUp();
+            String email = binding.etEmail.getText().toString();
+            String password = binding.etPassword.getText().toString();
+            String confirmPassword = binding.etConfirmPassword.getText().toString();
+
+            if (validateInputs(email, password, confirmPassword)) {
+                performSignUp(email, password);
             }
+        });
+        binding.btnSignUpWithGg(v -> {
+            // Instantiate a Google sign-in request
+            GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(true)
+                    .setServerClientId(getString(R.string.default_web_client_id))
+                    .build();
+
+            // Create the Credential Manager request
+            GetCredentialRequest request = new GetCredentialRequest.Builder()
+                    .addCredentialOption(googleIdOption)
+                    .build();
+
+            firebaseAu
         });
         binding.tvIntroSignIn.setOnClickListener(v -> {
             startActivity(new Intent(SignUpActivity.this, SignInActivity.class));
@@ -52,12 +72,8 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     // Validate tất cả dữ liệu đầu vào
-    private boolean validateInputs() {
+    private boolean validateInputs(String email, String password, String confirmPassword) {
         boolean isValid = true;
-
-        String email = binding.etEmail.getText().toString();
-        String password = binding.etPassword.getText().toString();
-        String confirmPassword = binding.etConfirmPassword.getText().toString();
 
         // 1. Kiểm tra Email
         if (ValidationUtils.isFieldEmpty(email)) {
@@ -99,9 +115,12 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     // Xử lý nghiệp vụ đăng ký
-    private void performSignUp() {
-        String email = binding.etEmail.getText().toString().trim();
-        String password = binding.etPassword.getText().toString().trim();
+    private void performSignUp(String email, String password) {
+        performSignUp(email, password, false);
+
+    }
+
+    private void performSignUp(String email, String password, boolean isGoogle) {
 
         showLoading(true);
 
@@ -112,7 +131,7 @@ public class SignUpActivity extends AppCompatActivity {
                         FirebaseUser user = mAuth.getCurrentUser();
 
                         if (user != null) {
-                            saveNewUserToDatabase(user);
+                            saveNewUserToDatabase(user, isGoogle);
                             resetForm();
                         } else {
                             UiUtils.showSnackbar(binding.getRoot(), getString(R.string.registration_failed_db_save), Snackbar.LENGTH_SHORT);
@@ -133,10 +152,14 @@ public class SignUpActivity extends AppCompatActivity {
 
     // Lưu user mới vào database
     private void saveNewUserToDatabase(@NonNull FirebaseUser firebaseUser) {
+        saveNewUserToDatabase(firebaseUser, false);
+    }
+
+    private void saveNewUserToDatabase(@NonNull FirebaseUser firebaseUser, boolean isGoogle) {
         String fullName = "";
         String profileImageUrl = "";
         Address address = new Address("", "", "", "", "");
-        User newUser = new User(firebaseUser.getUid(), firebaseUser.getEmail(), fullName, profileImageUrl, address);
+        User newUser = new User(firebaseUser.getUid(), firebaseUser.getEmail(), fullName, profileImageUrl, address, isGoogle);
 
         mDatabase.child("Users")
                 .child(firebaseUser.getUid())
