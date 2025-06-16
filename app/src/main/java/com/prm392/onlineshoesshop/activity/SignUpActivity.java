@@ -1,21 +1,33 @@
 package com.prm392.onlineshoesshop.activity;
 
 import android.content.Intent;
+import androidx.credentials.exceptions.GetCredentialException; // Add this line
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.credentials.Credential;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.CustomCredential;
 import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
 
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException;
 import com.google.android.material.snackbar.Snackbar;
 
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.prm392.onlineshoesshop.R;
@@ -51,10 +63,10 @@ public class SignUpActivity extends AppCompatActivity {
                 performSignUp(email, password);
             }
         });
-        binding.btnSignUpWithGg(v -> {
+        binding.btnSignUpWithGg.setOnClickListener(v -> {
             // Instantiate a Google sign-in request
             GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
-                    .setFilterByAuthorizedAccounts(true)
+                    .setFilterByAuthorizedAccounts(false)
                     .setServerClientId(getString(R.string.default_web_client_id))
                     .build();
 
@@ -63,7 +75,32 @@ public class SignUpActivity extends AppCompatActivity {
                     .addCredentialOption(googleIdOption)
                     .build();
 
-            firebaseAu
+            // Use 'this' for context since this is an Activity
+            CredentialManager credentialManager = CredentialManager.create(this);
+
+            credentialManager.getCredentialAsync(
+                    this, // Activity context
+                    request, // The request you built above
+                    null, // No cancellation signal
+                    ContextCompat.getMainExecutor(this), // Main thread executor
+                    new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                        @Override
+                        public void onResult(GetCredentialResponse result) {
+                            handleGoogleSignIn(result);
+                        }
+
+                        @Override
+                        public void onError(GetCredentialException e) {
+                            Snackbar snackbar = Snackbar.make(binding.getRoot(), "gg: " + e.getMessage(), Snackbar.LENGTH_INDEFINITE)
+                                    .setAction("Dismiss", v1 -> {});
+                            // Ensure the full message is visible
+                            View snackbarView = snackbar.getView();
+                            TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+                            textView.setMaxLines(10); // or Integer.MAX_VALUE for unlimited lines
+                            snackbar.show();
+                        }
+                    }
+            );
         });
         binding.tvIntroSignIn.setOnClickListener(v -> {
             startActivity(new Intent(SignUpActivity.this, SignInActivity.class));
@@ -119,6 +156,43 @@ public class SignUpActivity extends AppCompatActivity {
         performSignUp(email, password, false);
 
     }
+
+    private void handleGoogleSignIn(GetCredentialResponse result) {
+        // Extract the Google ID token from the credential
+        Credential credential = result.getCredential();
+
+        if (credential instanceof CustomCredential) {
+            if (GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(credential.getType())) {
+                GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(((CustomCredential) credential).getData());
+                String idToken = googleIdTokenCredential.getIdToken();
+
+                // Use the ID token to authenticate with Firebase
+                signInWithGoogleToken(idToken);
+            }
+        }
+    }
+
+    private void signInWithGoogleToken(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+
+        showLoading(true);
+
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    showLoading(false);
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            saveNewUserToDatabase(user, true); // true indicates Google account
+                            startActivity(new Intent(SignUpActivity.this, MainActivity.class));
+                            finish();
+                        }
+                    } else {
+                        UiUtils.showSnackbar(binding.getRoot(), "Google authentication failed", Snackbar.LENGTH_LONG);
+                    }
+                });
+    }
+
 
     private void performSignUp(String email, String password, boolean isGoogle) {
 
