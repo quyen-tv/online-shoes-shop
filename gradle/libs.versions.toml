@@ -1,8 +1,12 @@
 [versions]
 agp = "8.9.0"
 chipNavigationBar = "1.4.0"
+
 credentialsPlayServicesAuth = "1.5.0"
 firebaseBom = "33.15.0"
+
+dotsindicator = "4.3"
+
 glide = "4.12.0"
 googleid = "1.1.1"
 junit = "4.13.2"
@@ -22,6 +26,7 @@ chip-navigation-bar = { module = "com.github.ismaeldivita:chip-navigation-bar", 
 credentials = { module = "androidx.credentials:credentials", version.ref = "credentialsPlayServicesAuth" }
 credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+dotsindicator = { module = "com.tbuonomo:dotsindicator", version.ref = "dotsindicator" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 google-firebase-auth = { module = "com.google.firebase:firebase-auth" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }

@@ -34,4 +34,23 @@
     <string name="login_successful">Welcome back, Solemate</string>
     <string name="login_failed">Please your account information !!</string>
     <string name="default_web_client_id">283337588836-srvds3mng5fkrj29to4kgu3dn324piuu.apps.googleusercontent.com</string>
+    
+    <!-- Google Sign-In related strings -->
+    <string name="google_signin_successful">Successfully signed in with Google!</string>
+    <string name="google_signin_failed">Google sign-in failed. Please try again.</string>
+    <string name="google_signup_successful">Successfully signed up with Google!</string>
+    <string name="google_signup_failed">Google sign-up failed. Please try again.</string>
+    
+    <!-- Home related strings -->
+    <string name="welcome_back">Welcome back</string>
+    <string name="official_brand">Official Brand</string>
+    <string name="see_all">See all</string>
+    <string name="recommendation">Recommendation</string>
+
+    <!-- Navigation related strings -->
+    <string name="explorer">Explorer</string>
+    <string name="cart">Cart</string>
+    <string name="favorite">Favorite</string>
+    <string name="my_order">My Order</string>
+    <string name="profile">Profile</string>
 </resources>

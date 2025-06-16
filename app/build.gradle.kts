@@ -50,7 +50,6 @@ dependencies {
     implementation(libs.viewpager2)
     implementation(libs.glide)
 
-
     // Import the BoM for the Firebase platform
     implementation(libs.firebase.bom)
 
@@ -62,5 +61,7 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
-
+    
+    
+    implementation (libs.dotsindicator)
 }
