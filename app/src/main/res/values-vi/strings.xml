@@ -34,4 +34,23 @@
     <string name="email_already_in_use">Email đã được sử dụng bởi tài khoản khác!</string>
     <string name="login_successful">Chào mừng bạn trở lại</string>
     <string name="login_failed">Hãy kiểm tra lại thông tin đăng nhập</string>
+
+    <!-- Google Sign-In related strings -->
+    <string name="google_signin_successful">Successfully signed in with Google!</string>
+    <string name="google_signin_failed">Google sign-in failed. Please try again.</string>
+    <string name="google_signup_successful">Successfully signed up with Google!</string>
+    <string name="google_signup_failed">Google sign-up failed. Please try again.</string>
+
+    <!-- Home related strings -->
+    <string name="welcome_back">Xin chào</string>
+    <string name="official_brand">Thương Hiệu</string>
+    <string name="see_all">Xem tất cả</string>
+    <string name="recommendation">Đề xuất cho bạn</string>
+
+    <!-- Navigation related strings -->
+    <string name="explorer">Khám phá</string>
+    <string name="cart">Giỏ hàng</string>
+    <string name="favorite">Yêu thích</string>
+    <string name="my_order">Lịch sử</string>
+    <string name="profile">Cá nhân</string>
 </resources>

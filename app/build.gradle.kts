@@ -49,4 +49,5 @@ dependencies {
     implementation(libs.chip.navigation.bar)
     implementation(libs.viewpager2)
     implementation(libs.glide)
+    implementation (libs.dotsindicator)
 }
