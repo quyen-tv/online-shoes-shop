@@ -1,6 +1,7 @@
 [versions]
 agp = "8.9.0"
 chipNavigationBar = "1.4.0"
+dotsindicator = "4.3"
 glide = "4.12.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -16,6 +17,7 @@ firebaseAuth = "23.2.1"
 
 [libraries]
 chip-navigation-bar = { module = "com.github.ismaeldivita:chip-navigation-bar", version.ref = "chipNavigationBar" }
+dotsindicator = { module = "com.tbuonomo:dotsindicator", version.ref = "dotsindicator" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
