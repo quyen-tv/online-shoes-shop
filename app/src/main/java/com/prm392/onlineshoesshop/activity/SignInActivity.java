@@ -34,6 +34,15 @@ public class SignInActivity extends AppCompatActivity {
                 performSignIn();
             }
         });
+        binding.btnSignUpWithGg.setOnClickListener(v -> {
+            // Use the shared GoogleAuthHandler for Google sign-in
+            com.prm392.onlineshoesshop.utils.GoogleAuthHandler.startGoogleSignIn(
+                SignInActivity.this,
+                binding.getRoot(),
+                binding,
+                false // isSignUp = false for sign-in
+            );
+        });
         binding.tvIntroSignUp.setOnClickListener(v -> {
             startActivity(new Intent(SignInActivity.this, SignUpActivity.class));
         });

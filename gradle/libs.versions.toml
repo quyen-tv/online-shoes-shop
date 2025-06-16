@@ -1,8 +1,14 @@
 [versions]
 agp = "8.9.0"
 chipNavigationBar = "1.4.0"
+
+credentialsPlayServicesAuth = "1.5.0"
+firebaseBom = "33.15.0"
+
 dotsindicator = "4.3"
+
 glide = "4.12.0"
+googleid = "1.1.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -17,8 +23,13 @@ firebaseAuth = "23.2.1"
 
 [libraries]
 chip-navigation-bar = { module = "com.github.ismaeldivita:chip-navigation-bar", version.ref = "chipNavigationBar" }
+credentials = { module = "androidx.credentials:credentials", version.ref = "credentialsPlayServicesAuth" }
+credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 dotsindicator = { module = "com.tbuonomo:dotsindicator", version.ref = "dotsindicator" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+google-firebase-auth = { module = "com.google.firebase:firebase-auth" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

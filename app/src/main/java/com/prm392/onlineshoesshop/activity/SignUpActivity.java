@@ -1,19 +1,33 @@
 package com.prm392.onlineshoesshop.activity;
 
 import android.content.Intent;
+import androidx.credentials.exceptions.GetCredentialException; // Add this line
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.credentials.Credential;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.CustomCredential;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
 
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException;
 import com.google.android.material.snackbar.Snackbar;
 
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.prm392.onlineshoesshop.R;
@@ -41,9 +55,22 @@ public class SignUpActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
         binding.btnSignUp.setOnClickListener(v -> {
-            if (validateInputs()) {
-                performSignUp();
+            String email = binding.etEmail.getText().toString();
+            String password = binding.etPassword.getText().toString();
+            String confirmPassword = binding.etConfirmPassword.getText().toString();
+
+            if (validateInputs(email, password, confirmPassword)) {
+                performSignUp(email, password);
             }
+        });
+        binding.btnSignUpWithGg.setOnClickListener(v -> {
+            // Use the shared GoogleAuthHandler for Google sign-up
+            com.prm392.onlineshoesshop.utils.GoogleAuthHandler.startGoogleSignIn(
+                SignUpActivity.this,
+                binding.getRoot(),
+                binding,
+                true // isSignUp = true for sign-up
+            );
         });
         binding.tvIntroSignIn.setOnClickListener(v -> {
             startActivity(new Intent(SignUpActivity.this, SignInActivity.class));
@@ -52,12 +79,8 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     // Validate tất cả dữ liệu đầu vào
-    private boolean validateInputs() {
+    private boolean validateInputs(String email, String password, String confirmPassword) {
         boolean isValid = true;
-
-        String email = binding.etEmail.getText().toString();
-        String password = binding.etPassword.getText().toString();
-        String confirmPassword = binding.etConfirmPassword.getText().toString();
 
         // 1. Kiểm tra Email
         if (ValidationUtils.isFieldEmpty(email)) {
@@ -99,9 +122,12 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     // Xử lý nghiệp vụ đăng ký
-    private void performSignUp() {
-        String email = binding.etEmail.getText().toString().trim();
-        String password = binding.etPassword.getText().toString().trim();
+    private void performSignUp(String email, String password) {
+        performSignUp(email, password, false);
+
+    }
+
+    private void performSignUp(String email, String password, boolean isGoogle) {
 
         showLoading(true);
 
@@ -112,7 +138,7 @@ public class SignUpActivity extends AppCompatActivity {
                         FirebaseUser user = mAuth.getCurrentUser();
 
                         if (user != null) {
-                            saveNewUserToDatabase(user);
+                            saveNewUserToDatabase(user, isGoogle);
                             resetForm();
                         } else {
                             UiUtils.showSnackbar(binding.getRoot(), getString(R.string.registration_failed_db_save), Snackbar.LENGTH_SHORT);
@@ -133,10 +159,14 @@ public class SignUpActivity extends AppCompatActivity {
 
     // Lưu user mới vào database
     private void saveNewUserToDatabase(@NonNull FirebaseUser firebaseUser) {
+        saveNewUserToDatabase(firebaseUser, false);
+    }
+
+    private void saveNewUserToDatabase(@NonNull FirebaseUser firebaseUser, boolean isGoogle) {
         String fullName = "";
         String profileImageUrl = "";
         Address address = new Address("", "", "", "", "");
-        User newUser = new User(firebaseUser.getUid(), firebaseUser.getEmail(), fullName, profileImageUrl, address);
+        User newUser = new User(firebaseUser.getUid(), firebaseUser.getEmail(), fullName, profileImageUrl, address, isGoogle);
 
         mDatabase.child("Users")
                 .child(firebaseUser.getUid())
