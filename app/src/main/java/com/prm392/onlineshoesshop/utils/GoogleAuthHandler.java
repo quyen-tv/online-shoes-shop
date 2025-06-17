@@ -1,8 +1,13 @@
 package com.prm392.onlineshoesshop.utils;
 
+import static com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.CancellationSignal;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -17,8 +22,10 @@ import androidx.credentials.GetCredentialResponse;
 import androidx.credentials.exceptions.GetCredentialException;
 
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.Firebase;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -33,79 +40,88 @@ import com.prm392.onlineshoesshop.model.User;
 import com.prm392.onlineshoesshop.activity.MainActivity;
 import com.prm392.onlineshoesshop.utils.UiUtils;
 
+import java.util.concurrent.Executors;
+
 public class GoogleAuthHandler {
-    public static void startGoogleSignIn(Activity activity, View rootView, Object binding, boolean isSignUp) {
+    private FirebaseAuth mAuth;
+    private Activity activity;
+    private String TAG = "GoogleAuthHandler";
+    public void startGoogleSignIn(Activity activity, boolean isSignUp) {
+        mAuth = FirebaseAuth.getInstance();
+        this.activity = activity;
+
+        CredentialManager credentialManager = CredentialManager.create(activity);
+
         GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
                 .setServerClientId(activity.getString(R.string.default_web_client_id))
                 .build();
 
-        GetCredentialRequest request = new GetCredentialRequest.Builder()
-                .addCredentialOption(googleIdOption)
+        GetSignInWithGoogleOption googleOption = new GetSignInWithGoogleOption
+                .Builder(activity.getString(R.string.default_web_client_id))
                 .build();
 
-        CredentialManager credentialManager = CredentialManager.create(activity);
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(googleOption)
+                .build();
+
         credentialManager.getCredentialAsync(
                 activity,
                 request,
-                null,
-                ContextCompat.getMainExecutor(activity),
-                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                new CancellationSignal(),
+                Executors.newSingleThreadExecutor(),
+                new CredentialManagerCallback<>() {
                     @Override
                     public void onResult(GetCredentialResponse result) {
-                        handleGoogleSignIn(result, activity, rootView, binding, isSignUp);
+                        // Extract credential from the result returned by Credential Manager
+                        handleSignIn(result.getCredential());
                     }
 
                     @Override
                     public void onError(GetCredentialException e) {
-                        Snackbar snackbar = Snackbar.make(rootView, "gg: " + e.getMessage(), Snackbar.LENGTH_INDEFINITE)
-                                .setAction("Dismiss", v1 -> {});
-                        View snackbarView = snackbar.getView();
-                        TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
-                        textView.setMaxLines(10);
-                        snackbar.show();
+                        Log.e(TAG, "Couldn't retrieve user's credentials: " + e.getLocalizedMessage());
                     }
                 }
         );
+
     }
 
-    private static void handleGoogleSignIn(GetCredentialResponse result, Activity activity, View rootView, Object binding, boolean isSignUp) {
-        Credential credential = result.getCredential();
-        if (credential instanceof CustomCredential) {
-            if (GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(credential.getType())) {
-                GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(((CustomCredential) credential).getData());
-                String idToken = googleIdTokenCredential.getIdToken();
-                signInWithGoogleToken(idToken, activity, rootView, binding, isSignUp);
-            }
+    private void handleSignIn(Credential credential) {
+        // Check if credential is of type Google ID
+        if (credential instanceof CustomCredential
+                && credential.getType().equals(TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)) {
+            CustomCredential customCredential = (CustomCredential) credential;
+            // Create Google ID Token
+            Bundle credentialData = customCredential.getData();
+            GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credentialData);
+
+            // Sign in to Firebase with using the token
+            firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken(), true);
+        } else {
+            Log.w(TAG, "Credential is not of type Google ID!");
         }
     }
 
-    private static void signInWithGoogleToken(String idToken, Activity activity, View rootView, Object binding, boolean isSignUp) {
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private void firebaseAuthWithGoogle(String idToken, boolean isSignUp) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
-        if (binding instanceof ActivitySignInBinding) {
-            ((ActivitySignInBinding) binding).progressBar.setVisibility(View.VISIBLE);
-        } else if (binding instanceof ActivitySignUpBinding) {
-            ((ActivitySignUpBinding) binding).progressBar.setVisibility(View.VISIBLE);
-        }
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(activity, task -> {
-                    if (binding instanceof ActivitySignInBinding) {
-                        ((ActivitySignInBinding) binding).progressBar.setVisibility(View.GONE);
-                    } else if (binding instanceof ActivitySignUpBinding) {
-                        ((ActivitySignUpBinding) binding).progressBar.setVisibility(View.GONE);
-                    }
                     if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d(TAG, "signInWithCredential:success");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        if (user != null) {
-                            if (isSignUp) {
-                                saveNewUserToDatabase(user, rootView, true);
-                            }
-                            activity.startActivity(new Intent(activity, MainActivity.class));
-                            activity.finish();
+
+                        boolean isNewUser = task.getResult().getAdditionalUserInfo().isNewUser();
+                        if (isNewUser && user != null) {
+                            // New user, save to database
+                            saveNewUserToDatabase(user, activity.getWindow().getDecorView().getRootView(), true);
                         }
+                        Intent intent = new Intent(activity, MainActivity.class);
+                        activity.startActivity(intent);
+                        activity.finish();
                     } else {
-                        UiUtils.showSnackbar(rootView, "Google authentication failed", Snackbar.LENGTH_LONG);
+                        // If sign in fails, display a message to the user
+                        Log.w(TAG, "signInWithCredential:failure", task.getException());
                     }
                 });
     }

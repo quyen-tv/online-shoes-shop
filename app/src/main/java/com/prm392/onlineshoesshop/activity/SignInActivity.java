@@ -13,6 +13,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.databinding.ActivitySignInBinding;
+import com.prm392.onlineshoesshop.utils.GoogleAuthHandler;
 import com.prm392.onlineshoesshop.utils.UiUtils;
 import com.prm392.onlineshoesshop.utils.ValidationUtils;
 
@@ -35,11 +36,9 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
         binding.btnSignUpWithGg.setOnClickListener(v -> {
-            // Use the shared GoogleAuthHandler for Google sign-in
-            com.prm392.onlineshoesshop.utils.GoogleAuthHandler.startGoogleSignIn(
+            GoogleAuthHandler googleAuthHandler = new GoogleAuthHandler();
+            googleAuthHandler.startGoogleSignIn(
                 SignInActivity.this,
-                binding.getRoot(),
-                binding,
                 false // isSignUp = false for sign-in
             );
         });

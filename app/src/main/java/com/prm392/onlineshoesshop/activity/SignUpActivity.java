@@ -34,6 +34,7 @@ import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.databinding.ActivitySignUpBinding;
 import com.prm392.onlineshoesshop.model.Address;
 import com.prm392.onlineshoesshop.model.User;
+import com.prm392.onlineshoesshop.utils.GoogleAuthHandler;
 import com.prm392.onlineshoesshop.utils.UiUtils;
 import com.prm392.onlineshoesshop.utils.ValidationUtils;
 
@@ -65,11 +66,10 @@ public class SignUpActivity extends AppCompatActivity {
         });
         binding.btnSignUpWithGg.setOnClickListener(v -> {
             // Use the shared GoogleAuthHandler for Google sign-up
-            com.prm392.onlineshoesshop.utils.GoogleAuthHandler.startGoogleSignIn(
-                SignUpActivity.this,
-                binding.getRoot(),
-                binding,
-                true // isSignUp = true for sign-up
+            GoogleAuthHandler googleAuthHandler = new GoogleAuthHandler();
+            googleAuthHandler.startGoogleSignIn(
+                    SignUpActivity.this,
+                    false // isSignUp = false for sign-in
             );
         });
         binding.tvIntroSignIn.setOnClickListener(v -> {
