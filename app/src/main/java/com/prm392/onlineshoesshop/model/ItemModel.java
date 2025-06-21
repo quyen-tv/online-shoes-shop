@@ -1,8 +1,13 @@
 package com.prm392.onlineshoesshop.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
-public class ItemModel {
+public class ItemModel implements Parcelable {
 
     private String title;
     private String description;
@@ -51,5 +56,81 @@ public class ItemModel {
 
     public Integer getNumberInCart() {
         return numberInCart;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
+    }
+
+    public void setNumberInCart(Integer numberInCart) {
+        this.numberInCart = numberInCart;
+    }
+
+    protected ItemModel(Parcel in) {
+        title = in.readString();
+        description = in.readString();
+        picUrl = in.createStringArrayList();
+        size = in.createStringArrayList();
+        if (in.readByte() == 0) {
+            price = null;
+        } else {
+            price = in.readDouble();
+        }
+        if (in.readByte() == 0) {
+            rating = null;
+        } else {
+            rating = in.readDouble();
+        }
+        if (in.readByte() == 0) {
+            numberInCart = null;
+        } else {
+            numberInCart = in.readInt();
+        }
+    }
+
+    public static final Creator<ItemModel> CREATOR = new Creator<>() {
+        @Override
+        public ItemModel createFromParcel(Parcel in) {
+            return new ItemModel(in);
+        }
+
+        @Override
+        public ItemModel[] newArray(int size) {
+            return new ItemModel[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(title);
+        dest.writeString(description);
+        dest.writeStringList(picUrl);
+        dest.writeStringList(size);
+
+        if (price == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeDouble(price);
+        }
+
+        if (rating == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeDouble(rating);
+        }
+
+        if (numberInCart == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(numberInCart);
+        }
     }
 }

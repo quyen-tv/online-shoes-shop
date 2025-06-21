@@ -52,5 +52,10 @@
     <string name="cart">Giỏ hàng</string>
     <string name="favorite">Yêu thích</string>
     <string name="my_order">Lịch sử</string>
-    <string name="profile">Cá nhân</string>
+    <string name="profile">Tài khoản</string>
+
+    <!-- Item detail related strings -->
+    <string name="select_size">Kích cỡ</string>
+    <string name="buy_now">Mua ngay</string>
+    <string name="rating">Đánh giá</string>
 </resources>
