@@ -57,5 +57,6 @@
     <!-- Item detail related strings -->
     <string name="select_size">Select size</string>
     <string name="buy_now">Buy Now</string>
+    <string name="rating">Rating</string>
 
 </resources>

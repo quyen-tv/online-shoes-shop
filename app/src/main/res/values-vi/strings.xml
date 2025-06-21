@@ -57,4 +57,5 @@
     <!-- Item detail related strings -->
     <string name="select_size">Kích cỡ</string>
     <string name="buy_now">Mua ngay</string>
+    <string name="rating">Đánh giá</string>
 </resources>

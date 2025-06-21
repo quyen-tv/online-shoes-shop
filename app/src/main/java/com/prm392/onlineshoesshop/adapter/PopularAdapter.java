@@ -1,23 +1,19 @@
 package com.prm392.onlineshoesshop.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
-import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
-import com.prm392.onlineshoesshop.R;
+import com.prm392.onlineshoesshop.activity.DetailActivity;
 import com.prm392.onlineshoesshop.databinding.ViewholderRecommendedBinding;
 import com.prm392.onlineshoesshop.model.ItemModel;
-import com.prm392.onlineshoesshop.model.SliderModel;
 
 import java.util.List;
 
@@ -41,15 +37,21 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.PopularV
     @Override
     public void onBindViewHolder(@NonNull PopularAdapter.PopularViewHolder holder, int position) {
         ItemModel item = items.get(position);
+        Context context = holder.itemView.getContext();
+
         holder.binding.tvTitle.setText(item.getTitle());
         holder.binding.tvPrice.setText(String.format("$%s", item.getPrice()));
         holder.binding.tvRating.setText(String.valueOf(item.getRating()));
 
         RequestOptions options = new RequestOptions().transform(new CenterCrop());
-        Glide.with(holder.itemView.getContext())
+        Glide.with(context)
                 .load(item.getPicUrl().get(0))
                 .apply(options)
                 .into(holder.binding.pic);
+
+        holder.itemView.setOnClickListener(v -> {
+            context.startActivity(new Intent(context, DetailActivity.class).putExtra("object", item));
+        });
     }
 
     @Override
