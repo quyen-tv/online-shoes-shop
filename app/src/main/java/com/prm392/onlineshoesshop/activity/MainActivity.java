@@ -9,11 +9,13 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 
 import com.prm392.onlineshoesshop.R;
+import com.prm392.onlineshoesshop.adapter.PopularAdapter;
 import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityMainBinding;
 import com.prm392.onlineshoesshop.model.SliderModel;
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         initBanner();
+        initPopular();
     }
 
     private void initBanner() {
@@ -42,6 +45,16 @@ public class MainActivity extends AppCompatActivity {
             binding.progressBarBanner.setVisibility(View.GONE);
         });
         viewModel.loadBanners();
+    }
+
+    private void initPopular() {
+        binding.progressBarPopular.setVisibility(View.VISIBLE);
+        viewModel.populars.observe(this, itemModels -> {
+            binding.viewPopular.setLayoutManager(new GridLayoutManager(this, 2));
+            binding.viewPopular.setAdapter(new PopularAdapter(itemModels));
+            binding.progressBarPopular.setVisibility(View.GONE);
+        });
+        viewModel.loadPopulars();
     }
 
     private void banners(List<SliderModel> images) {

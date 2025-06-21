@@ -9,6 +9,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.SliderModel;
 
 import java.util.ArrayList;
@@ -18,7 +19,10 @@ public class MainViewModel extends ViewModel {
 
     private FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     private MutableLiveData<List<SliderModel>> _banner = new MutableLiveData<>();
+    private MutableLiveData<List<ItemModel>> _popular = new MutableLiveData<>();
+
     public LiveData<List<SliderModel>> banners = _banner;
+    public LiveData<List<ItemModel>> populars = _popular;
 
     public MainViewModel() {
         loadBanners();
@@ -38,6 +42,27 @@ public class MainViewModel extends ViewModel {
                     }
                 }
                 _banner.setValue(lists);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {}
+        });
+    }
+
+    public void loadPopulars() {
+        DatabaseReference Ref = firebaseDatabase.getReference("Items");
+
+        Ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                List<ItemModel> lists = new ArrayList<>();
+                for (DataSnapshot childSnapshot : snapshot.getChildren()) {
+                    ItemModel itemModel = childSnapshot.getValue(ItemModel.class);
+                    if (itemModel != null) {
+                        lists.add(itemModel);
+                    }
+                }
+                _popular.setValue(lists);
             }
 
             @Override
