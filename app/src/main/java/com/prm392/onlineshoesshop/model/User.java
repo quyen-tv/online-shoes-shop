@@ -5,15 +5,31 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import com.prm392.onlineshoesshop.utils.ItemUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class User implements Parcelable {
-    public String uid;
-    public String email;
-    public String fullName;
-    public String profileImageUrl;
-    public Address address;
-    public boolean googleAccount;
+    private String uid;
+    private String email;
+    private String fullName;
+    private String profileImageUrl;
+    private Address address;
+    private boolean googleAccount;
+    private Map<String, Boolean> favoriteItems;
 
     public User() {
+    }
+
+    public User(User user) {
+        this.uid = user.getUid();
+        this.email = user.getEmail();
+        this.fullName = user.getFullName();
+        this.profileImageUrl = user.getProfileImageUrl();
+        this.address = (user.getAddress() != null) ? new Address(user.getAddress()) : null;
+        this.googleAccount = user.isGoogleAccount();
+        this.favoriteItems = (user.getFavoriteItems() != null) ? new HashMap<>(user.getFavoriteItems()) : new HashMap<>();
     }
 
     public User(String uid, String email, String fullName, String profileImageUrl, Address address, boolean googleAccount) {
@@ -23,6 +39,7 @@ public class User implements Parcelable {
         this.profileImageUrl = profileImageUrl;
         this.address = address;
         this.googleAccount = googleAccount;
+        this.favoriteItems = new HashMap<>();
     }
 
     protected User(Parcel in) {
@@ -30,7 +47,10 @@ public class User implements Parcelable {
         email = in.readString();
         fullName = in.readString();
         profileImageUrl = in.readString();
+        address = in.readParcelable(Address.class.getClassLoader());
         googleAccount = in.readByte() != 0;
+        favoriteItems = new HashMap<>();
+        in.readMap(favoriteItems, String.class.getClassLoader());
     }
 
     public static final Creator<User> CREATOR = new Creator<>() {
@@ -93,6 +113,23 @@ public class User implements Parcelable {
         this.googleAccount = googleAccount;
     }
 
+    public Map<String, Boolean> getFavoriteItems() {
+        if (favoriteItems == null) {
+            favoriteItems = new HashMap<>();
+        }
+        return favoriteItems;
+    }
+
+    public void setFavoriteItems(Map<String, Boolean> favoriteItems) {
+        this.favoriteItems = favoriteItems;
+    }
+
+    // Phương thức tiện ích để kiểm tra sản phẩm có trong danh sách yêu thích không
+    public boolean isFavorite(String itemId) {
+        String firebaseKey = ItemUtils.getFirebaseItemId(itemId);
+        return favoriteItems != null && favoriteItems.containsKey(firebaseKey) && Boolean.TRUE.equals(favoriteItems.get(firebaseKey));
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -104,6 +141,8 @@ public class User implements Parcelable {
         dest.writeString(email);
         dest.writeString(fullName);
         dest.writeString(profileImageUrl);
+        dest.writeParcelable(address, flags);
         dest.writeByte((byte) (googleAccount ? 1 : 0));
+        dest.writeMap(favoriteItems);
     }
 }
