@@ -12,4 +12,8 @@
     <color name="light_grey">#E9E9E9</color>
     <color name="dark_grey">#616161</color>
     <color name="grey_line">#CCCCCC</color>
+    <color name="success_green">#4CAF50</color>
+    <color name="error_red">#F44336</color>
+    <color name="warning_orange">#FF9800</color>
+    <color name="info_blue">#2196F3</color>
 </resources>

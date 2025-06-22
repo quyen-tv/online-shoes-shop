@@ -2,6 +2,8 @@ package com.prm392.onlineshoesshop.utils;
 
 import android.view.View;
 
+import androidx.annotation.ColorInt;
+
 import com.google.android.material.snackbar.Snackbar;
 
 public class UiUtils {
@@ -15,6 +17,20 @@ public class UiUtils {
      */
     public static void showSnackbar(View view, String message, int duration) {
         Snackbar.make(view, message, duration).show();
+    }
+
+    /**
+     * Hiển thị một Snackbar message với màu nền tùy chỉnh.
+     *
+     * @param view         View gốc để "neo" Snackbar vào.
+     * @param message      Nội dung thông báo.
+     * @param duration     Thời lượng hiển thị.
+     * @param backgroundColor Màu nền của Snackbar (ví dụ: ContextCompat.getColor(context, R.color.my_custom_color)).
+     */
+    public static void showSnackbarWithBackground(View view, String message, int duration, @ColorInt int backgroundColor) {
+        Snackbar snackbar = Snackbar.make(view, message, duration);
+        snackbar.setBackgroundTint(backgroundColor);
+        snackbar.show();
     }
 
     /**

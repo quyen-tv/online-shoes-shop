@@ -84,7 +84,11 @@ public class SignInActivity extends AppCompatActivity {
 
         authViewModel.getErrorMessage().observe(this, message -> {
             if (message != null && !message.isEmpty()) {
-                UiUtils.showSnackbar(binding.getRoot(), message, Snackbar.LENGTH_LONG);
+                UiUtils.showSnackbarWithBackground(
+                        binding.getRoot(),
+                        message,
+                        Snackbar.LENGTH_LONG,
+                        getResources().getColor(R.color.error_red));
             }
         });
 
