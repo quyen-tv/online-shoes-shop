@@ -128,7 +128,8 @@ public class GoogleAuthHandler {
 
     private static void saveNewUserToDatabase(@NonNull FirebaseUser firebaseUser, View rootView, boolean isGoogle) {
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        String fullName = "";
+        String email = firebaseUser.getEmail();
+        String fullName = UserUtils.extractNameFromEmail(email);
         String profileImageUrl = "";
         Address address = new Address("", "", "", "", "");
         User newUser = new User(firebaseUser.getUid(), firebaseUser.getEmail(), fullName, profileImageUrl, address, isGoogle);

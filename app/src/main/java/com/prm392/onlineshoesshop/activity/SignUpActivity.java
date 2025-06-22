@@ -36,6 +36,7 @@ import com.prm392.onlineshoesshop.model.Address;
 import com.prm392.onlineshoesshop.model.User;
 import com.prm392.onlineshoesshop.utils.GoogleAuthHandler;
 import com.prm392.onlineshoesshop.utils.UiUtils;
+import com.prm392.onlineshoesshop.utils.UserUtils;
 import com.prm392.onlineshoesshop.utils.ValidationUtils;
 
 import java.util.Arrays;
@@ -163,7 +164,9 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void saveNewUserToDatabase(@NonNull FirebaseUser firebaseUser, boolean isGoogle) {
-        String fullName = "";
+        String email = firebaseUser.getEmail();
+        String fullName = UserUtils.extractNameFromEmail(email);
+
         String profileImageUrl = "";
         Address address = new Address("", "", "", "", "");
         User newUser = new User(firebaseUser.getUid(), firebaseUser.getEmail(), fullName, profileImageUrl, address, isGoogle);
