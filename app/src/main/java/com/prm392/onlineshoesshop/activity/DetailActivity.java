@@ -1,114 +1,181 @@
-    package com.prm392.onlineshoesshop.activity;
+package com.prm392.onlineshoesshop.activity;
 
-    import android.os.Bundle;
-    import android.view.View;
+import android.os.Bundle;
+import android.view.View;
 
-    import androidx.activity.EdgeToEdge;
-    import androidx.appcompat.app.AppCompatActivity;
-    import androidx.core.graphics.Insets;
-    import androidx.core.view.ViewCompat;
-    import androidx.core.view.WindowInsetsCompat;
-    import androidx.recyclerview.widget.LinearLayoutManager;
-    import androidx.recyclerview.widget.RecyclerView;
-    import androidx.viewpager2.widget.ViewPager2;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.viewpager2.widget.ViewPager2;
 
-    import com.prm392.onlineshoesshop.R;
-    import com.prm392.onlineshoesshop.adapter.ColorAdapter;
-    import com.prm392.onlineshoesshop.adapter.SizeAdapter;
-    import com.prm392.onlineshoesshop.adapter.SliderAdapter;
-    import com.prm392.onlineshoesshop.databinding.ActivityDetailBinding;
-    import com.prm392.onlineshoesshop.helper.ManagementCart;
-    import com.prm392.onlineshoesshop.model.ItemModel;
-    import com.prm392.onlineshoesshop.model.SliderModel;
+import com.google.android.material.snackbar.Snackbar;
+import com.prm392.onlineshoesshop.R;
+import com.prm392.onlineshoesshop.adapter.ColorAdapter;
+import com.prm392.onlineshoesshop.adapter.SizeAdapter;
+import com.prm392.onlineshoesshop.adapter.SliderAdapter;
+import com.prm392.onlineshoesshop.databinding.ActivityDetailBinding;
+import com.prm392.onlineshoesshop.helper.ManagementCart;
+import com.prm392.onlineshoesshop.model.ItemModel;
+import com.prm392.onlineshoesshop.model.SliderModel;
+import com.prm392.onlineshoesshop.repository.UserRepository;
+import com.prm392.onlineshoesshop.utils.UiUtils;
+import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
 
-    import java.util.ArrayList;
-    import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
 
-    public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity {
 
-        private ActivityDetailBinding binding;
-        private ItemModel item;
-        private int numberOrder = 1;
-        private ManagementCart managementCart;
+    private ActivityDetailBinding binding;
+    private ItemModel item;
+    private int numberOrder = 1;
+    private ManagementCart managementCart;
 
-        private ColorAdapter colorAdapter;
-        private SliderAdapter sliderAdapter;
+    private ColorAdapter colorAdapter;
+    private SliderAdapter sliderAdapter;
 
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            binding = ActivityDetailBinding.inflate(getLayoutInflater());
-            setContentView(binding.getRoot());
+    private ItemViewModel itemViewModel;
+    private UserRepository userRepository;
 
-            managementCart = new ManagementCart(this);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityDetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-            getBundle();
-            banners();
-            initLists();
+        managementCart = new ManagementCart(this);
+       userRepository = new UserRepository();
+        itemViewModel = new ViewModelProvider(
+                this,
+                new ItemViewModelFactory(userRepository))
+                .get(ItemViewModel.class);
 
-            setupSynchronization();
-        }
 
-        private void initLists() {
-            List<String> sizeList = new ArrayList<>(item.getSize());
+        getBundle();
+        banners();
+        initLists();
+        setupObservers();
 
-            binding.sizeList.setAdapter(new SizeAdapter(sizeList));
-            binding.sizeList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        setupSynchronization();
+    }
 
-            List<String> colorList = new ArrayList<>(item.getPicUrl());
-            colorAdapter = new ColorAdapter(colorList, position -> {
-                binding.slider.setCurrentItem(position, true);
-            });
+    private void initLists() {
+        List<String> sizeList = new ArrayList<>(item.getSize());
 
-            binding.colorList.setAdapter(colorAdapter);
-            binding.colorList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.sizeList.setAdapter(new SizeAdapter(sizeList));
+        binding.sizeList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
-            if (!colorList.isEmpty()) {
-                colorAdapter.setSelectedPosition(0);
-            }
-        }
+        List<String> colorList = new ArrayList<>(item.getPicUrl());
+        colorAdapter = new ColorAdapter(colorList, position -> {
+            binding.slider.setCurrentItem(position, true);
+        });
 
-        private void banners() {
-            List<SliderModel> sliderItems = new ArrayList<>();
-            for (String imageUrl : item.getPicUrl()) {
-                sliderItems.add(new SliderModel(imageUrl));
-            }
+        binding.colorList.setAdapter(colorAdapter);
+        binding.colorList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
-            sliderAdapter = new SliderAdapter(sliderItems);
-            binding.slider.setAdapter(sliderAdapter);
-            binding.slider.setClipToPadding(true);
-            binding.slider.setClipChildren(true);
-            binding.slider.setOffscreenPageLimit(1);
-
-            if (sliderItems.size() > 1) {
-                binding.dotIndicator.setVisibility(View.VISIBLE);
-                binding.dotIndicator.attachTo(binding.slider);
-            }
-        }
-
-        private void getBundle() {
-            item = getIntent().getParcelableExtra("object");
-            binding.tvTitle.setText(item.getTitle());
-            binding.tvDescription.setText(item.getDescription());
-            binding.tvPrice.setText(String.format("$%.2f",item.getPrice()));
-            binding.tvRating.setText(String.valueOf(item.getRating()));
-            binding.btnAddToCart.setOnClickListener(v -> {
-                item.setNumberInCart(numberOrder);
-                managementCart.insertFood(item);
-            });
-            binding.btnBack.setOnClickListener(v -> finish());
-        }
-
-        private void setupSynchronization() {
-            binding.slider.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-                @Override
-                public void onPageSelected(int position) {
-                    super.onPageSelected(position);
-                    if (colorAdapter != null) {
-                        colorAdapter.setSelectedPosition(position);
-                        binding.colorList.scrollToPosition(position);
-                    }
-                }
-            });
+        if (!colorList.isEmpty()) {
+            colorAdapter.setSelectedPosition(0);
         }
     }
+
+    private void banners() {
+        List<SliderModel> sliderItems = new ArrayList<>();
+        for (String imageUrl : item.getPicUrl()) {
+            sliderItems.add(new SliderModel(imageUrl));
+        }
+
+        sliderAdapter = new SliderAdapter(sliderItems);
+        binding.slider.setAdapter(sliderAdapter);
+        binding.slider.setClipToPadding(true);
+        binding.slider.setClipChildren(true);
+        binding.slider.setOffscreenPageLimit(1);
+
+        if (sliderItems.size() > 1) {
+            binding.dotIndicator.setVisibility(View.VISIBLE);
+            binding.dotIndicator.attachTo(binding.slider);
+        }
+    }
+
+    private void getBundle() {
+        item = getIntent().getParcelableExtra("object");
+        binding.tvTitle.setText(item.getTitle());
+        binding.tvDescription.setText(item.getDescription());
+        binding.tvPrice.setText(String.format("$%.2f", item.getPrice()));
+        binding.tvRating.setText(String.valueOf(item.getRating()));
+        binding.btnAddToCart.setOnClickListener(v -> {
+            item.setNumberInCart(numberOrder);
+            managementCart.insertFood(item);
+        });
+        binding.btnBack.setOnClickListener(v -> finish());
+        binding.btnFavorite.setOnClickListener(v -> {
+            itemViewModel.toggleFavorite(item.getItemId());
+        });
+    }
+
+    /**
+     * Thiết lập các Observer để theo dõi sự thay đổi của LiveData từ AuthViewModel.
+     * - isLoading: Hiển thị/ẩn ProgressBar và vô hiệu hóa/kích hoạt các phần tử UI.
+     * - errorMessage: Hiển thị Snackbar với thông báo lỗi nếu có.
+     * - authSuccess: Đặt lại form nếu đăng nhập/đăng ký thành công.
+     * - currentUserData: Nếu đăng nhập thành công và có dữ liệu người dùng, chuyển đến MainActivity.
+     */
+    private void setupObservers() {
+
+        itemViewModel.getErrorMessage().observe(this, message -> {
+            if (message != null && !message.isEmpty()) {
+                UiUtils.showSnackbarWithBackground(
+                        binding.getRoot(),
+                        message,
+                        Snackbar.LENGTH_LONG,
+                        getResources().getColor(R.color.error_red));
+            }
+        });
+
+        itemViewModel.isItemFavorite(item.getItemId()).observe(this, isFav -> {
+            if (isFav) {
+                binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.fav_icon_fill));
+            } else {
+                binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.fav_icon));
+            }
+        });
+    }
+
+    private void setupSynchronization() {
+        binding.slider.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                if (colorAdapter != null) {
+                    colorAdapter.setSelectedPosition(position);
+                    binding.colorList.scrollToPosition(position);
+                }
+            }
+        });
+    }
+
+    /**
+     * Lớp ViewModelProvider.Factory tùy chỉnh.
+     * Sử dụng để cung cấp một instance của ItemViewModelFactory
+     * với một UserRepository đã được khởi tạo.
+     * Điều này cho phép ItemViewModelFactory nhận các dependencies cần thiết thông qua constructor của nó.
+     */
+    public static class ItemViewModelFactory implements ViewModelProvider.Factory {
+        private final UserRepository userRepository;
+
+        public ItemViewModelFactory(UserRepository userRepository) {
+            this.userRepository = userRepository;
+        }
+
+        @NonNull
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T extends androidx.lifecycle.ViewModel> T create(@NonNull Class<T> modelClass) {
+            if (modelClass.isAssignableFrom(ItemViewModel.class)) {
+                return (T) new ItemViewModel(userRepository);
+            }
+            throw new IllegalArgumentException("Unknown ViewModel class");
+        }
+    }
+}

@@ -1,21 +1,14 @@
 package com.prm392.onlineshoesshop.activity;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 
-import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.adapter.PopularAdapter;
 import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityMainBinding;
@@ -43,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void getBundle() {
         User user = getIntent().getParcelableExtra("user_data");
-        String userName = user != null ? user.fullName : "";
+        String userName = user != null ? user.getFullName() : "";
         binding.tvUserName.setText(userName);
     }
 

@@ -9,6 +9,8 @@ import java.util.List;
 
 public class ItemModel implements Parcelable {
 
+
+    private String itemId;
     private String title;
     private String description;
     private List<String> picUrl;
@@ -20,7 +22,8 @@ public class ItemModel implements Parcelable {
     public ItemModel() {
     }
 
-    public ItemModel(String title, String description, List<String> picUrl, List<String> size, Double price, Double rating, Integer numberInCart) {
+    public ItemModel(String itemId, String title, String description, List<String> picUrl, List<String> size, Double price, Double rating, Integer numberInCart) {
+        this.itemId = itemId;
         this.title = title;
         this.description = description;
         this.picUrl = picUrl;
@@ -28,6 +31,14 @@ public class ItemModel implements Parcelable {
         this.price = price;
         this.rating = rating;
         this.numberInCart = numberInCart;
+    }
+
+    public String getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(String itemId) {
+        this.itemId = itemId;
     }
 
     public String getTitle() {
@@ -67,6 +78,7 @@ public class ItemModel implements Parcelable {
     }
 
     protected ItemModel(Parcel in) {
+        itemId = in.readString();
         title = in.readString();
         description = in.readString();
         picUrl = in.createStringArrayList();
@@ -107,6 +119,7 @@ public class ItemModel implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(itemId);
         dest.writeString(title);
         dest.writeString(description);
         dest.writeStringList(picUrl);

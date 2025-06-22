@@ -1,5 +1,7 @@
 package com.prm392.onlineshoesshop.viewmodel;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -59,6 +61,7 @@ public class MainViewModel extends ViewModel {
                 for (DataSnapshot childSnapshot : snapshot.getChildren()) {
                     ItemModel itemModel = childSnapshot.getValue(ItemModel.class);
                     if (itemModel != null) {
+                        itemModel.setItemId(childSnapshot.getKey());
                         lists.add(itemModel);
                     }
                 }

@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -15,6 +16,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.prm392.onlineshoesshop.model.User;
+import com.prm392.onlineshoesshop.utils.ItemUtils;
 
 import java.util.Map;
 
@@ -219,5 +221,79 @@ public class UserRepository {
                 throw task.getException();
             }
         });
+    }
+
+    /**
+     * Thêm sản phẩm vào danh sách yêu thích của người dùng hiện tại.
+     * @param itemId ID của sản phẩm cần thêm.
+     * @return Task<Void> để lắng nghe sự hoàn thành của thao tác.
+     */
+    public Task<Void> addFavoriteItem(String itemId) {
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        if (firebaseUser == null) {
+            return Tasks.forException(new IllegalStateException("User not logged in."));
+        }
+        if (itemId == null || itemId.isEmpty()) {
+            return Tasks.forException(new IllegalArgumentException("Product ID cannot be null or empty."));
+        }
+
+        String userId = firebaseUser.getUid();
+        String firebaseKey = ItemUtils.getFirebaseItemId(itemId);
+        DatabaseReference userFavoriteRef = usersRef.child(userId).child("favoriteItems").child(firebaseKey);
+
+        User currentUser = _currentUserLiveData.getValue();
+        if (currentUser != null) {
+            User updatedUser = new User(currentUser);
+            updatedUser.getFavoriteItems().put(firebaseKey, true);
+            _currentUserLiveData.postValue(updatedUser);
+        }
+
+        return userFavoriteRef.setValue(true)
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to add favorite product to Firebase: " + e.getMessage());
+                    User failedUser = _currentUserLiveData.getValue();
+                    if (failedUser != null) {
+                        User revertedUser = new User(failedUser);
+                        revertedUser.getFavoriteItems().remove(firebaseKey);
+                        _currentUserLiveData.postValue(revertedUser);
+                    }
+                });
+    }
+
+    /**
+     * Xóa sản phẩm khỏi danh sách yêu thích của người dùng hiện tại.
+     * @param itemId ID của sản phẩm cần xóa.
+     * @return Task<Void> để lắng nghe sự hoàn thành của thao tác.
+     */
+    public Task<Void> removeFavoriteItem(String itemId) {
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        if (firebaseUser == null) {
+            return Tasks.forException(new IllegalStateException("User not logged in."));
+        }
+        if (itemId == null || itemId.isEmpty()) {
+            return Tasks.forException(new IllegalArgumentException("Product ID cannot be null or empty."));
+        }
+
+        String userId = firebaseUser.getUid();
+        String firebaseKey = ItemUtils.getFirebaseItemId(itemId);
+        DatabaseReference userFavoriteRef = usersRef.child(userId).child("favoriteItems").child(firebaseKey);
+
+        User currentUser = _currentUserLiveData.getValue();
+        if (currentUser != null) {
+            User updatedUser = new User(currentUser);
+            updatedUser.getFavoriteItems().remove(firebaseKey);
+            _currentUserLiveData.postValue(updatedUser);
+        }
+
+        return userFavoriteRef.setValue(null)
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to remove favorite product from Firebase: " + e.getMessage());
+                    User failedUser = _currentUserLiveData.getValue();
+                    if (failedUser != null) {
+                        User revertedUser = new User(failedUser);
+                        revertedUser.getFavoriteItems().put(firebaseKey, true);
+                        _currentUserLiveData.postValue(revertedUser);
+                    }
+                });
     }
 }
