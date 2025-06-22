@@ -82,17 +82,16 @@ public class AuthViewModel extends ViewModel {
      * @param password Mật khẩu cho tài khoản mới.
      */
     public void signUp(String email, String password) {
-        _isLoading.setValue(true); // Đặt trạng thái đang tải là true
-        _errorMessage.setValue(null); // Xóa thông báo lỗi cũ
-        _authSuccess.setValue(false); // Đặt trạng thái thành công là false
+        _isLoading.setValue(true);
+        _errorMessage.setValue(null);
+        _authSuccess.setValue(false);
 
         userRepository.signUpWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
-                    _isLoading.setValue(false); // Đặt trạng thái đang tải là false sau khi hoàn thành
+                    _isLoading.setValue(false);
                     if (task.isSuccessful()) {
-                        _authSuccess.setValue(true); // Đăng ký thành công
+                        _authSuccess.setValue(true);
                     } else {
-                        // Cập nhật thông báo lỗi nếu đăng ký thất bại
                         _errorMessage.setValue(task.getException() != null ? task.getException().getMessage() : "Unknown error.");
                     }
                 });
