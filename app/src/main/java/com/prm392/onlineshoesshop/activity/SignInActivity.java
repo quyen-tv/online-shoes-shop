@@ -4,61 +4,112 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.databinding.ActivitySignInBinding;
-import com.prm392.onlineshoesshop.model.Address;
-import com.prm392.onlineshoesshop.model.User;
+import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.utils.GoogleAuthHandler;
 import com.prm392.onlineshoesshop.utils.UiUtils;
 import com.prm392.onlineshoesshop.utils.ValidationUtils;
+import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 
 import java.util.Arrays;
 
 public class SignInActivity extends AppCompatActivity {
     private ActivitySignInBinding binding;
-    private FirebaseAuth mAuth;
-
-    private User user;
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         binding = ActivitySignInBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        mAuth = FirebaseAuth.getInstance();
+        UserRepository userRepository = new UserRepository();
+        authViewModel = new ViewModelProvider(
+                this,
+                new AuthViewModelFactory(userRepository))
+                .get(AuthViewModel.class);
+
+        setupObservers();
+        setupListeners();
+        setupTextWatchers();
+    }
+
+    /**
+     * Thiết lập các sự kiện click cho các nút và TextView trong layout.
+     * - btnSignIn: Xử lý sự kiện đăng nhập bằng email/password.
+     * - btnSignUpWithGg: Xử lý sự kiện đăng ký/đăng nhập bằng Google.
+     * - tvIntroSignUp: Chuyển hướng sang màn hình đăng ký (SignUpActivity).
+     */
+    private void setupListeners() {
         binding.btnSignIn.setOnClickListener(v -> {
             if (validateInputs()) {
-                performSignIn();
+                authViewModel.signIn(
+                        binding.etEmail.getText().toString().trim(),
+                        binding.etPassword.getText().toString().trim()
+                );
             }
         });
+
         binding.btnSignUpWithGg.setOnClickListener(v -> {
             GoogleAuthHandler googleAuthHandler = new GoogleAuthHandler();
             googleAuthHandler.startGoogleSignIn(
                     SignInActivity.this,
-                    false // isSignUp = false for sign-in
+                    false
             );
         });
+
         binding.tvIntroSignUp.setOnClickListener(v -> {
             startActivity(new Intent(SignInActivity.this, SignUpActivity.class));
         });
-        setupTextWatchers();
     }
 
+    /**
+     * Thiết lập các Observer để theo dõi sự thay đổi của LiveData từ AuthViewModel.
+     * - isLoading: Hiển thị/ẩn ProgressBar và vô hiệu hóa/kích hoạt các phần tử UI.
+     * - errorMessage: Hiển thị Snackbar với thông báo lỗi nếu có.
+     * - authSuccess: Đặt lại form nếu đăng nhập/đăng ký thành công.
+     * - currentUserData: Nếu đăng nhập thành công và có dữ liệu người dùng, chuyển đến MainActivity.
+     */
+    private void setupObservers() {
+        authViewModel.getIsLoading().observe(this, this::showLoading);
+
+        authViewModel.getErrorMessage().observe(this, message -> {
+            if (message != null && !message.isEmpty()) {
+                UiUtils.showSnackbar(binding.getRoot(), message, Snackbar.LENGTH_LONG);
+            }
+        });
+
+        authViewModel.getAuthSuccess().observe(this, isSuccess -> {
+            if (isSuccess) {
+                resetForm();
+            }
+        });
+
+        authViewModel.currentUserData.observe(this, user -> {
+            if (authViewModel.getAuthSuccess().getValue() != null && authViewModel.getAuthSuccess().getValue() && user != null) {
+                Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                intent.putExtra("user_data", user);
+                startActivity(intent);
+                finish();
+            }
+        });
+    }
+
+    /**
+     * Hiển thị hoặc ẩn ProgressBar và điều chỉnh trạng thái tương tác của các phần tử UI
+     * dựa trên trạng thái loading.
+     *
+     * @param isLoading true nếu đang tải, false nếu không.
+     */
     private void showLoading(boolean isLoading) {
         binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
 
@@ -77,6 +128,12 @@ public class SignInActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Xác thực các trường nhập liệu (Email và Mật khẩu).
+     * Hiển thị thông báo lỗi tương ứng dưới mỗi trường nếu dữ liệu không hợp lệ.
+     *
+     * @return true nếu tất cả các trường đều hợp lệ, ngược lại là false.
+     */
     private boolean validateInputs() {
         boolean isValid = true;
 
@@ -93,9 +150,11 @@ public class SignInActivity extends AppCompatActivity {
         } else if (!ValidationUtils.isValidEmail(email)) {
             binding.tilEmail.setError(getString(R.string.error_email_invalid));
             isValid = false;
+        } else {
+            binding.tilEmail.setError(null);
         }
 
-        // 2. Kiểm tra password
+        // 2. Kiểm tra mật khẩu
         if (ValidationUtils.isFieldEmpty(password)) {
             binding.tilPassword.setError(getString(R.string.error_field_empty));
             isValid = false;
@@ -105,17 +164,20 @@ public class SignInActivity extends AppCompatActivity {
         } else if (!ValidationUtils.isValidPassword(password)) {
             binding.tilPassword.setError(String.format(getString(R.string.error_password_too_short), ValidationUtils.MIN_PASSWORD_LENGTH));
             isValid = false;
+        } else {
+            binding.tilPassword.setError(null);
         }
-
-
         return isValid;
     }
 
+    /**
+     * Thiết lập các TextWatcher cho trường Email và Mật khẩu.
+     * Mỗi khi người dùng thay đổi văn bản, thông báo lỗi (nếu có) sẽ được xóa.
+     */
     private void setupTextWatchers() {
         binding.etEmail.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -123,14 +185,12 @@ public class SignInActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-            }
+            public void afterTextChanged(Editable s) {}
         });
 
         binding.etPassword.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -138,13 +198,14 @@ public class SignInActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-            }
+            public void afterTextChanged(Editable s) {}
         });
-
-
     }
 
+    /**
+     * Đặt lại các trường nhập liệu Email và Mật khẩu về rỗng
+     * và xóa mọi thông báo lỗi đang hiển thị.
+     */
     private void resetForm() {
         binding.etEmail.setText("");
         binding.etPassword.setText("");
@@ -153,76 +214,27 @@ public class SignInActivity extends AppCompatActivity {
         binding.tilPassword.setError(null);
     }
 
-    private void performSignIn() {
-        String email = binding.etEmail.getText().toString().trim();
-        String password = binding.etPassword.getText().toString().trim();
+    /**
+     * Lớp ViewModelProvider.Factory tùy chỉnh.
+     * Sử dụng để cung cấp một instance của AuthViewModel
+     * với một UserRepository đã được khởi tạo.
+     * Điều này cho phép AuthViewModel nhận các dependencies cần thiết thông qua constructor của nó.
+     */
+    public static class AuthViewModelFactory implements ViewModelProvider.Factory {
+        private final UserRepository userRepository;
 
-        showLoading(true);
-
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        if (user != null) {
-                            fetchUserData(user.getUid(), new OnUserDataFetchListener() {
-                                @Override
-                                public void onSuccess(User user) {
-                                    showLoading(false);
-                                    resetForm();
-                                    startActivity(new Intent(SignInActivity.this, MainActivity.class).putExtra("user_data", user));
-                                    finish();
-                                }
-                                @Override
-                                public void onFailure(Exception e) {
-                                    showLoading(false);
-                                    resetForm();
-                                    UiUtils.showSnackbar(binding.getRoot(), getString(R.string.login_failed), Snackbar.LENGTH_SHORT);
-                                }
-                            });
-                        } else {
-                            UiUtils.showSnackbar(binding.getRoot(), getString(R.string.login_failed), Snackbar.LENGTH_SHORT);
-                        }
-                    } else {
-                        String errorMessage = getString(R.string.login_failed);
-                        if (task.getException() != null && task.getException().getMessage() != null) {
-                            errorMessage = task.getException().getMessage();
-                        }
-                        UiUtils.showSnackbar(binding.getRoot(), errorMessage, Snackbar.LENGTH_LONG);
-                    }
-                });
-
-    }
-
-    // Interface callback cho việc lấy dữ liệu User từ DB
-    public interface OnUserDataFetchListener {
-        void onSuccess(User user);
-        void onFailure(Exception e);
-    }
-
-
-    public void fetchUserData(String userId, @NonNull OnUserDataFetchListener listener) {
-        if (userId == null || userId.isEmpty()) {
-            listener.onFailure(new IllegalArgumentException("User ID cannot be null or empty."));
-            return;
+        public AuthViewModelFactory(UserRepository userRepository) {
+            this.userRepository = userRepository;
         }
 
-        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
-
-        usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    User user = snapshot.getValue(User.class);
-                    listener.onSuccess(user);
-                } else {
-                    listener.onFailure(new Exception("User with ID " + userId + " not found in Realtime Database."));
-                }
+        @NonNull
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T extends androidx.lifecycle.ViewModel> T create(@NonNull Class<T> modelClass) {
+            if (modelClass.isAssignableFrom(AuthViewModel.class)) {
+                return (T) new AuthViewModel(userRepository);
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                listener.onFailure(error.toException());
-            }
-        });
+            throw new IllegalArgumentException("Unknown ViewModel class");
+        }
     }
 }
