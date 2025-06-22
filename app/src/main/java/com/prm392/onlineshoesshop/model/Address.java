@@ -7,6 +7,9 @@ public class Address {
     private String city;
     private String country;
 
+    public Address() {
+    }
+
     public Address(String street, String ward, String district, String city, String country) {
         this.street = street;
         this.ward = ward;

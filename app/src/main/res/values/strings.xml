@@ -32,7 +32,7 @@
     <string name="registration_failed_db_save">Registration failed! Please try again</string>
     <string name="email_already_in_use">This email is already in use.</string>
     <string name="login_successful">Welcome back, Solemate</string>
-    <string name="login_failed">Please your account information !!</string>
+    <string name="login_failed">Please your account information !</string>
     <string name="default_web_client_id">283337588836-srvds3mng5fkrj29to4kgu3dn324piuu.apps.googleusercontent.com</string>
 
     <!-- Google Sign-In related strings -->
