@@ -5,10 +5,12 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 
+import com.prm392.onlineshoesshop.adapter.CategoryAdapter;
 import com.prm392.onlineshoesshop.adapter.PopularAdapter;
 import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityMainBinding;
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
         getBundle();
         initBanner();
         initPopular();
+        initCategory();
     }
 
     private void getBundle() {
@@ -57,6 +60,16 @@ public class MainActivity extends AppCompatActivity {
             binding.progressBarPopular.setVisibility(View.GONE);
         });
         viewModel.loadPopulars();
+    }
+
+    private void initCategory() {
+        binding.progressBarBrand.setVisibility(View.VISIBLE);
+        viewModel.categories.observe(this, itemModels -> {
+            binding.viewBrand.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+            binding.viewBrand.setAdapter(new CategoryAdapter(itemModels));
+            binding.progressBarBrand.setVisibility(View.GONE);
+        });
+        viewModel.loadCategory();
     }
 
     private void banners(List<SliderModel> images) {
