@@ -59,4 +59,9 @@
     <string name="buy_now">Buy Now</string>
     <string name="rating">Rating</string>
 
+    <!-- Settings related strings -->
+    <string name="settings_profile">User profile</string>
+    <string name="settings_notification">Notification</string>
+    <string name="settings_tos">Term of services</string>
+    <string name="settings_logout">Log out</string>
 </resources>

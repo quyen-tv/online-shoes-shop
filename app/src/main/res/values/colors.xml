@@ -16,4 +16,10 @@
     <color name="error_red">#F44336</color>
     <color name="warning_orange">#FF9800</color>
     <color name="info_blue">#2196F3</color>
+    <color name="custom_light_blue">#f2f1f6</color>
+    <color name="light_gray_background">#FAFAFA</color>
+    <color name="input_border_default">#BDBDBD</color>
+    <color name="input_border_focused">#6200EE</color>
+    <color name="input_hint_color">#757575</color>
+
 </resources>
