@@ -1,5 +1,9 @@
 <!-- res/drawable/avatar_background.xml -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="#CCCCCC"/> <!-- Change to any color or use @color/ -->
+
+    <!-- Màu nền bên trong -->
+    <solid android:color="#CCCCCC" /> <!-- hoặc @color/gray_light -->
+
+
 </shape>
