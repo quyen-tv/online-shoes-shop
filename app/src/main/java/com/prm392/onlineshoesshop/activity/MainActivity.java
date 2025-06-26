@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,15 +15,18 @@ import com.prm392.onlineshoesshop.adapter.CategoryAdapter;
 import com.prm392.onlineshoesshop.adapter.PopularAdapter;
 import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityMainBinding;
+import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
 import com.prm392.onlineshoesshop.model.SliderModel;
-import com.prm392.onlineshoesshop.model.User;
+import com.prm392.onlineshoesshop.repository.UserRepository;
+import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 import com.prm392.onlineshoesshop.viewmodel.MainViewModel;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private MainViewModel viewModel = new MainViewModel();
+    private final MainViewModel viewModel = new MainViewModel();
+    private AuthViewModel authViewModel;
     private ActivityMainBinding binding;
 
     @Override
@@ -31,16 +35,27 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        getBundle();
+        UserRepository userRepository = new UserRepository();
+        AuthViewModelFactory authViewModelFactory = new AuthViewModelFactory(userRepository);
+        authViewModel = new ViewModelProvider(
+                this,
+                authViewModelFactory)
+                .get(AuthViewModel.class);
+
+        initWelcome();
         initBanner();
         initPopular();
         initCategory();
     }
 
-    private void getBundle() {
-        User user = getIntent().getParcelableExtra("user_data");
-        String userName = user != null ? user.getFullName() : "";
-        binding.tvUserName.setText(userName);
+    private void initWelcome() {
+        authViewModel.currentUserData.observe(this, user -> {
+            if (user != null) {
+                String userName = user.getFullName();
+                binding.tvUserName.setText(userName);
+            }
+        });
+
     }
 
     private void initBanner() {
