@@ -22,5 +22,6 @@
     <color name="input_border_focused">#6200EE</color>
     <color name="input_hint_color">#757575</color>
     <color name="custom_blue">#2196F3</color> <!-- hoặc bất kỳ mã nào -->
+    <color name="hint_color">#808080</color> <!-- hoặc màu giống TextInputLayout -->
 
 </resources>

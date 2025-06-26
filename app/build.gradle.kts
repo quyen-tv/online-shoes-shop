@@ -59,4 +59,9 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
     // To use constraintlayout in compose
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
+    // OkHttp client
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // (Tùy chọn) Logging Interceptor để debug request/response
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }

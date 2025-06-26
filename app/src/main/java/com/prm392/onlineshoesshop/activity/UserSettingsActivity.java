@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.prm392.onlineshoesshop.databinding.ActivityUserSettingsBinding;
-import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
 import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 
@@ -25,10 +24,11 @@ public class UserSettingsActivity extends AppCompatActivity {
 
         authViewModel = new ViewModelProvider(
                 this,
-                new AuthViewModelFactory(new UserRepository())
+                new SignUpActivity.AuthViewModelFactory(new UserRepository())
         ).get(AuthViewModel.class);
 
         setupUI();
+        updateUI();
         observeLogoutState();
     }
 
@@ -46,6 +46,14 @@ public class UserSettingsActivity extends AppCompatActivity {
         });
     }
 
+    private void updateUI() {
+        authViewModel.currentUserData.observe(this, user -> {
+            if(user != null) {
+                if(!user.getFullName().isEmpty()) binding.tvFullName.setText(user.getFullName());
+                binding.tvEmail.setText(user.getEmail());
+            }
+        });
+    }
     private void showLogoutDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Confirm Logout")

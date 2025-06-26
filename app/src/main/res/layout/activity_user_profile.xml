@@ -109,12 +109,13 @@
 
                     <!-- Full Name -->
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilFullName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:hint="Full Name"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="@color/light_gray_background">
+                        app:boxBackgroundColor="@color/light_gray_background"
+                        app:boxBackgroundMode="outline">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextFullName"
@@ -125,12 +126,13 @@
 
                     <!-- Email -->
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilEmail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:hint="Email"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="@color/light_gray_background">
+                        app:boxBackgroundColor="@color/light_gray_background"
+                        app:boxBackgroundMode="outline">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextEmail"
@@ -139,71 +141,7 @@
                             android:enabled="false" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Street -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:hint="Street"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="@color/light_gray_background">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTextStreet"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:enabled="false" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <!-- Ward -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:hint="Ward"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="@color/light_gray_background">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTextWard"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:enabled="false" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <!-- District -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:hint="District"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="@color/light_gray_background">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTextDistrict"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:enabled="false" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <!-- City -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:hint="City"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="@color/light_gray_background">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTextCity"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:enabled="false" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <!-- Country -->
+                    <!-- Country (vẫn là EditText tĩnh) -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -216,8 +154,108 @@
                             android:id="@+id/editTextCountry"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:enabled="false"
+
+                            android:text="Việt Nam" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+
+                    <!-- City Spinner -->
+                    <FrameLayout
+                        android:id="@+id/spinnerCityContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:foreground="@drawable/spinner_disabled_overlay"
+                        android:foregroundGravity="fill">
+
+                        <Spinner
+                            android:id="@+id/spinnerCity"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/spinner_item_background"
+                            android:enabled="false"
+                            android:clickable="false"
+                            android:gravity="center_vertical"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp" />
+                    </FrameLayout>
+
+                    <!-- District Spinner -->
+                    <FrameLayout
+                        android:id="@+id/spinnerDistrictContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:foreground="@drawable/spinner_disabled_overlay"
+                        android:foregroundGravity="fill">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="District"
+                            app:boxBackgroundMode="outline"
+                            app:boxBackgroundColor="@color/light_gray_background">
+
+                            <Spinner
+                                android:id="@+id/spinnerDistrict"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/spinner_item_background"
+                                android:enabled="false"
+                                android:clickable="false"
+                                android:gravity="center_vertical"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </FrameLayout>
+
+                    <!-- Ward Spinner -->
+                    <FrameLayout
+                        android:id="@+id/spinnerWardContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:foreground="@drawable/spinner_disabled_overlay"
+                        android:foregroundGravity="fill">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Ward"
+                            app:boxBackgroundMode="outline"
+                            app:boxBackgroundColor="@color/light_gray_background">
+
+                            <Spinner
+                                android:id="@+id/spinnerWard"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/spinner_item_background"
+                                android:enabled="false"
+                                android:clickable="false"
+                                android:gravity="center_vertical"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </FrameLayout>
+
+                    <!-- Street (giữ là EditText để nhập tay) -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilStreet"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:hint="Street"
+                        app:boxBackgroundColor="@color/light_gray_background"
+                        app:boxBackgroundMode="outline">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextStreet"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:enabled="false" />
                     </com.google.android.material.textfield.TextInputLayout>
+
                 </LinearLayout>
 
 
