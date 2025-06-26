@@ -10,66 +10,107 @@ import com.prm392.onlineshoesshop.repository.AddressRepository;
 import java.util.List;
 
 public class AddressViewModel extends ViewModel {
+    private final AddressRepository repository = new AddressRepository();
 
-    private final AddressRepository addressRepository = AddressRepository.getInstance();
+    private final MutableLiveData<List<Address.City>> cities = new MutableLiveData<>();
+    private final MutableLiveData<List<Address.District>> districts = new MutableLiveData<>();
+    private final MutableLiveData<List<Address.Ward>> wards = new MutableLiveData<>();
 
-    private final MutableLiveData<String> _country = new MutableLiveData<>("Việt Nam");
-    private final MutableLiveData<String> _street = new MutableLiveData<>();
-    private final MutableLiveData<String> _selectedCity = new MutableLiveData<>();
-    private final MutableLiveData<String> _selectedDistrict = new MutableLiveData<>();
-    private final MutableLiveData<String> _selectedWard = new MutableLiveData<>();
+    private final MutableLiveData<Address.City> selectedCity = new MutableLiveData<>();
+    private final MutableLiveData<Address.District> selectedDistrict = new MutableLiveData<>();
+    private final MutableLiveData<Address.Ward> selectedWard = new MutableLiveData<>();
+    private final MutableLiveData<String> country = new MutableLiveData<>("Việt Nam");
 
-    public LiveData<String> getCountry() { return _country; }
-    public LiveData<String> getStreet() { return _street; }
-    public LiveData<String> getSelectedCity() { return _selectedCity; }
-    public LiveData<String> getSelectedDistrict() { return _selectedDistrict; }
-    public LiveData<String> getSelectedWard() { return _selectedWard; }
-
-    public void setStreet(String street) { _street.setValue(street); }
-    public void setCountry(String country) { _country.setValue(country); }
-
-    public LiveData<List<String>> getCities() { return addressRepository.getCities(); }
-    public LiveData<List<String>> getDistricts() { return addressRepository.getDistricts(); }
-    public LiveData<List<String>> getWards() { return addressRepository.getWards(); }
-
-    public void fetchCities() { addressRepository.fetchCities(); }
-
-    public void setSelectedCity(String city) {
-        _selectedCity.setValue(city);
-        _selectedDistrict.setValue(null);  // reset các cấp thấp hơn
-        _selectedWard.setValue(null);
-        addressRepository.fetchDistricts(city); // tự động fetch quận
+    // === Expose ===
+    public LiveData<List<Address.City>> getCities() {
+        return cities;
     }
 
-    public void setSelectedDistrict(String district) {
-        _selectedDistrict.setValue(district);
-        _selectedWard.setValue(null);
-        addressRepository.fetchWards(district); // tự động fetch phường
+    public LiveData<List<Address.District>> getDistricts() {
+        return districts;
     }
 
-    public void setSelectedWard(String ward) {
-        _selectedWard.setValue(ward);
+    public LiveData<List<Address.Ward>> getWards() {
+        return wards;
     }
 
-    public Address buildAddress() {
-        return new Address(
-                _street.getValue(),
-                _selectedWard.getValue(),
-                _selectedDistrict.getValue(),
-                _selectedCity.getValue(),
-                _country.getValue()
-        );
+    public MutableLiveData<Address.City> getSelectedCity() {
+        return selectedCity;
     }
 
-
-    // Gọi API để lấy danh sách quận/huyện theo thành phố
-    public void fetchDistricts(String city) {
-        addressRepository.fetchDistricts(city);
+    public MutableLiveData<Address.District> getSelectedDistrict() {
+        return selectedDistrict;
     }
 
-    // Gọi API để lấy danh sách phường/xã theo quận
-    public void fetchWards(String district) {
-        addressRepository.fetchWards(district);
+    public MutableLiveData<Address.Ward> getSelectedWard() {
+        return selectedWard;
     }
 
+    public MutableLiveData<String> getCountry() {
+        return country;
+    }
+
+    // === Actions ===
+    public void fetchCities() {
+        repository.fetchCities(new AddressRepository.CityCallback() {
+            @Override
+            public void onSuccess(List<Address.City> result) {
+                cities.setValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // log nếu cần
+            }
+        });
+    }
+
+    public void fetchDistricts(int cityCode) {
+        repository.fetchDistricts(cityCode, new AddressRepository.DistrictCallback() {
+            @Override
+            public void onSuccess(List<Address.District> result) {
+                districts.setValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {}
+        });
+    }
+
+    public void fetchWards(int districtCode) {
+        repository.fetchWards(districtCode, new AddressRepository.WardCallback() {
+            @Override
+            public void onSuccess(List<Address.Ward> result) {
+                wards.setValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {}
+        });
+    }
+
+    public void setSelectedCity(String name, int code) {
+        Address.City city = new Address.City(code, name);
+        selectedCity.setValue(city);
+    }
+
+    public void setSelectedDistrict(String name, int code) {
+        Address.District district = new Address.District(code, name);
+        selectedDistrict.setValue(district);
+    }
+
+    public void setSelectedWard(String name, int code) {
+        Address.Ward ward = new Address.Ward(code, name);
+        selectedWard.setValue(ward);
+    }
+
+    // Khôi phục dữ liệu gốc (nếu cần)
+    public void restoreAddress(Address address) {
+        if (address != null) {
+            selectedCity.setValue(address.getCity());
+            selectedDistrict.setValue(address.getDistrict());
+            selectedWard.setValue(address.getWard());
+            country.setValue(address.getCountry());
+        }
+    }
 }

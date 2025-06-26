@@ -128,11 +128,34 @@ public class GoogleAuthHandler {
 
     private static void saveNewUserToDatabase(@NonNull FirebaseUser firebaseUser, View rootView, boolean isGoogle) {
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+
         String email = firebaseUser.getEmail();
         String fullName = UserUtils.extractNameFromEmail(email);
         String profileImageUrl = "";
-        Address address = new Address("", "", "", "", "");
-        User newUser = new User(firebaseUser.getUid(), firebaseUser.getEmail(), fullName, profileImageUrl, address, isGoogle);
+        Address.City city = new Address.City(-1, "");
+        Address.District district = new Address.District(-1, "");
+        Address.Ward ward = new Address.Ward(-1, "");
+
+        Address address = new Address();
+        address.setStreet("");
+        address.setCountry("");
+        address.setCity(new Address.City(-1, ""));
+        address.setDistrict(new Address.District(-1, ""));
+        address.setWard(new Address.Ward(-1, ""));
+
+
+        String phoneNumber = firebaseUser.getPhoneNumber() != null ? firebaseUser.getPhoneNumber() : null;
+
+        User newUser = new User(
+                firebaseUser.getUid(),
+                email,
+                fullName,
+                profileImageUrl,
+                address,
+                isGoogle,
+                phoneNumber // ✅ truyền thêm phoneNumber
+        );
+
         mDatabase.child("Users")
                 .child(firebaseUser.getUid())
                 .setValue(newUser)
@@ -143,4 +166,5 @@ public class GoogleAuthHandler {
                     UiUtils.showSnackbar(rootView, "Registration failed: " + e.getMessage(), Snackbar.LENGTH_LONG);
                 });
     }
+
 }

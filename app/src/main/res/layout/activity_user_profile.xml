@@ -140,23 +140,22 @@
                             android:layout_height="wrap_content"
                             android:enabled="false" />
                     </com.google.android.material.textfield.TextInputLayout>
-
-                    <!-- Country (vẫn là EditText tĩnh) -->
+                    <!-- Thêm Phone Number -->
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilPhone"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:hint="Country"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="@color/light_gray_background">
+                        android:hint="Phone Number"
+                        app:boxBackgroundColor="@color/light_gray_background"
+                        app:boxBackgroundMode="outline">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTextCountry"
+                            android:id="@+id/editTextPhone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:enabled="false"
-
-                            android:text="Việt Nam" />
+                            android:inputType="phone"
+                            android:enabled="false" />
                     </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -165,16 +164,13 @@
                         android:id="@+id/spinnerCityContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:foreground="@drawable/spinner_disabled_overlay"
-                        android:foregroundGravity="fill">
+                        android:layout_marginTop="8dp">
 
                         <Spinner
                             android:id="@+id/spinnerCity"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
                             android:background="@drawable/spinner_item_background"
-                            android:enabled="false"
                             android:clickable="false"
                             android:gravity="center_vertical"
                             android:paddingStart="16dp"
@@ -186,23 +182,20 @@
                         android:id="@+id/spinnerDistrictContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:foreground="@drawable/spinner_disabled_overlay"
-                        android:foregroundGravity="fill">
+                        android:layout_marginTop="8dp">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="District"
-                            app:boxBackgroundMode="outline"
-                            app:boxBackgroundColor="@color/light_gray_background">
+                            app:boxBackgroundColor="@color/light_gray_background"
+                            app:boxBackgroundMode="outline">
 
                             <Spinner
                                 android:id="@+id/spinnerDistrict"
                                 android:layout_width="match_parent"
                                 android:layout_height="48dp"
                                 android:background="@drawable/spinner_item_background"
-                                android:enabled="false"
                                 android:clickable="false"
                                 android:gravity="center_vertical"
                                 android:paddingStart="16dp"
@@ -215,23 +208,20 @@
                         android:id="@+id/spinnerWardContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:foreground="@drawable/spinner_disabled_overlay"
-                        android:foregroundGravity="fill">
+                        android:layout_marginTop="8dp">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Ward"
-                            app:boxBackgroundMode="outline"
-                            app:boxBackgroundColor="@color/light_gray_background">
+                            app:boxBackgroundColor="@color/light_gray_background"
+                            app:boxBackgroundMode="outline">
 
                             <Spinner
                                 android:id="@+id/spinnerWard"
                                 android:layout_width="match_parent"
                                 android:layout_height="48dp"
                                 android:background="@drawable/spinner_item_background"
-                                android:enabled="false"
                                 android:clickable="false"
                                 android:gravity="center_vertical"
                                 android:paddingStart="16dp"

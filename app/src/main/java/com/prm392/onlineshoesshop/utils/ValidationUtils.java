@@ -31,5 +31,9 @@ public class ValidationUtils {
     public static boolean doPasswordsMatch(String password, String confirmPassword) {
         return !isFieldEmpty(password) && password.equals(confirmPassword);
     }
+    public static boolean isValidPhoneNumber(String phone) {
+        // Kiểm tra theo định dạng Việt Nam: bắt đầu bằng 0, có 10 chữ số
+        return phone.matches("^0\\d{9}$");
+    }
 
 }
