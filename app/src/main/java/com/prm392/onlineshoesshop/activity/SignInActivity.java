@@ -100,9 +100,7 @@ public class SignInActivity extends AppCompatActivity {
 
         authViewModel.currentUserData.observe(this, user -> {
             if (authViewModel.getAuthSuccess().getValue() != null && authViewModel.getAuthSuccess().getValue() && user != null) {
-                Intent intent = new Intent(SignInActivity.this, MainActivity.class);
-                intent.putExtra("user_data", user);
-                startActivity(intent);
+                startActivity(new Intent(SignInActivity.this, MainActivity.class));
                 finish();
             }
         });
