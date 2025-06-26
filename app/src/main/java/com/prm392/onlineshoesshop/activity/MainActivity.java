@@ -8,25 +8,31 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 
 import com.google.android.material.navigation.NavigationBarView;
 import com.prm392.onlineshoesshop.R;
+import com.prm392.onlineshoesshop.adapter.CategoryAdapter;
 import com.prm392.onlineshoesshop.adapter.PopularAdapter;
 import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityMainBinding;
+import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
 import com.prm392.onlineshoesshop.model.SliderModel;
-import com.prm392.onlineshoesshop.model.User;
+import com.prm392.onlineshoesshop.repository.UserRepository;
+import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 import com.prm392.onlineshoesshop.viewmodel.MainViewModel;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private MainViewModel viewModel = new MainViewModel();
+    private final MainViewModel viewModel = new MainViewModel();
+    private AuthViewModel authViewModel;
     private ActivityMainBinding binding;
 
     @Override
@@ -35,7 +41,14 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        getBundle();
+        UserRepository userRepository = new UserRepository();
+        AuthViewModelFactory authViewModelFactory = new AuthViewModelFactory(userRepository);
+        authViewModel = new ViewModelProvider(
+                this,
+                authViewModelFactory)
+                .get(AuthViewModel.class);
+
+        initWelcome();
         initBanner();
         initPopular();
 
@@ -50,12 +63,17 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+        initCategory();
     }
 
-    private void getBundle() {
-        User user = getIntent().getParcelableExtra("user_data");
-        String userName = user != null ? user.getFullName() : "";
-        binding.tvUserName.setText(userName);
+    private void initWelcome() {
+        authViewModel.currentUserData.observe(this, user -> {
+            if (user != null) {
+                String userName = user.getFullName();
+                binding.tvUserName.setText(userName);
+            }
+        });
+
     }
 
     private void initBanner() {
@@ -75,6 +93,16 @@ public class MainActivity extends AppCompatActivity {
             binding.progressBarPopular.setVisibility(View.GONE);
         });
         viewModel.loadPopulars();
+    }
+
+    private void initCategory() {
+        binding.progressBarBrand.setVisibility(View.VISIBLE);
+        viewModel.categories.observe(this, itemModels -> {
+            binding.viewBrand.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+            binding.viewBrand.setAdapter(new CategoryAdapter(itemModels));
+            binding.progressBarBrand.setVisibility(View.GONE);
+        });
+        viewModel.loadCategory();
     }
 
     private void banners(List<SliderModel> images) {
