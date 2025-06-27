@@ -222,7 +222,7 @@ public class UserProfileActivity extends AppCompatActivity {
         // City
         List<String> cityOptions = new ArrayList<>();
         cityOptions.add("Select City");
-        if (userAddress != null && userAddress.getCity() != null) {
+        if (userAddress != null && !userAddress.getCity().getName().isEmpty()) {
             cityOptions.clear();
             cityOptions.add(userAddress.getCity().getName());
         }
@@ -234,7 +234,7 @@ public class UserProfileActivity extends AppCompatActivity {
         // District
         List<String> districtOptions = new ArrayList<>();
         districtOptions.add("Select District");
-        if (userAddress != null && userAddress.getDistrict() != null) {
+        if (userAddress != null && !userAddress.getDistrict().getName().isEmpty()) {
             districtOptions.clear();
             districtOptions.add(userAddress.getDistrict().getName());
         }
@@ -246,7 +246,7 @@ public class UserProfileActivity extends AppCompatActivity {
         // Ward
         List<String> wardOptions = new ArrayList<>();
         wardOptions.add("Select Ward");
-        if (userAddress != null && userAddress.getWard() != null) {
+        if (userAddress != null && !userAddress.getWard().getName().isEmpty()) {
             wardOptions.clear();
             wardOptions.add(userAddress.getWard().getName());
         }
