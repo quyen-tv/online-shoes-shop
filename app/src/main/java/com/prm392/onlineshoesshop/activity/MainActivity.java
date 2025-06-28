@@ -3,6 +3,7 @@ package com.prm392.onlineshoesshop.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -15,6 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 
+import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.prm392.onlineshoesshop.R;
 import com.google.android.material.navigation.NavigationBarView;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.adapter.CategoryAdapter;
@@ -64,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         initCategory();
+        initBottomNavigation();
     }
 
     private void initWelcome() {
@@ -120,5 +125,16 @@ public class MainActivity extends AppCompatActivity {
             binding.dotIndicator.setVisibility(View.VISIBLE);
             binding.dotIndicator.attachTo(binding.viewPageSlider);
         }
+    }
+
+    private void initBottomNavigation() {
+
+        binding.bottomMenu.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.navigation_cart) {
+                startActivity(new Intent(this, CartActivity.class));
+                return true; // Return true to indicate the event was handled
+            }
+            return false; // Return false for other items if you don't handle them
+        });
     }
 }

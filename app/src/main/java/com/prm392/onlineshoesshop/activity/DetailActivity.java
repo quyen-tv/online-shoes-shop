@@ -1,5 +1,6 @@
 package com.prm392.onlineshoesshop.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -57,6 +58,10 @@ public class DetailActivity extends AppCompatActivity {
         banners();
         initLists();
         setupObservers();
+
+        binding.btnCart.setOnClickListener(v -> {
+            startActivity(new Intent(this, CartActivity.class));
+        });
 
         setupSynchronization();
     }
