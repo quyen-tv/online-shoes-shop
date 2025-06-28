@@ -128,13 +128,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initBottomNavigation() {
-
-        binding.bottomMenu.setOnItemSelectedListener(item -> {
+        binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_cart) {
                 startActivity(new Intent(this, CartActivity.class));
-                return true; // Return true to indicate the event was handled
+                return true;
             }
-            return false; // Return false for other items if you don't handle them
+            return false;
         });
     }
+
 }
