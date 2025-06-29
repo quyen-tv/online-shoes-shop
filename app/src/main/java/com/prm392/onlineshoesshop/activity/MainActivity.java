@@ -3,8 +3,11 @@ package com.prm392.onlineshoesshop.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -15,6 +18,8 @@ import androidx.viewpager2.widget.MarginPageTransformer;
 
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.prm392.onlineshoesshop.R;
+import com.google.android.material.navigation.NavigationBarView;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.adapter.CategoryAdapter;
 import com.prm392.onlineshoesshop.adapter.PopularAdapter;
@@ -50,6 +55,18 @@ public class MainActivity extends AppCompatActivity {
         initWelcome();
         initBanner();
         initPopular();
+
+        binding.bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if(item.getItemId() == R.id.navigation_profile) {
+                    item.setChecked(true);
+                    startActivity(new Intent(MainActivity.this, UserSettingsActivity.class));
+
+                }
+                return false;
+            }
+        });
         initCategory();
         initBottomNavigation();
     }
@@ -111,13 +128,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initBottomNavigation() {
-
-        binding.bottomMenu.setOnItemSelectedListener(item -> {
+        binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_cart) {
                 startActivity(new Intent(this, CartActivity.class));
-                return true; // Return true to indicate the event was handled
+                return true;
             }
-            return false; // Return false for other items if you don't handle them
+            if(item.getItemId() == R.id.navigation_profile) {
+                startActivity(new Intent(this,UserSettingsActivity.class));
+                return true;
+            }
+            return false;
         });
     }
+
 }

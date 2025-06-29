@@ -64,37 +64,50 @@ public class UserRepository {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
-                            // Nếu người dùng đã tồn tại trong DB, lấy dữ liệu và cập nhật LiveData
+                            // Người dùng đã tồn tại trong DB
                             User user = snapshot.getValue(User.class);
                             _currentUserLiveData.postValue(user);
                         } else {
-                            // Nếu người dùng chưa tồn tại trong DB
-                            // tạo một đối tượng User cơ bản và lưu vào DB.
+                            // Người dùng chưa tồn tại trong DB
+                            String phone = firebaseUser.getPhoneNumber() != null ? firebaseUser.getPhoneNumber() : null;
+
                             User basicUser = new User(
                                     firebaseUser.getUid(),
                                     firebaseUser.getEmail(),
                                     firebaseUser.getDisplayName(),
                                     firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null,
-                                    null,
-                                    false);
+                                    null,    // Address chưa có
+                                    false,   // Không phải tài khoản Google
+                                    phone    // ✅ Thêm phone number nếu có
+                            );
+
                             _currentUserLiveData.postValue(basicUser);
                             saveUser(basicUser);
                         }
                     }
 
+
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         Log.e(TAG, "Failed to fetch user profile from Realtime DB: " + error.getMessage());
-                        // Tạo một đối tượng User cơ bản ngay cả khi có lỗi, để đảm bảo LiveData không rỗng
+
+                        // Lấy số điện thoại nếu có
+                        String phone = firebaseUser.getPhoneNumber() != null ? firebaseUser.getPhoneNumber() : null;
+
+                        // Tạo user cơ bản để đảm bảo LiveData không null
                         User basicUser = new User(
                                 firebaseUser.getUid(),
                                 firebaseUser.getEmail(),
                                 firebaseUser.getDisplayName(),
                                 firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null,
-                                null,
-                                false);
+                                null,    // Address
+                                false,   // googleAccount
+                                phone    // ✅ phoneNumber
+                        );
+
                         _currentUserLiveData.postValue(basicUser);
                     }
+
                 });
             } else {
                 // Nếu không có FirebaseUser (đã đăng xuất), đặt currentUserLiveData về null
@@ -137,19 +150,25 @@ public class UserRepository {
                     if (task.isSuccessful()) {
                         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
                         if (firebaseUser != null) {
+                            String name = firebaseUser.getDisplayName() != null ? firebaseUser.getDisplayName() : "";
+                            String phone = firebaseUser.getPhoneNumber() != null ? firebaseUser.getPhoneNumber() : null;
+
                             User newUser = new User(
                                     firebaseUser.getUid(),
                                     email,
-                                    firebaseUser.getDisplayName(),
-                                    null,
-                                    null,
-                                    false);
+                                    name,
+                                    null,     // profileImageUrl
+                                    null,     // address
+                                    false,    // googleAccount
+                                    phone     // ✅ thêm phoneNumber
+                            );
                             return saveUser(newUser);
                         }
                     }
-                    throw task.getException();
+                    throw task.getException(); // báo lỗi nếu đăng ký thất bại
                 });
     }
+
 
     /**
      * Đăng xuất người dùng hiện tại khỏi Firebase Authentication.

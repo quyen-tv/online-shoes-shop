@@ -7,101 +7,208 @@ import androidx.annotation.NonNull;
 
 public class Address implements Parcelable {
     private String street;
-    private String ward;
-    private String district;
-    private String city;
+    private City city;
+    private District district;
+    private Ward ward;
     private String country;
 
-    public Address() {
-    }
+    public Address() {}
 
-    public Address(Address address) {
-        this.street = address.getStreet();
-        this.ward = address.getWard();
-        this.district = address.getDistrict();
-        this.city = address.getCity();
-        this.country = address.getCountry();
+    public Address(Address other) {
+        this.street = other.street;
+        this.city = other.city;
+        this.district = other.district;
+        this.ward = other.ward;
+        this.country = other.country;
     }
-
-    public Address(String street, String ward, String district, String city, String country) {
+    public Address(String street, String country, City city, District district, Ward ward) {
         this.street = street;
-        this.ward = ward;
-        this.district = district;
-        this.city = city;
         this.country = country;
+        this.city = city;
+        this.district = district;
+        this.ward = ward;
     }
 
     protected Address(Parcel in) {
         street = in.readString();
-        ward = in.readString();
-        district = in.readString();
-        city = in.readString();
+        city = in.readParcelable(City.class.getClassLoader());
+        district = in.readParcelable(District.class.getClassLoader());
+        ward = in.readParcelable(Ward.class.getClassLoader());
         country = in.readString();
     }
 
     public static final Creator<Address> CREATOR = new Creator<Address>() {
-        @Override
-        public Address createFromParcel(Parcel in) {
+        @Override public Address createFromParcel(Parcel in) {
             return new Address(in);
         }
 
-        @Override
-        public Address[] newArray(int size) {
+        @Override public Address[] newArray(int size) {
             return new Address[size];
         }
     };
 
-    public String getStreet() {
-        return street;
-    }
-
-    public void setStreet(String street) {
-        this.street = street;
-    }
-
-    public String getWard() {
-        return ward;
-    }
-
-    public void setWard(String ward) {
-        this.ward = ward;
-    }
-
-    public String getDistrict() {
-        return district;
-    }
-
-    public void setDistrict(String district) {
-        this.district = district;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
+    @Override public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(street);
-        dest.writeString(ward);
-        dest.writeString(district);
-        dest.writeString(city);
+        dest.writeParcelable(city, flags);
+        dest.writeParcelable(district, flags);
+        dest.writeParcelable(ward, flags);
         dest.writeString(country);
+    }
+
+    @Override public int describeContents() { return 0; }
+
+    // Getters & Setters
+    public String getStreet() { return street; }
+    public void setStreet(String street) { this.street = street; }
+
+    public City getCity() { return city; }
+    public void setCity(City city) { this.city = city; }
+
+    public District getDistrict() { return district; }
+    public void setDistrict(District district) { this.district = district; }
+
+    public Ward getWard() { return ward; }
+    public void setWard(Ward ward) { this.ward = ward; }
+
+    public String getCountry() { return country; }
+    public void setCountry(String country) { this.country = country; }
+
+    // ========== LỚP LỒNG ==========
+
+    public static class City implements Parcelable {
+        private int code;
+        private String name;
+
+        public City() {}
+
+        public City(int code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+
+        protected City(Parcel in) {
+            code = in.readInt();
+            name = in.readString();
+        }
+
+        public static final Creator<City> CREATOR = new Creator<City>() {
+            @Override public City createFromParcel(Parcel in) {
+                return new City(in);
+            }
+            @Override public City[] newArray(int size) {
+                return new City[size];
+            }
+        };
+
+        public int getCode() { return code; }
+        public void setCode(int code) { this.code = code; }
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+
+        @Override public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeInt(code);
+            dest.writeString(name);
+        }
+
+        @Override public int describeContents() { return 0; }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    public static class District implements Parcelable {
+        private int code;
+        private String name;
+
+        public District() {}
+
+        public District(int code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+
+        protected District(Parcel in) {
+            code = in.readInt();
+            name = in.readString();
+        }
+
+        public static final Creator<District> CREATOR = new Creator<District>() {
+            @Override public District createFromParcel(Parcel in) {
+                return new District(in);
+            }
+
+            @Override public District[] newArray(int size) {
+                return new District[size];
+            }
+        };
+
+        public int getCode() { return code; }
+        public void setCode(int code) { this.code = code; }
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+
+        @Override public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeInt(code);
+            dest.writeString(name);
+        }
+
+        @Override public int describeContents() { return 0; }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    public static class Ward implements Parcelable {
+        private int code;
+        private String name;
+
+        public Ward() {}
+
+        public Ward(int code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+
+        protected Ward(Parcel in) {
+            code = in.readInt();
+            name = in.readString();
+        }
+
+        public static final Creator<Ward> CREATOR = new Creator<Ward>() {
+            @Override public Ward createFromParcel(Parcel in) {
+                return new Ward(in);
+            }
+
+            @Override public Ward[] newArray(int size) {
+                return new Ward[size];
+            }
+        };
+
+        public int getCode() { return code; }
+        public void setCode(int code) { this.code = code; }
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+
+        @Override public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeInt(code);
+            dest.writeString(name);
+        }
+
+        @Override public int describeContents() { return 0; }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }

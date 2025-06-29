@@ -234,15 +234,14 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomMenu"
+            android:id="@+id/bottomNavigationView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            app:menu="@menu/bottom_nav_menu"
-            app:itemTextColor="@color/white"
+            android:background="@drawable/purple_button_bg"
             app:itemIconTint="@color/white"
             app:itemRippleColor="@color/purple_500"
-            android:background="@drawable/purple_button_bg">
-        </com.google.android.material.bottomnavigation.BottomNavigationView>
+            app:itemTextColor="@color/white"
+            app:menu="@menu/bottom_nav_menu"></com.google.android.material.bottomnavigation.BottomNavigationView>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

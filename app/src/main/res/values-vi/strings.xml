@@ -58,4 +58,10 @@
     <string name="select_size">Kích cỡ</string>
     <string name="buy_now">Mua ngay</string>
     <string name="rating">Đánh giá</string>
+
+    <!-- Settings related strings -->
+    <string name="settings_profile">Thông tin cá nhân</string>
+    <string name="settings_notification">Thông báo</string>
+    <string name="settings_tos">Điều khoản sử dụng</string>
+    <string name="settings_logout">Đăng xuất</string>
 </resources>

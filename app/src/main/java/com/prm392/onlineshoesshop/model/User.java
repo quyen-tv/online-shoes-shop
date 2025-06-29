@@ -18,6 +18,7 @@ public class User implements Parcelable {
     private Address address;
     private boolean googleAccount;
     private Map<String, Boolean> favoriteItems;
+    private String phoneNumber; // ✅ Thêm mới
 
     public User() {
     }
@@ -30,9 +31,11 @@ public class User implements Parcelable {
         this.address = (user.getAddress() != null) ? new Address(user.getAddress()) : null;
         this.googleAccount = user.isGoogleAccount();
         this.favoriteItems = (user.getFavoriteItems() != null) ? new HashMap<>(user.getFavoriteItems()) : new HashMap<>();
+        this.phoneNumber = user.getPhoneNumber(); // ✅ Copy phoneNumber
+
     }
 
-    public User(String uid, String email, String fullName, String profileImageUrl, Address address, boolean googleAccount) {
+    public User(String uid, String email, String fullName, String profileImageUrl, Address address, boolean googleAccount, String phoneNumber) {
         this.uid = uid;
         this.email = email;
         this.fullName = fullName;
@@ -40,6 +43,8 @@ public class User implements Parcelable {
         this.address = address;
         this.googleAccount = googleAccount;
         this.favoriteItems = new HashMap<>();
+        this.phoneNumber = phoneNumber; // ✅ Gán phoneNumber
+
     }
 
     protected User(Parcel in) {
@@ -51,6 +56,8 @@ public class User implements Parcelable {
         googleAccount = in.readByte() != 0;
         favoriteItems = new HashMap<>();
         in.readMap(favoriteItems, String.class.getClassLoader());
+        phoneNumber = in.readString(); // ✅ Đọc phoneNumber
+
     }
 
     public static final Creator<User> CREATOR = new Creator<>() {
@@ -64,7 +71,14 @@ public class User implements Parcelable {
             return new User[size];
         }
     };
+    // ✅ Getter và Setter cho phoneNumber
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
 
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
     public String getUid() {
         return uid;
     }
@@ -98,8 +112,17 @@ public class User implements Parcelable {
     }
 
     public Address getAddress() {
+        if (address == null) {
+            address = new Address();
+            address.setCity(new Address.City(-1, ""));
+            address.setDistrict(new Address.District(-1, ""));
+            address.setWard(new Address.Ward(-1, ""));
+            address.setStreet("");
+            address.setCountry("");
+        }
         return address;
     }
+
 
     public void setAddress(Address address) {
         this.address = address;
@@ -144,5 +167,7 @@ public class User implements Parcelable {
         dest.writeParcelable(address, flags);
         dest.writeByte((byte) (googleAccount ? 1 : 0));
         dest.writeMap(favoriteItems);
+        dest.writeString(phoneNumber); // ✅ Ghi phoneNumber
+
     }
 }
