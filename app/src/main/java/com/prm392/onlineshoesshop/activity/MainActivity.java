@@ -133,6 +133,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, CartActivity.class));
                 return true;
             }
+            if(item.getItemId() == R.id.navigation_profile) {
+                startActivity(new Intent(this,UserSettingsActivity.class));
+                return true;
+            }
             return false;
         });
     }
