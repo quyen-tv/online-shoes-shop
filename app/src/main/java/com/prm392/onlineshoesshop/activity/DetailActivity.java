@@ -113,10 +113,23 @@ public class DetailActivity extends AppCompatActivity {
             item.setNumberInCart(numberOrder);
             managementCart.insertFood(item);
         });
-        binding.btnBack.setOnClickListener(v -> finish());
+        binding.btnBack.setOnClickListener(v -> {
+            // Trả lại itemId ngay cả khi user chỉ nhấn back
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra("changedItemId", item.getItemId());
+            setResult(RESULT_OK, resultIntent);
+            finish();
+        });
         binding.btnFavorite.setOnClickListener(v -> {
             itemViewModel.toggleFavorite(item.getItemId());
+
+            Intent intent = new Intent();
+            intent.putExtra("changedItemId", item.getItemId());
+            setResult(RESULT_OK, intent); // Thông báo cho MainActivity biết có thay đổi
         });
+
+
+
     }
 
     /**

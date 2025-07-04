@@ -15,9 +15,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.User;
 import com.prm392.onlineshoesshop.utils.ItemUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class UserRepository {
@@ -315,4 +318,92 @@ public class UserRepository {
                     }
                 });
     }
+
+    /**
+     * Lấy ID sản phẩm yêu thích tại vị trí cụ thể.
+     * @param itemId Vị trí trong danh sách yêu thích (bắt đầu từ 0).
+     * @return ID của sản phẩm yêu thích nếu hợp lệ, ngược lại trả về null.
+     */
+    public boolean isFavorite(String itemId) {
+        User currentUser = _currentUserLiveData.getValue();
+        if (currentUser == null || currentUser.getFavoriteItems() == null) {
+            return false;
+        }
+
+        Map<String, Boolean> favoriteMap = currentUser.getFavoriteItems();
+        return favoriteMap.containsKey(itemId);
+    }
+
+    public void reloadCurrentUser() {
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        if (firebaseUser != null) {
+            usersRef.child(firebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        User user = snapshot.getValue(User.class);
+                        _currentUserLiveData.postValue(user);  // 🔁 Trigger cập nhật LiveData
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e(TAG, "Failed to reload current user: " + error.getMessage());
+                }
+            });
+        }
+    }
+    public void getFavoriteItemModels(User user, OnCompleteListener<List<ItemModel>> listener) {
+        List<String> itemIds = new ArrayList<>(user.getFavoriteItems().keySet());
+        List<ItemModel> result = new ArrayList<>();
+
+        if (itemIds.isEmpty()) {
+            listener.onComplete(result);
+            return;
+        }
+
+        final int[] completedCount = {0}; // Đếm tổng số phản hồi (thành công + thất bại)
+
+        for (String firebaseKey : itemIds) {
+            String itemId = ItemUtils.getItemIdFromFirebaseKey(firebaseKey); // dùng HÀM LOẠI "item_"
+            Log.d("getFavoriteItemModels", "Fetching itemId: " + itemId + " (from key: " + firebaseKey + ")");
+
+            FirebaseDatabase.getInstance().getReference("Items")
+                    .child(itemId)
+                    .get()
+                    .addOnSuccessListener(snapshot -> {
+                        if (snapshot.exists()) {
+                            ItemModel item = snapshot.getValue(ItemModel.class);
+                            if (item != null) {
+                                Log.d("getFavoriteItemModels", "Fetched item: " + itemId + " - " + item.getTitle());
+                                item.setItemId(itemId);
+                                result.add(item);
+                            } else {
+                                Log.w("getFavoriteItemModels", "Snapshot is not null but item is null for ID: " + itemId);
+                            }
+                        } else {
+                            Log.w("getFavoriteItemModels", "No data found for itemId: " + itemId);
+                        }
+
+                        completedCount[0]++;
+                        if (completedCount[0] == itemIds.size()) {
+                            listener.onComplete(result);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("getFavoriteItemModels", "Failed to fetch itemId: " + itemId, e);
+                        completedCount[0]++;
+                        if (completedCount[0] == itemIds.size()) {
+                            listener.onComplete(result);
+                        }
+                    });
+        }
+
+    }
+
+    public interface OnCompleteListener<T> {
+        void onComplete(T data);
+    }
+
+
 }

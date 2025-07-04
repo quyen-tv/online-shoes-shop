@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -26,9 +28,11 @@ import com.prm392.onlineshoesshop.adapter.PopularAdapter;
 import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityMainBinding;
 import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
+import com.prm392.onlineshoesshop.factory.ItemViewModelFactory;
 import com.prm392.onlineshoesshop.model.SliderModel;
 import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
+import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
 import com.prm392.onlineshoesshop.viewmodel.MainViewModel;
 
 import java.util.List;
@@ -38,7 +42,10 @@ public class MainActivity extends AppCompatActivity {
     private final MainViewModel viewModel = new MainViewModel();
     private AuthViewModel authViewModel;
     private ActivityMainBinding binding;
+    private PopularAdapter popularAdapter;
+    private ActivityResultLauncher<Intent> detailLauncher;
 
+    private ItemViewModel itemViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,26 +54,29 @@ public class MainActivity extends AppCompatActivity {
 
         UserRepository userRepository = new UserRepository();
         AuthViewModelFactory authViewModelFactory = new AuthViewModelFactory(userRepository);
-        authViewModel = new ViewModelProvider(
+        authViewModel = new ViewModelProvider(this, authViewModelFactory).get(AuthViewModel.class);
+
+        itemViewModel = new ViewModelProvider(
                 this,
-                authViewModelFactory)
-                .get(AuthViewModel.class);
+                new DetailActivity.ItemViewModelFactory(userRepository))
+                .get(ItemViewModel.class);
+
+        detailLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        String changedItemId = result.getData().getStringExtra("changedItemId");
+                        if (changedItemId != null) {
+                            itemViewModel.forceRefreshUserData();  // Ép cập nhật lại LiveData -> Adapter sẽ auto update
+                        }
+                    }
+                });
+
 
         initWelcome();
         initBanner();
         initPopular();
 
-        binding.bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                if(item.getItemId() == R.id.navigation_profile) {
-                    item.setChecked(true);
-                    startActivity(new Intent(MainActivity.this, UserSettingsActivity.class));
-
-                }
-                return false;
-            }
-        });
         initCategory();
         initBottomNavigation();
     }
@@ -94,7 +104,8 @@ public class MainActivity extends AppCompatActivity {
         binding.progressBarPopular.setVisibility(View.VISIBLE);
         viewModel.populars.observe(this, itemModels -> {
             binding.viewPopular.setLayoutManager(new GridLayoutManager(this, 2));
-            binding.viewPopular.setAdapter(new PopularAdapter(itemModels));
+            popularAdapter = new PopularAdapter(itemModels, itemViewModel, this, detailLauncher);
+            binding.viewPopular.setAdapter(popularAdapter);
             binding.progressBarPopular.setVisibility(View.GONE);
         });
         viewModel.loadPopulars();
@@ -128,13 +139,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initBottomNavigation() {
+        binding.bottomNavigationView.setSelectedItemId(R.id.navigation_explorer);
+
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_cart) {
                 startActivity(new Intent(this, CartActivity.class));
-                return true;
+
+                return false;
             }
             if(item.getItemId() == R.id.navigation_profile) {
                 startActivity(new Intent(this,UserSettingsActivity.class));
+                finish();
+                return true;
+            }
+            if(item.getItemId() == R.id.navigation_favorite) {
+                startActivity(new Intent(this, FavoriteActivity.class));
+                finish();
                 return true;
             }
             return false;

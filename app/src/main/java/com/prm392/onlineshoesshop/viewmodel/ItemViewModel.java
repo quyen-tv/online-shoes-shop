@@ -1,13 +1,20 @@
 package com.prm392.onlineshoesshop.viewmodel;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.google.firebase.auth.FirebaseUser;
+import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.User;
 import com.prm392.onlineshoesshop.repository.UserRepository;
+import com.prm392.onlineshoesshop.utils.ItemUtils;
+
+import java.util.Collections;
+import java.util.List;
 
 public class ItemViewModel extends ViewModel {
     private final UserRepository userRepository;
@@ -47,6 +54,12 @@ public class ItemViewModel extends ViewModel {
                     .addOnFailureListener(e -> _errorMessage.setValue("Lỗi khi thêm vào yêu thích: " + e.getMessage()));
         }
     }
+    public boolean isFavor(String itemId) {
+        String firebaseKey = ItemUtils.getFirebaseItemId(itemId); // => "item_123"
+        User user = currentUserData.getValue();
+        return user != null && user.getFavoriteItems().containsKey(firebaseKey);
+    }
+
 
     /**
      * Kiểm tra xem sản phẩm có đang được yêu thích bởi người dùng hiện tại không.
@@ -56,4 +69,23 @@ public class ItemViewModel extends ViewModel {
     public LiveData<Boolean> isItemFavorite(String itemId) {
         return Transformations.map(currentUserData, user -> user != null && user.isFavorite(itemId));
     }
+    public void forceRefreshUserData() {
+        userRepository.reloadCurrentUser(); // Tự định nghĩa trong repository
+    }
+    public void fetchFavoriteItems(UserRepository.OnCompleteListener<List<ItemModel>> listener) {
+        User user = currentUserData.getValue();
+        if (user == null) {
+            Log.w("ItemViewModel", "fetchFavoriteItems: User is null, returning empty list.");
+            listener.onComplete(Collections.emptyList());
+            return;
+        }
+
+        Log.d("ItemViewModel", "fetchFavoriteItems: Fetching favorite items for user: " + user.getUid());
+        userRepository.getFavoriteItemModels(user, items -> {
+            Log.d("ItemViewModel", "fetchFavoriteItems: Received " + items.size() + " items.");
+            listener.onComplete(items);
+        });
+    }
+
+
 }
