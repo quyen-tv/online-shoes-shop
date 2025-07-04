@@ -31,26 +31,31 @@ public class UserRepository {
 
     // LiveData để theo dõi đối tượng người dùng hiện tại (từ Realtime Database)
     private final MutableLiveData<User> _currentUserLiveData = new MutableLiveData<>();
+
     public LiveData<User> getCurrentUserLiveData() {
         return _currentUserLiveData;
     }
 
     // LiveData để theo dõi đối tượng FirebaseUser (từ FirebaseAuth)
     private final MutableLiveData<FirebaseUser> _firebaseUserLiveData = new MutableLiveData<>();
+
     public LiveData<FirebaseUser> getFirebaseUserLiveData() {
         return _firebaseUserLiveData;
     }
 
-
     /**
      * Constructor của UserRepository.
      * Khởi tạo FirebaseAuth và tham chiếu đến node "Users" trong Realtime Database.
-     * Thêm một AuthStateListener để lắng nghe sự thay đổi trạng thái đăng nhập của người dùng.
+     * Thêm một AuthStateListener để lắng nghe sự thay đổi trạng thái đăng nhập của
+     * người dùng.
      * Khi trạng thái thay đổi:
      * - Cập nhật _firebaseUserLiveData.
-     * - Nếu có FirebaseUser, sẽ cố gắng lấy thông tin người dùng từ Realtime Database.
-     * - Nếu người dùng chưa tồn tại trong DB, tạo một bản ghi User cơ bản và lưu vào DB.
-     * - Nếu không có FirebaseUser (người dùng đã đăng xuất), đặt _currentUserLiveData về null.
+     * - Nếu có FirebaseUser, sẽ cố gắng lấy thông tin người dùng từ Realtime
+     * Database.
+     * - Nếu người dùng chưa tồn tại trong DB, tạo một bản ghi User cơ bản và lưu
+     * vào DB.
+     * - Nếu không có FirebaseUser (người dùng đã đăng xuất), đặt
+     * _currentUserLiveData về null.
      */
     public UserRepository() {
         firebaseAuth = FirebaseAuth.getInstance();
@@ -59,6 +64,8 @@ public class UserRepository {
 
         firebaseAuth.addAuthStateListener(firebaseAuth -> {
             FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+            Log.d(TAG, "AuthStateListener triggered, FirebaseUser: "
+                    + (firebaseUser != null ? firebaseUser.getUid() : "null"));
             _firebaseUserLiveData.postValue(firebaseUser);
 
             if (firebaseUser != null) {
@@ -66,12 +73,20 @@ public class UserRepository {
                 usersRef.child(firebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Log.d(TAG, "onDataChange called for user: " + firebaseUser.getUid());
                         if (snapshot.exists()) {
                             // Người dùng đã tồn tại trong DB
                             User user = snapshot.getValue(User.class);
+                            if (user != null) {
+                                user.setUid(snapshot.getKey());
+                                Log.d(TAG, "User data loaded successfully: " + user.getEmail());
+                            } else {
+                                Log.w(TAG, "User object is null after getting from Firebase");
+                            }
                             _currentUserLiveData.postValue(user);
                         } else {
                             // Người dùng chưa tồn tại trong DB
+                            Log.d(TAG, "User not found in DB, creating new user");
                             String phone = firebaseUser.getPhoneNumber() != null ? firebaseUser.getPhoneNumber() : null;
 
                             User basicUser = new User(
@@ -79,16 +94,16 @@ public class UserRepository {
                                     firebaseUser.getEmail(),
                                     firebaseUser.getDisplayName(),
                                     firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null,
-                                    null,    // Address chưa có
-                                    false,   // Không phải tài khoản Google
-                                    phone    // ✅ Thêm phone number nếu có
+                                    null, // Address chưa có
+                                    false, // Không phải tài khoản Google
+                                    phone // ✅ Thêm phone number nếu có
                             );
 
+                            Log.d(TAG, "Created new user: " + basicUser.getEmail());
                             _currentUserLiveData.postValue(basicUser);
                             saveUser(basicUser);
                         }
                     }
-
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
@@ -103,17 +118,19 @@ public class UserRepository {
                                 firebaseUser.getEmail(),
                                 firebaseUser.getDisplayName(),
                                 firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null,
-                                null,    // Address
-                                false,   // googleAccount
-                                phone    // ✅ phoneNumber
+                                null, // Address
+                                false, // googleAccount
+                                phone // ✅ phoneNumber
                         );
 
+                        Log.d(TAG, "Created fallback user due to error: " + basicUser.getEmail());
                         _currentUserLiveData.postValue(basicUser);
                     }
 
                 });
             } else {
                 // Nếu không có FirebaseUser (đã đăng xuất), đặt currentUserLiveData về null
+                Log.d(TAG, "No FirebaseUser found, setting currentUserLiveData to null");
                 _currentUserLiveData.postValue(null);
             }
         });
@@ -122,10 +139,11 @@ public class UserRepository {
     /**
      * Đăng nhập người dùng bằng email và mật khẩu.
      *
-     * @param email Email của người dùng.
+     * @param email    Email của người dùng.
      * @param password Mật khẩu của người dùng.
      * @return Một Task<Void> biểu thị kết quả của thao tác đăng nhập.
-     * Nếu thành công, Task sẽ hoàn thành. Nếu thất bại, Task sẽ chứa Exception.
+     *         Nếu thành công, Task sẽ hoàn thành. Nếu thất bại, Task sẽ chứa
+     *         Exception.
      */
     public Task<Void> signInWithEmailAndPassword(String email, String password) {
         return firebaseAuth.signInWithEmailAndPassword(email, password)
@@ -142,10 +160,12 @@ public class UserRepository {
      * Sau khi đăng ký thành công trên Firebase Authentication,
      * một bản ghi User cơ bản cũng sẽ được lưu vào Realtime Database.
      *
-     * @param email Email của người dùng mới.
+     * @param email    Email của người dùng mới.
      * @param password Mật khẩu của người dùng mới.
-     * @return Một Task<Void> biểu thị kết quả của thao tác đăng ký và lưu người dùng vào DB.
-     * Nếu thành công, Task sẽ hoàn thành. Nếu thất bại, Task sẽ chứa Exception.
+     * @return Một Task<Void> biểu thị kết quả của thao tác đăng ký và lưu người
+     *         dùng vào DB.
+     *         Nếu thành công, Task sẽ hoàn thành. Nếu thất bại, Task sẽ chứa
+     *         Exception.
      */
     public Task<Void> signUpWithEmailAndPassword(String email, String password) {
         return firebaseAuth.createUserWithEmailAndPassword(email, password)
@@ -160,10 +180,10 @@ public class UserRepository {
                                     firebaseUser.getUid(),
                                     email,
                                     name,
-                                    null,     // profileImageUrl
-                                    null,     // address
-                                    false,    // googleAccount
-                                    phone     // ✅ thêm phoneNumber
+                                    null, // profileImageUrl
+                                    null, // address
+                                    false, // googleAccount
+                                    phone // ✅ thêm phoneNumber
                             );
                             return saveUser(newUser);
                         }
@@ -171,7 +191,6 @@ public class UserRepository {
                     throw task.getException(); // báo lỗi nếu đăng ký thất bại
                 });
     }
-
 
     /**
      * Đăng xuất người dùng hiện tại khỏi Firebase Authentication.
@@ -183,7 +202,8 @@ public class UserRepository {
     /**
      * Lấy đối tượng FirebaseUser hiện tại.
      *
-     * @return Đối tượng FirebaseUser nếu có người dùng đăng nhập, ngược lại là null.
+     * @return Đối tượng FirebaseUser nếu có người dùng đăng nhập, ngược lại là
+     *         null.
      */
     public FirebaseUser getCurrentFirebaseUser() {
         return firebaseAuth.getCurrentUser();
@@ -195,11 +215,12 @@ public class UserRepository {
      *
      * @param user Đối tượng User cần lưu.
      * @return Một Task<Void> biểu thị kết quả của thao tác lưu.
-     * Trả về Task lỗi nếu User hoặc UID không hợp lệ.
+     *         Trả về Task lỗi nếu User hoặc UID không hợp lệ.
      */
     public Task<Void> saveUser(User user) {
         if (user == null || user.getUid() == null || user.getUid().isEmpty()) {
-            return com.google.android.gms.tasks.Tasks.forException(new IllegalArgumentException("User or User ID is invalid."));
+            return com.google.android.gms.tasks.Tasks
+                    .forException(new IllegalArgumentException("User or User ID is invalid."));
         }
         return usersRef.child(user.getUid()).setValue(user);
     }
@@ -207,14 +228,16 @@ public class UserRepository {
     /**
      * Cập nhật một phần thông tin của người dùng trong Realtime Database.
      *
-     * @param userId ID của người dùng cần cập nhật.
-     * @param updates Một Map chứa các cặp key-value (tên trường và giá trị mới) để cập nhật.
+     * @param userId  ID của người dùng cần cập nhật.
+     * @param updates Một Map chứa các cặp key-value (tên trường và giá trị mới) để
+     *                cập nhật.
      * @return Một Task<Void> biểu thị kết quả của thao tác cập nhật.
-     * Trả về Task lỗi nếu User ID hoặc updates không hợp lệ.
+     *         Trả về Task lỗi nếu User ID hoặc updates không hợp lệ.
      */
     public Task<Void> updateUserProfile(String userId, Map<String, Object> updates) {
         if (userId == null || userId.isEmpty() || updates == null || updates.isEmpty()) {
-            return com.google.android.gms.tasks.Tasks.forException(new IllegalArgumentException("User ID or updates are invalid."));
+            return com.google.android.gms.tasks.Tasks
+                    .forException(new IllegalArgumentException("User ID or updates are invalid."));
         }
         return usersRef.child(userId).updateChildren(updates);
     }
@@ -223,13 +246,15 @@ public class UserRepository {
      * Lấy thông tin người dùng từ Realtime Database dựa trên User ID.
      *
      * @param userId ID của người dùng cần lấy.
-     * @return Một Task<User> chứa đối tượng User nếu tìm thấy, hoặc null nếu không tìm thấy.
-     * Nếu có lỗi trong quá trình lấy dữ liệu, Task sẽ chứa Exception.
-     * Trả về Task lỗi nếu User ID không hợp lệ.
+     * @return Một Task<User> chứa đối tượng User nếu tìm thấy, hoặc null nếu không
+     *         tìm thấy.
+     *         Nếu có lỗi trong quá trình lấy dữ liệu, Task sẽ chứa Exception.
+     *         Trả về Task lỗi nếu User ID không hợp lệ.
      */
     public Task<User> getUserById(String userId) {
         if (userId == null || userId.isEmpty()) {
-            return com.google.android.gms.tasks.Tasks.forException(new IllegalArgumentException("User ID cannot be null or empty."));
+            return com.google.android.gms.tasks.Tasks
+                    .forException(new IllegalArgumentException("User ID cannot be null or empty."));
         }
         return usersRef.child(userId).get().continueWith(task -> {
             if (task.isSuccessful()) {
@@ -247,6 +272,7 @@ public class UserRepository {
 
     /**
      * Thêm sản phẩm vào danh sách yêu thích của người dùng hiện tại.
+     * 
      * @param itemId ID của sản phẩm cần thêm.
      * @return Task<Void> để lắng nghe sự hoàn thành của thao tác.
      */
@@ -284,6 +310,7 @@ public class UserRepository {
 
     /**
      * Xóa sản phẩm khỏi danh sách yêu thích của người dùng hiện tại.
+     * 
      * @param itemId ID của sản phẩm cần xóa.
      * @return Task<Void> để lắng nghe sự hoàn thành của thao tác.
      */

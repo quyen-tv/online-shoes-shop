@@ -95,11 +95,6 @@ public class SignInActivity extends AppCompatActivity {
         authViewModel.getAuthSuccess().observe(this, isSuccess -> {
             if (isSuccess) {
                 resetForm();
-            }
-        });
-
-        authViewModel.currentUserData.observe(this, user -> {
-            if (authViewModel.getAuthSuccess().getValue() != null && authViewModel.getAuthSuccess().getValue() && user != null) {
                 startActivity(new Intent(SignInActivity.this, MainActivity.class));
                 finish();
             }

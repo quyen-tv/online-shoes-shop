@@ -18,6 +18,9 @@
             android:name=".activity.FavoriteActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.AllItemsActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.UserProfileActivity"
             android:exported="false" />
         <activity

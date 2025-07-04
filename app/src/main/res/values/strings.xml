@@ -59,9 +59,44 @@
     <string name="buy_now">Buy Now</string>
     <string name="rating">Rating</string>
 
+    <!-- All items related strings -->
+    <string name="hint_search_products">Search for products…</string>
+    <string name="hint_search">Search</string>
+
+
     <!-- Settings related strings -->
     <string name="settings_profile">User profile</string>
     <string name="settings_notification">Notification</string>
     <string name="settings_tos">Term of services</string>
     <string name="settings_logout">Log out</string>
+
+    <!-- Price range filter strings -->
+    <string name="title_select_price_range">Select price range</string>
+    <string name="price_range_all">All</string>
+    <string name="price_range_under_10m">Under 10 million</string>
+    <string name="price_range_10_16m">10 – 16 million</string>
+    <string name="price_range_16_22m">16 – 22 million</string>
+    <string name="price_range_over_22m">Over 22 million</string>
+
+    <!-- AllItemsActivity text -->
+    <string name="msg_applied">Applied: %1$s</string>
+    <string name="chip_price_range_default">Select price range</string>
+    <string name="chip_price_range_under_50">Under $50</string>
+    <string name="chip_price_range_50_100">$50 - $100</string>
+    <string name="chip_price_range_100_200">$100 - $200</string>
+    <string name="chip_price_range_200_500">$200 - $500</string>
+    <string name="chip_price_range_over_500">Over $500</string>
+    <string name="chip_price_range_custom_from">From $%1$.0f+</string>
+    <string name="chip_price_range_custom_range">$%1$.0f - $%2$.0f</string>
+    <string name="log_applied_filters">Applied filters: %1$s</string>
+
+    <string name="filter_criteria_label">Filter by:</string>
+    <string name="chip_in_stock">In stock</string>
+    <string name="sort_by_label">Sort by:</string>
+    <string name="chip_sort_price_low">Price: Low to High</string>
+    <string name="chip_sort_price_high">Price: High to Low</string>
+    <string name="chip_sort_popular">Popular</string>
+
+    <!-- Favorite related text -->
+    <string name="my_favorites">My favorites</string>
 </resources>

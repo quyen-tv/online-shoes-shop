@@ -48,7 +48,8 @@ public class MainViewModel extends ViewModel {
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {}
+            public void onCancelled(DatabaseError error) {
+            }
         });
     }
 
@@ -70,7 +71,8 @@ public class MainViewModel extends ViewModel {
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {}
+            public void onCancelled(DatabaseError error) {
+            }
         });
     }
 
@@ -84,7 +86,7 @@ public class MainViewModel extends ViewModel {
                 for (DataSnapshot childSnapshot : snapshot.getChildren()) {
                     CategoryModel itemModel = childSnapshot.getValue(CategoryModel.class);
                     if (itemModel != null) {
-                        //itemModel.setId(childSnapshot.getKey());
+                        // itemModel.setId(childSnapshot.getKey());
                         lists.add(itemModel);
                     }
                 }
@@ -92,7 +94,8 @@ public class MainViewModel extends ViewModel {
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {}
+            public void onCancelled(DatabaseError error) {
+            }
         });
     }
 

@@ -1,40 +1,41 @@
 package com.prm392.onlineshoesshop.viewmodel;
 
-import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
-import com.google.firebase.auth.FirebaseUser;
 import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.User;
+import com.prm392.onlineshoesshop.repository.ItemRepository;
 import com.prm392.onlineshoesshop.repository.UserRepository;
-import com.prm392.onlineshoesshop.utils.ItemUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 public class ItemViewModel extends ViewModel {
     private final UserRepository userRepository;
 
     private final MutableLiveData<String> _errorMessage = new MutableLiveData<>();
+
     public LiveData<String> getErrorMessage() {
         return _errorMessage;
     }
 
+    public LiveData<List<ItemModel>> allItems;
     public LiveData<User> currentUserData;
-    public LiveData<FirebaseUser> firebaseUserLiveData;
 
-    public ItemViewModel(UserRepository userRepository) {
+    public ItemViewModel(UserRepository userRepository, ItemRepository itemRepository) {
         this.userRepository = userRepository;
+
+        this.allItems = itemRepository.getAllItems();
         this.currentUserData = userRepository.getCurrentUserLiveData();
-        this.firebaseUserLiveData = userRepository.getFirebaseUserLiveData();
+
+        itemRepository.getErrorMessage().observeForever(_errorMessage::setValue);
     }
 
     /**
      * Chuyển đổi trạng thái yêu thích của sản phẩm (thêm/xóa).
+     * 
      * @param itemId ID của sản phẩm.
      */
     public void toggleFavorite(String itemId) {
@@ -54,38 +55,28 @@ public class ItemViewModel extends ViewModel {
                     .addOnFailureListener(e -> _errorMessage.setValue("Lỗi khi thêm vào yêu thích: " + e.getMessage()));
         }
     }
-    public boolean isFavor(String itemId) {
-        String firebaseKey = ItemUtils.getFirebaseItemId(itemId); // => "item_123"
-        User user = currentUserData.getValue();
-        return user != null && user.getFavoriteItems().containsKey(firebaseKey);
-    }
-
 
     /**
      * Kiểm tra xem sản phẩm có đang được yêu thích bởi người dùng hiện tại không.
+     * 
      * @param itemId ID của sản phẩm.
      * @return LiveData<Boolean> cho biết trạng thái yêu thích.
      */
     public LiveData<Boolean> isItemFavorite(String itemId) {
         return Transformations.map(currentUserData, user -> user != null && user.isFavorite(itemId));
     }
-    public void forceRefreshUserData() {
-        userRepository.reloadCurrentUser(); // Tự định nghĩa trong repository
-    }
+
+    /**
+     * Lấy danh sách ItemModel từ danh sách sản phẩm yêu thích của user hiện tại.
+     * 
+     * @param listener callback trả về List<ItemModel> yêu thích
+     */
     public void fetchFavoriteItems(UserRepository.OnCompleteListener<List<ItemModel>> listener) {
         User user = currentUserData.getValue();
-        if (user == null) {
-            Log.w("ItemViewModel", "fetchFavoriteItems: User is null, returning empty list.");
-            listener.onComplete(Collections.emptyList());
-            return;
+        if (user != null && user.getFavoriteItems() != null && !user.getFavoriteItems().isEmpty()) {
+            userRepository.getFavoriteItemModels(user, listener);
+        } else {
+            listener.onComplete(new java.util.ArrayList<>());
         }
-
-        Log.d("ItemViewModel", "fetchFavoriteItems: Fetching favorite items for user: " + user.getUid());
-        userRepository.getFavoriteItemModels(user, items -> {
-            Log.d("ItemViewModel", "fetchFavoriteItems: Received " + items.size() + " items.");
-            listener.onComplete(items);
-        });
     }
-
-
 }

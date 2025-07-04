@@ -2,14 +2,8 @@ package com.prm392.onlineshoesshop.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -18,10 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 
-import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.prm392.onlineshoesshop.R;
-import com.google.android.material.navigation.NavigationBarView;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.adapter.CategoryAdapter;
 import com.prm392.onlineshoesshop.adapter.PopularAdapter;
@@ -29,23 +19,25 @@ import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityMainBinding;
 import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
 import com.prm392.onlineshoesshop.factory.ItemViewModelFactory;
+import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.SliderModel;
+import com.prm392.onlineshoesshop.repository.ItemRepository;
 import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
 import com.prm392.onlineshoesshop.viewmodel.MainViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PopularAdapter.OnChangeListener {
 
     private final MainViewModel viewModel = new MainViewModel();
     private AuthViewModel authViewModel;
-    private ActivityMainBinding binding;
-    private PopularAdapter popularAdapter;
-    private ActivityResultLauncher<Intent> detailLauncher;
-
     private ItemViewModel itemViewModel;
+    private ActivityMainBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,29 +46,21 @@ public class MainActivity extends AppCompatActivity {
 
         UserRepository userRepository = new UserRepository();
         AuthViewModelFactory authViewModelFactory = new AuthViewModelFactory(userRepository);
-        authViewModel = new ViewModelProvider(this, authViewModelFactory).get(AuthViewModel.class);
-
+        authViewModel = new ViewModelProvider(
+                this,
+                authViewModelFactory)
+                .get(AuthViewModel.class);
+        ItemRepository itemRepository = new ItemRepository();
+        ItemViewModelFactory itemViewModelFactory = new ItemViewModelFactory(userRepository, itemRepository);
         itemViewModel = new ViewModelProvider(
                 this,
-                new DetailActivity.ItemViewModelFactory(userRepository))
+                itemViewModelFactory)
                 .get(ItemViewModel.class);
-
-        detailLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        String changedItemId = result.getData().getStringExtra("changedItemId");
-                        if (changedItemId != null) {
-                            itemViewModel.forceRefreshUserData();  // Ép cập nhật lại LiveData -> Adapter sẽ auto update
-                        }
-                    }
-                });
-
 
         initWelcome();
         initBanner();
         initPopular();
-
+        setUpListeners();
         initCategory();
         initBottomNavigation();
     }
@@ -104,8 +88,22 @@ public class MainActivity extends AppCompatActivity {
         binding.progressBarPopular.setVisibility(View.VISIBLE);
         viewModel.populars.observe(this, itemModels -> {
             binding.viewPopular.setLayoutManager(new GridLayoutManager(this, 2));
-            popularAdapter = new PopularAdapter(itemModels, itemViewModel, this, detailLauncher);
+            PopularAdapter popularAdapter = new PopularAdapter(itemModels);
             binding.viewPopular.setAdapter(popularAdapter);
+            popularAdapter.setOnChangeListener(this);
+            authViewModel.currentUserData.observe(this, user -> {
+                if (user != null && user.getFavoriteItems() != null) {
+                    List<String> favoriteIds = new ArrayList<>();
+                    for (Map.Entry<String, Boolean> entry : user.getFavoriteItems().entrySet()) {
+                        if (Boolean.TRUE.equals(entry.getValue())) {
+                            favoriteIds.add(entry.getKey());
+                        }
+                    }
+                    popularAdapter.setFavoriteIds(favoriteIds);
+                }
+            });
+            int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
+            binding.viewPopular.addItemDecoration(new SpaceItemDecoration(spacing, 2));
             binding.progressBarPopular.setVisibility(View.GONE);
         });
         viewModel.loadPopulars();
@@ -144,21 +142,39 @@ public class MainActivity extends AppCompatActivity {
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_cart) {
                 startActivity(new Intent(this, CartActivity.class));
-
                 return false;
             }
-            if(item.getItemId() == R.id.navigation_profile) {
-                startActivity(new Intent(this,UserSettingsActivity.class));
-                finish();
+            if (item.getItemId() == R.id.navigation_profile) {
+                startActivity(new Intent(this, UserSettingsActivity.class));
                 return true;
             }
-            if(item.getItemId() == R.id.navigation_favorite) {
+            if (item.getItemId() == R.id.navigation_favorite) {
                 startActivity(new Intent(this, FavoriteActivity.class));
-                finish();
                 return true;
             }
             return false;
         });
     }
 
+    private void setUpListeners() {
+        binding.tvSeeAllRecommendation.setOnClickListener(v -> {
+            startActivity(new Intent(this, AllItemsActivity.class));
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        authViewModel.reloadCurrentUser();
+    }
+
+    @Override
+    public void onToggleFavorite(String itemId) {
+        itemViewModel.toggleFavorite(itemId);
+    }
+
+    @Override
+    public void onClick(ItemModel item) {
+        startActivity(new Intent(this, DetailActivity.class).putExtra("object", item));
+    }
 }

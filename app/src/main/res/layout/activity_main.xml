@@ -242,6 +242,6 @@
             app:itemIconTint="@color/white"
             app:itemRippleColor="@color/purple_500"
             app:itemTextColor="@color/white"
-            app:menu="@menu/bottom_nav_menu"></com.google.android.material.bottomnavigation.BottomNavigationView>
+            app:menu="@menu/bottom_nav_menu"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

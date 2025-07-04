@@ -14,18 +14,21 @@ public class AuthViewModel extends ViewModel {
 
     // MutableLiveData để theo dõi trạng thái loading của các thao tác xác thực
     private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>();
+
     public LiveData<Boolean> getIsLoading() {
         return _isLoading;
     }
 
     // MutableLiveData để chứa thông báo lỗi nếu có trong quá trình xác thực
     private final MutableLiveData<String> _errorMessage = new MutableLiveData<>();
+
     public LiveData<String> getErrorMessage() {
         return _errorMessage;
     }
 
     // MutableLiveData để chỉ ra liệu một thao tác xác thực có thành công hay không
     private final MutableLiveData<Boolean> _authSuccess = new MutableLiveData<>();
+
     public LiveData<Boolean> getAuthSuccess() {
         return _authSuccess;
     }
@@ -33,7 +36,8 @@ public class AuthViewModel extends ViewModel {
     // LiveData để theo dõi đối tượng FirebaseUser hiện tại từ UserRepository
     public LiveData<FirebaseUser> firebaseUserLiveData;
 
-    // LiveData để theo dõi đối tượng User tùy chỉnh hiện tại từ UserRepository (từ Realtime Database)
+    // LiveData để theo dõi đối tượng User tùy chỉnh hiện tại từ UserRepository (từ
+    // Realtime Database)
     public LiveData<User> currentUserData;
 
     /**
@@ -41,7 +45,8 @@ public class AuthViewModel extends ViewModel {
      * Nhận một UserRepository làm dependency để thực hiện các thao tác xác thực.
      * Khởi tạo các LiveData để nhận dữ liệu từ UserRepository.
      *
-     * @param userRepository Instance của UserRepository để tương tác với dữ liệu người dùng.
+     * @param userRepository Instance của UserRepository để tương tác với dữ liệu
+     *                       người dùng.
      */
     public AuthViewModel(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -51,10 +56,12 @@ public class AuthViewModel extends ViewModel {
 
     /**
      * Thực hiện thao tác đăng nhập bằng email và mật khẩu.
-     * Cập nhật trạng thái loading, reset lỗi và trạng thái thành công trước khi gọi repository.
-     * Sau khi thao tác hoàn tất, cập nhật lại trạng thái loading và kết quả (thành công/thất bại).
+     * Cập nhật trạng thái loading, reset lỗi và trạng thái thành công trước khi gọi
+     * repository.
+     * Sau khi thao tác hoàn tất, cập nhật lại trạng thái loading và kết quả (thành
+     * công/thất bại).
      *
-     * @param email Email của người dùng.
+     * @param email    Email của người dùng.
      * @param password Mật khẩu của người dùng.
      */
     public void signIn(String email, String password) {
@@ -68,17 +75,20 @@ public class AuthViewModel extends ViewModel {
                     if (task.isSuccessful()) {
                         _authSuccess.setValue(true);
                     } else {
-                        _errorMessage.setValue(task.getException() != null ? task.getException().getMessage() : "Unknown error.");
+                        _errorMessage.setValue(
+                                task.getException() != null ? task.getException().getMessage() : "Unknown error.");
                     }
                 });
     }
 
     /**
      * Thực hiện thao tác đăng ký tài khoản mới bằng email và mật khẩu.
-     * Cập nhật trạng thái loading, reset lỗi và trạng thái thành công trước khi gọi repository.
-     * Sau khi thao tác hoàn tất, cập nhật lại trạng thái loading và kết quả (thành công/thất bại).
+     * Cập nhật trạng thái loading, reset lỗi và trạng thái thành công trước khi gọi
+     * repository.
+     * Sau khi thao tác hoàn tất, cập nhật lại trạng thái loading và kết quả (thành
+     * công/thất bại).
      *
-     * @param email Email của tài khoản mới.
+     * @param email    Email của tài khoản mới.
      * @param password Mật khẩu cho tài khoản mới.
      */
     public void signUp(String email, String password) {
@@ -92,17 +102,23 @@ public class AuthViewModel extends ViewModel {
                     if (task.isSuccessful()) {
                         _authSuccess.setValue(true);
                     } else {
-                        _errorMessage.setValue(task.getException() != null ? task.getException().getMessage() : "Unknown error.");
+                        _errorMessage.setValue(
+                                task.getException() != null ? task.getException().getMessage() : "Unknown error.");
                     }
                 });
     }
 
     /**
      * Thực hiện thao tác đăng xuất người dùng.
-     * Gọi phương thức signOut từ UserRepository và đặt lại trạng thái xác thực thành false.
+     * Gọi phương thức signOut từ UserRepository và đặt lại trạng thái xác thực
+     * thành false.
      */
     public void logout() {
         userRepository.signOut();
         _authSuccess.setValue(false);
+    }
+
+    public void reloadCurrentUser() {
+        userRepository.reloadCurrentUser();
     }
 }
