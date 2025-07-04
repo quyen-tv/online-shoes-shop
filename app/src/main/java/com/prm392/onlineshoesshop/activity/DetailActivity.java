@@ -17,9 +17,11 @@ import com.prm392.onlineshoesshop.adapter.ColorAdapter;
 import com.prm392.onlineshoesshop.adapter.SizeAdapter;
 import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityDetailBinding;
+import com.prm392.onlineshoesshop.factory.ItemViewModelFactory;
 import com.prm392.onlineshoesshop.helper.ManagementCart;
 import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.SliderModel;
+import com.prm392.onlineshoesshop.repository.ItemRepository;
 import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.utils.UiUtils;
 import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
@@ -38,7 +40,6 @@ public class DetailActivity extends AppCompatActivity {
     private SliderAdapter sliderAdapter;
 
     private ItemViewModel itemViewModel;
-    private UserRepository userRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +48,12 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         managementCart = new ManagementCart(this);
-       userRepository = new UserRepository();
+        UserRepository userRepository = new UserRepository();
+        ItemRepository itemRepository = new ItemRepository();
+        ItemViewModelFactory itemViewModelFactory = new ItemViewModelFactory(userRepository, itemRepository);
         itemViewModel = new ViewModelProvider(
                 this,
-                new ItemViewModelFactory(userRepository))
+                itemViewModelFactory)
                 .get(ItemViewModel.class);
 
 
@@ -114,18 +117,10 @@ public class DetailActivity extends AppCompatActivity {
             managementCart.insertFood(item);
         });
         binding.btnBack.setOnClickListener(v -> {
-            // Trả lại itemId ngay cả khi user chỉ nhấn back
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra("changedItemId", item.getItemId());
-            setResult(RESULT_OK, resultIntent);
             finish();
         });
         binding.btnFavorite.setOnClickListener(v -> {
             itemViewModel.toggleFavorite(item.getItemId());
-
-            Intent intent = new Intent();
-            intent.putExtra("changedItemId", item.getItemId());
-            setResult(RESULT_OK, intent); // Thông báo cho MainActivity biết có thay đổi
         });
 
 
@@ -171,29 +166,5 @@ public class DetailActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    /**
-     * Lớp ViewModelProvider.Factory tùy chỉnh.
-     * Sử dụng để cung cấp một instance của ItemViewModelFactory
-     * với một UserRepository đã được khởi tạo.
-     * Điều này cho phép ItemViewModelFactory nhận các dependencies cần thiết thông qua constructor của nó.
-     */
-    public static class ItemViewModelFactory implements ViewModelProvider.Factory {
-        private final UserRepository userRepository;
-
-        public ItemViewModelFactory(UserRepository userRepository) {
-            this.userRepository = userRepository;
-        }
-
-        @NonNull
-        @Override
-        @SuppressWarnings("unchecked")
-        public <T extends androidx.lifecycle.ViewModel> T create(@NonNull Class<T> modelClass) {
-            if (modelClass.isAssignableFrom(ItemViewModel.class)) {
-                return (T) new ItemViewModel(userRepository);
-            }
-            throw new IllegalArgumentException("Unknown ViewModel class");
-        }
     }
 }

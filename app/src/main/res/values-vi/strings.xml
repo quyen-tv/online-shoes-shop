@@ -64,4 +64,37 @@
     <string name="settings_notification">Thông báo</string>
     <string name="settings_tos">Điều khoản sử dụng</string>
     <string name="settings_logout">Đăng xuất</string>
+
+    <!-- All items related strings -->
+    <string name="hint_search_products">Tìm kiếm sản phẩm…</string>
+    <string name="hint_search">Tìm kiếm</string>
+
+    <!-- Price range filter strings -->
+    <string name="title_select_price_range">Chọn khoảng giá</string>
+    <string name="price_range_all">Tất cả</string>
+    <string name="price_range_under_10m">Dưới 10 Triệu</string>
+    <string name="price_range_10_16m">Từ 10 - 16 Triệu</string>
+    <string name="price_range_16_22m">Từ 16 - 22 Triệu</string>
+    <string name="price_range_over_22m">Trên 22 Triệu</string>
+
+    <!-- AllItemsActivity text -->
+    <string name="msg_applied">Đã áp dụng: %1$s</string>
+    <string name="chip_price_range_default">Chọn khoảng giá</string>
+    <string name="chip_price_range_under_50">Dưới $50</string>
+    <string name="chip_price_range_50_100">$50 - $100</string>
+    <string name="chip_price_range_100_200">$100 - $200</string>
+    <string name="chip_price_range_200_500">$200 - $500</string>
+    <string name="chip_price_range_over_500">Trên $500</string>
+    <string name="chip_price_range_custom_from">Từ $%1$.0f+</string>
+    <string name="chip_price_range_custom_range">$%1$.0f - $%2$.0f</string>
+    <string name="log_applied_filters">Đã áp dụng filter: %1$s</string>
+
+    <string name="filter_criteria_label">Chọn theo tiêu chí:</string>
+    <string name="chip_in_stock">Còn hàng</string>
+    <string name="sort_by_label">Sắp xếp theo:</string>
+    <string name="chip_sort_price_low">Giá tăng dần</string>
+    <string name="chip_sort_price_high">Giá giảm dần</string>
+    <string name="chip_sort_popular">Xem nhiều</string>
+
+    <string name="my_favorites">Lượt thích</string>
 </resources>
