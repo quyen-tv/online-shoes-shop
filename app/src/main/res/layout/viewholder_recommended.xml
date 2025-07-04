@@ -16,15 +16,12 @@
         app:srcCompat="@drawable/shoes" />
 
     <ImageView
-        android:id="@+id/imageView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/btn_3"
-        app:tint="@color/grey"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:id="@+id/imgFavorite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:scaleType="centerInside"
+        app:srcCompat="@drawable/fav_icon" />
+
 
     <TextView
         android:id="@+id/tvPrice"
