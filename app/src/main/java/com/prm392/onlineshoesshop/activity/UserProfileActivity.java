@@ -97,6 +97,12 @@ public class UserProfileActivity extends AppCompatActivity {
                 addressViewModel.setSelectedWard(originalAddress.getWard().getName(), originalAddress.getWard().getCode());
                 binding.editTextStreet.setText(originalAddress.getStreet());
             }
+
+            // ❗ Reset lỗi
+            binding.tilFullName.setError(null);
+            binding.tilPhone.setError(null);
+            binding.editTextStreet.setError(null);
+
             enableEditing(false);
         });
 
