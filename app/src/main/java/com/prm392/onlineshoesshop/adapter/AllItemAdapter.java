@@ -15,12 +15,33 @@ import com.prm392.onlineshoesshop.activity.DetailActivity;
 import com.prm392.onlineshoesshop.databinding.ViewholderRecommendedBinding;
 import com.prm392.onlineshoesshop.model.ItemModel;
 
+import androidx.core.content.ContextCompat;
+import com.prm392.onlineshoesshop.R;
+import com.prm392.onlineshoesshop.utils.ItemUtils;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AllItemAdapter extends RecyclerView.Adapter<AllItemAdapter.AllItemViewHolder> {
 
     private final List<ItemModel> items;
     private Context context;
+    private List<String> favoriteIds = new ArrayList<>();
+    private OnChangeListener listener;
+
+    public void setOnChangeListener(OnChangeListener listener) {
+        this.listener = listener;
+    }
+
+    public interface OnChangeListener {
+        void onToggleFavorite(String itemId);
+        void onClick(ItemModel item);
+    }
+
+    @android.annotation.SuppressLint("NotifyDataSetChanged")
+    public void setFavoriteIds(List<String> favoriteIds) {
+        this.favoriteIds = favoriteIds;
+        notifyDataSetChanged();
+    }
 
     public AllItemAdapter(List<ItemModel> items) {
         this.items = items;
@@ -44,14 +65,31 @@ public class AllItemAdapter extends RecyclerView.Adapter<AllItemAdapter.AllItemV
         holder.binding.tvPrice.setText(String.format("$%s", item.getPrice()));
         holder.binding.tvRating.setText(String.valueOf(item.getRating()));
 
+        boolean isFavorite = favoriteIds.contains(ItemUtils.getFirebaseItemId(item.getItemId()));
+        if (isFavorite) {
+            holder.binding.imgFavorite.setImageResource(R.drawable.ic_fav_fill);
+            holder.binding.imgFavorite.setColorFilter(null);
+        } else {
+            holder.binding.imgFavorite.setImageResource(R.drawable.ic_fav);
+            holder.binding.imgFavorite.setColorFilter(
+                    ContextCompat.getColor(context, R.color.grey), android.graphics.PorterDuff.Mode.SRC_IN
+            );
+        }
+
         RequestOptions options = new RequestOptions().transform(new CenterCrop());
         Glide.with(context)
                 .load(item.getPicUrl().get(0))
                 .apply(options)
                 .into(holder.binding.pic);
 
-        holder.itemView.setOnClickListener(
-                v -> context.startActivity(new Intent(context, DetailActivity.class).putExtra("object", item)));
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onClick(item);
+            else context.startActivity(new Intent(context, DetailActivity.class).putExtra("object", item));
+        });
+
+        holder.binding.imgFavorite.setOnClickListener(v -> {
+            if (listener != null) listener.onToggleFavorite(item.getItemId());
+        });
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.prm392.onlineshoesshop.activity;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -36,6 +35,14 @@ import com.prm392.onlineshoesshop.viewmodel.MainViewModel;
 
 import java.util.List;
 
+import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
+import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
+import android.content.Intent;
+import com.prm392.onlineshoesshop.activity.DetailActivity;
+
+import java.util.ArrayList;
+import java.util.Map;
+
 public class AllItemsActivity extends AppCompatActivity {
 
     private static final String TAG = "AllItemsActivity";
@@ -50,6 +57,9 @@ public class AllItemsActivity extends AppCompatActivity {
     private PriceRangeDialog priceRangeDialog;
     private String[] priceRanges;
     private int selectedPriceIndex = 0;
+    private List<String> favoriteIds = new ArrayList<>();
+    private AllItemAdapter allItemAdapter;
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +86,8 @@ public class AllItemsActivity extends AppCompatActivity {
         ItemRepository itemRepository = new ItemRepository();
         ItemViewModelFactory itemViewModelFactory = new ItemViewModelFactory(userRepository, itemRepository);
         itemViewModel = new ViewModelProvider(this, itemViewModelFactory).get(ItemViewModel.class);
+        AuthViewModelFactory authViewModelFactory = new AuthViewModelFactory(userRepository);
+        authViewModel = new ViewModelProvider(this, authViewModelFactory).get(AuthViewModel.class);
 
         // Initialize price range dialog
         priceRangeDialog = new PriceRangeDialog(this, (minPrice, maxPrice, rangeType) -> {
@@ -96,36 +108,14 @@ public class AllItemsActivity extends AppCompatActivity {
         initCategory();
         initFilterChips();
         initBackButton();
-        // Sự kiện chọn khoảng giá đơn giản
-        binding.chipPriceRange.setOnClickListener(v -> {
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-            builder.setTitle(getString(R.string.title_select_price_range));
-            builder.setSingleChoiceItems(priceRanges, selectedPriceIndex, (dialog, which) -> {
-                selectedPriceIndex = which;
-                if (selectedPriceIndex == 0) { // Tất cả
-                    binding.chipPriceRange.setText(getString(R.string.chip_price_range_default));
-                    ChipStyleUtils.applyStyle(this, binding.chipPriceRange, false);
-                } else {
-                    binding.chipPriceRange.setText(priceRanges[which]);
-                    ChipStyleUtils.applyStyle(this, binding.chipPriceRange, true);
-                }
-                dialog.dismiss();
-                // TODO: Lọc dữ liệu theo khoảng giá đã chọn ở đây
-            });
-            builder.show();
-        });
-        // Áp dụng style đúng khi khởi tạo
         updatePriceRangeChipStyle();
     }
 
     private void updatePriceRangeChipStyle() {
-        if (selectedPriceIndex == 0) {
-            binding.chipPriceRange.setText(getString(R.string.chip_price_range_default));
-            ChipStyleUtils.applyStyle(this, binding.chipPriceRange, false);
-        } else {
-            binding.chipPriceRange.setText(priceRanges[selectedPriceIndex]);
-            ChipStyleUtils.applyStyle(this, binding.chipPriceRange, true);
-        }
+        boolean isDefault = selectedPriceIndex == 0;
+        binding.chipPriceRange
+                .setText(isDefault ? getString(R.string.chip_price_range_default) : priceRanges[selectedPriceIndex]);
+        ChipStyleUtils.applyStyle(this, binding.chipPriceRange, !isDefault);
     }
 
     private void setupObservers() {
@@ -148,19 +138,25 @@ public class AllItemsActivity extends AppCompatActivity {
             applyFilters();
         });
 
-        binding.chipPriceRange.setOnClickListener(v -> {
-            if (filterState.isPriceRangeSelected()) {
-                // If price range is already selected, reset it
-                filterState = filterState.setPriceRange(0, 0, FilterState.PriceRangeType.NONE);
-                updateChipAppearance(binding.chipPriceRange, false);
-                binding.chipPriceRange.setText("Chọn khoảng giá");
-                applyFilters();
+        binding.chipPriceRange.setOnClickListener(v -> showPriceRangeDialog());
+    }
+
+    private void showPriceRangeDialog() {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle(getString(R.string.title_select_price_range));
+        builder.setSingleChoiceItems(priceRanges, selectedPriceIndex, (dialog, which) -> {
+            selectedPriceIndex = which;
+            if (selectedPriceIndex == 0) {
+                binding.chipPriceRange.setText(getString(R.string.chip_price_range_default));
+                ChipStyleUtils.applyStyle(this, binding.chipPriceRange, false);
             } else {
-                // Show price range dialog with current selection
-                priceRangeDialog.show(filterState.getPriceRangeType(), filterState.getMinPrice(),
-                        filterState.getMaxPrice());
+                binding.chipPriceRange.setText(priceRanges[which]);
+                ChipStyleUtils.applyStyle(this, binding.chipPriceRange, true);
             }
+            dialog.dismiss();
+            // TODO: Lọc dữ liệu theo khoảng giá đã chọn ở đây
         });
+        builder.show();
     }
 
     private void setupSortChips() {
@@ -316,6 +312,20 @@ public class AllItemsActivity extends AppCompatActivity {
 
     private void observeItems() {
         itemViewModel.allItems.observe(this, this::setupItemsList);
+        authViewModel.currentUserData.observe(this, user -> {
+            if (user != null && user.getFavoriteItems() != null) {
+                List<String> ids = new ArrayList<>();
+                for (Map.Entry<String, Boolean> entry : user.getFavoriteItems().entrySet()) {
+                    if (Boolean.TRUE.equals(entry.getValue())) {
+                        ids.add(entry.getKey());
+                    }
+                }
+                favoriteIds = ids;
+                if (allItemAdapter != null) {
+                    allItemAdapter.setFavoriteIds(favoriteIds);
+                }
+            }
+        });
     }
 
     private void observeCategories() {
@@ -348,9 +358,29 @@ public class AllItemsActivity extends AppCompatActivity {
 
         GridLayoutManager layoutManager = new GridLayoutManager(this, GRID_SPAN_COUNT);
         binding.viewAllItems.setLayoutManager(layoutManager);
-        binding.viewAllItems.setAdapter(new AllItemAdapter((List<ItemModel>) itemModels));
-        int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
-        binding.viewAllItems.addItemDecoration(new SpaceItemDecoration(spacing, GRID_SPAN_COUNT));
+        if (allItemAdapter == null) {
+            allItemAdapter = new AllItemAdapter((List<ItemModel>) itemModels);
+            allItemAdapter.setFavoriteIds(favoriteIds);
+            allItemAdapter.setOnChangeListener(new AllItemAdapter.OnChangeListener() {
+                @Override
+                public void onToggleFavorite(String itemId) {
+                    // Gọi ViewModel để toggle favorite
+                    itemViewModel.toggleFavorite(itemId);
+                }
+
+                @Override
+                public void onClick(ItemModel item) {
+                    Intent intent = new Intent(AllItemsActivity.this, DetailActivity.class);
+                    intent.putExtra("object", item);
+                    startActivity(intent);
+                }
+            });
+            binding.viewAllItems.setAdapter(allItemAdapter);
+            int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
+            binding.viewAllItems.addItemDecoration(new SpaceItemDecoration(spacing, GRID_SPAN_COUNT));
+        } else {
+            allItemAdapter.setFavoriteIds(favoriteIds);
+        }
     }
 
     private void setupCategoryList(@NonNull List<?> itemModels) {
@@ -366,6 +396,7 @@ public class AllItemsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadData();
+        authViewModel.reloadCurrentUser();
     }
 
     private void loadData() {

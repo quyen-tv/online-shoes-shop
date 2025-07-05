@@ -16,12 +16,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.adapter.FavoriteAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityFavoriteBinding;
+import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
 import com.prm392.onlineshoesshop.factory.ItemViewModelFactory;
 import com.prm392.onlineshoesshop.model.FilterState;
 import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.repository.ItemRepository;
 import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.utils.ChipStyleUtils;
+import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
 
 import java.util.ArrayList;
@@ -34,10 +36,12 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
     private ActivityFavoriteBinding binding;
     private FavoriteAdapter adapter;
     private ItemViewModel itemViewModel;
+    private AuthViewModel authViewModel;
     private static final int GRID_SPAN_COUNT = 2;
     private int selectedPriceIndex = 0;
     private String[] priceRanges;
     private FilterState filterState = new FilterState();
+    private boolean isDecorationAdded = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,7 +68,11 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         ItemRepository itemRepository = new ItemRepository();
         ItemViewModelFactory itemViewModelFactory = new ItemViewModelFactory(userRepository, itemRepository);
         itemViewModel = new ViewModelProvider(this, itemViewModelFactory).get(ItemViewModel.class);
-
+        AuthViewModelFactory authViewModelFactory = new AuthViewModelFactory(userRepository);
+        authViewModel = new ViewModelProvider(
+                this,
+                authViewModelFactory)
+                .get(AuthViewModel.class);
         itemViewModel.getErrorMessage().observe(this, msg -> {
             if (msg != null && !msg.isEmpty()) {
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
@@ -78,7 +86,10 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         GridLayoutManager layoutManager = new GridLayoutManager(this, GRID_SPAN_COUNT);
         binding.viewFavorites.setLayoutManager(layoutManager);
         int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
-        binding.viewFavorites.addItemDecoration(new SpaceItemDecoration(spacing, GRID_SPAN_COUNT));
+        if (!isDecorationAdded) {
+            binding.viewFavorites.addItemDecoration(new SpaceItemDecoration(spacing, GRID_SPAN_COUNT));
+            isDecorationAdded = true;
+        }
         binding.viewFavorites.setAdapter(adapter);
     }
 
@@ -108,6 +119,8 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             boolean selected = !binding.chipInStock.isChecked();
             updateChipAppearance(binding.chipInStock, selected);
         });
+
+        binding.btnBack.setOnClickListener(v -> finish());
 
         binding.chipPriceRange.setOnClickListener(v -> {
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
@@ -191,5 +204,11 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             }
             return false;
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        authViewModel.reloadCurrentUser();
     }
 }
