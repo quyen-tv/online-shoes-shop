@@ -32,6 +32,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     private Context context;
     private int selectedPosition = -1;
     private int lastSelectedPosition = -1;
+    private OnBrandSelectedListener listener;
 
     public CategoryAdapter(List<CategoryModel> items) {
         this.items = items;
@@ -61,11 +62,28 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
         // Set the click listener for the item view
         holder.binding.getRoot().setOnClickListener(v -> {
-            lastSelectedPosition = selectedPosition;
-            selectedPosition = position;
-            notifyItemChanged(lastSelectedPosition);
-            notifyItemChanged(selectedPosition);
+            if (selectedPosition == position) {
+                // Đã chọn lại chính item đó → Unselect
+                lastSelectedPosition = selectedPosition;
+                selectedPosition = -1;
+                notifyItemChanged(lastSelectedPosition);
+
+                if (listener != null) {
+                    listener.onBrandSelected(""); // Xóa filter brand
+                }
+            } else {
+                // Chọn item mới
+                lastSelectedPosition = selectedPosition;
+                selectedPosition = position;
+                notifyItemChanged(lastSelectedPosition);
+                notifyItemChanged(selectedPosition);
+
+                if (listener != null) {
+                    listener.onBrandSelected(item.getTitle());
+                }
+            }
         });
+
 
         holder.binding.tvTitle.setTextColor(R.color.white);
 
@@ -77,6 +95,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             holder.binding.tvTitle.setTextColor(ContextCompat.getColor(context, R.color.white));
             ImageViewCompat.setImageTintList(holder.binding.pic, ColorStateList.valueOf(ContextCompat.getColor(context, R.color.white)));
             holder.binding.tvTitle.setVisibility(View.VISIBLE);
+            // Gọi callback để thông báo brand đã chọn
+            if (listener != null) {
+                listener.onBrandSelected(item.getTitle());
+            }
         } else {
             // --- Style for an UNSELECTED item ---
             holder.binding.pic.setBackgroundResource(R.drawable.grey_bg);
@@ -99,5 +121,13 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             this.binding = binding;
         }
     }
+
+    public void setOnBrandSelectedListener(OnBrandSelectedListener listener) {
+        this.listener = listener;
+    }
+    public interface OnBrandSelectedListener {
+        void onBrandSelected(String selectedBrand);
+    }
+
 }
 

@@ -1,6 +1,7 @@
 package com.prm392.onlineshoesshop.activity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -60,7 +61,7 @@ public class AllItemsActivity extends AppCompatActivity {
     private List<String> favoriteIds = new ArrayList<>();
     private AllItemAdapter allItemAdapter;
     private AuthViewModel authViewModel;
-
+    private String selectedBrandFilter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -358,8 +359,15 @@ public class AllItemsActivity extends AppCompatActivity {
 
         GridLayoutManager layoutManager = new GridLayoutManager(this, GRID_SPAN_COUNT);
         binding.viewAllItems.setLayoutManager(layoutManager);
+
+        // CAST list
+        List<ItemModel> allItems = (List<ItemModel>) itemModels;
+
+        // 💡 Áp dụng filter theo selectedBrandFilter
+        List<ItemModel> filteredItems = filterItemsByBrand(allItems, selectedBrandFilter);
+
         if (allItemAdapter == null) {
-            allItemAdapter = new AllItemAdapter((List<ItemModel>) itemModels);
+            allItemAdapter = new AllItemAdapter(filteredItems);
             allItemAdapter.setFavoriteIds(favoriteIds);
             allItemAdapter.setOnChangeListener(new AllItemAdapter.OnChangeListener() {
                 @Override
@@ -379,6 +387,7 @@ public class AllItemsActivity extends AppCompatActivity {
             int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
             binding.viewAllItems.addItemDecoration(new SpaceItemDecoration(spacing, GRID_SPAN_COUNT));
         } else {
+            allItemAdapter.updateData(filteredItems);
             allItemAdapter.setFavoriteIds(favoriteIds);
         }
     }
@@ -387,7 +396,17 @@ public class AllItemsActivity extends AppCompatActivity {
         binding.progressBarBrand.setVisibility(View.GONE);
 
         binding.viewBrand.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        binding.viewBrand.setAdapter(new CategoryAdapter((List<CategoryModel>) itemModels));
+        CategoryAdapter categoryAdapter = new CategoryAdapter((List<CategoryModel>) itemModels);
+        categoryAdapter.setOnBrandSelectedListener(selectedBrand -> {
+            selectedBrandFilter = selectedBrand;
+            Log.d("BrandFilter", selectedBrandFilter);
+            if (itemViewModel.allItems.getValue() != null) {
+                setupItemsList(itemViewModel.allItems.getValue()); // refresh lại danh sách theo brand
+            }
+        });
+
+        binding.viewBrand.setAdapter(categoryAdapter);
+
     }
 
     // MARK: - Data Loading
@@ -402,6 +421,18 @@ public class AllItemsActivity extends AppCompatActivity {
     private void loadData() {
         mainViewModel.loadBanners();
         mainViewModel.loadCategory();
+    }
+    //Brand Filter
+    private List<ItemModel> filterItemsByBrand(List<ItemModel> allItems, String brand) {
+        if (brand == null || brand.isEmpty() ) return allItems;
+
+        List<ItemModel> filtered = new ArrayList<>();
+        for (ItemModel item : allItems) {
+            if (item.getBrand() != null && item.getBrand().equalsIgnoreCase(brand)) {
+                filtered.add(item);
+            }
+        }
+        return filtered;
     }
 
 }

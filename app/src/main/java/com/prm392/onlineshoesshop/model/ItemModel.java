@@ -18,11 +18,12 @@ public class ItemModel implements Parcelable {
     private Double price;
     private Double rating;
     private Integer numberInCart;
+    private String brand;
 
     public ItemModel() {
     }
 
-    public ItemModel(String itemId, String title, String description, List<String> picUrl, List<String> size, Double price, Double rating, Integer numberInCart) {
+    public ItemModel(String itemId, String title, String description, List<String> picUrl, List<String> size, Double price, Double rating, Integer numberInCart, String brand) {
         this.itemId = itemId;
         this.title = title;
         this.description = description;
@@ -31,6 +32,7 @@ public class ItemModel implements Parcelable {
         this.price = price;
         this.rating = rating;
         this.numberInCart = numberInCart;
+        this.brand = brand;
     }
 
     public String getItemId() {
@@ -76,6 +78,13 @@ public class ItemModel implements Parcelable {
     public void setNumberInCart(Integer numberInCart) {
         this.numberInCart = numberInCart;
     }
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
 
     protected ItemModel(Parcel in) {
         itemId = in.readString();
@@ -83,6 +92,8 @@ public class ItemModel implements Parcelable {
         description = in.readString();
         picUrl = in.createStringArrayList();
         size = in.createStringArrayList();
+        brand = in.readString();
+
         if (in.readByte() == 0) {
             price = null;
         } else {
@@ -124,6 +135,8 @@ public class ItemModel implements Parcelable {
         dest.writeString(description);
         dest.writeStringList(picUrl);
         dest.writeStringList(size);
+        dest.writeString(brand);
+
 
         if (price == null) {
             dest.writeByte((byte) 0);
