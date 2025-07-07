@@ -28,6 +28,7 @@ import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -70,9 +71,8 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void initLists() {
-        List<String> sizeList = new ArrayList<>(item.getSize());
-
-        binding.sizeList.setAdapter(new SizeAdapter(sizeList));
+        SizeAdapter sizeAdapter = new SizeAdapter(item.getSizeQuantityMap());
+        binding.sizeList.setAdapter(sizeAdapter);
         binding.sizeList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
         List<String> colorList = new ArrayList<>(item.getPicUrl());

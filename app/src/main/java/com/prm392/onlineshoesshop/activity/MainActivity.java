@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
     private AuthViewModel authViewModel;
     private ItemViewModel itemViewModel;
     private ActivityMainBinding binding;
+    private String selectedBrandFilter = "";
+    private boolean isItemDecorationAdded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,10 +89,13 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
     private void initPopular() {
         binding.progressBarPopular.setVisibility(View.VISIBLE);
         viewModel.populars.observe(this, itemModels -> {
+            List<ItemModel> filteredItems = filterItemsByBrand(itemModels, selectedBrandFilter);
+
             binding.viewPopular.setLayoutManager(new GridLayoutManager(this, 2));
-            PopularAdapter popularAdapter = new PopularAdapter(itemModels);
+            PopularAdapter popularAdapter = new PopularAdapter(filteredItems);
             binding.viewPopular.setAdapter(popularAdapter);
             popularAdapter.setOnChangeListener(this);
+
             authViewModel.currentUserData.observe(this, user -> {
                 if (user != null && user.getFavoriteItems() != null) {
                     List<String> favoriteIds = new ArrayList<>();
@@ -102,8 +107,13 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
                     popularAdapter.setFavoriteIds(favoriteIds);
                 }
             });
-            int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
-            binding.viewPopular.addItemDecoration(new SpaceItemDecoration(spacing, 2));
+
+            if (!isItemDecorationAdded) {
+                int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
+                binding.viewPopular.addItemDecoration(new SpaceItemDecoration(spacing, 2));
+                isItemDecorationAdded = true;
+            }
+
             binding.progressBarPopular.setVisibility(View.GONE);
         });
         viewModel.loadPopulars();
@@ -113,7 +123,12 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
         binding.progressBarBrand.setVisibility(View.VISIBLE);
         viewModel.categories.observe(this, itemModels -> {
             binding.viewBrand.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-            binding.viewBrand.setAdapter(new CategoryAdapter(itemModels));
+            CategoryAdapter categoryAdapter = new CategoryAdapter(itemModels);
+            categoryAdapter.setOnBrandSelectedListener(brand -> {
+                selectedBrandFilter = brand;
+                viewModel.loadPopulars(); // gọi lại dữ liệu
+            });
+            binding.viewBrand.setAdapter(categoryAdapter);
             binding.progressBarBrand.setVisibility(View.GONE);
         });
         viewModel.loadCategory();
@@ -177,4 +192,17 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
     public void onClick(ItemModel item) {
         startActivity(new Intent(this, DetailActivity.class).putExtra("object", item));
     }
+
+    private List<ItemModel> filterItemsByBrand(List<ItemModel> allItems, String brand) {
+        if (brand == null || brand.isEmpty()) return allItems;
+
+        List<ItemModel> filtered = new ArrayList<>();
+        for (ItemModel item : allItems) {
+            if (item.getBrand() != null && item.getBrand().equalsIgnoreCase(brand)) {
+                filtered.add(item);
+            }
+        }
+        return filtered;
+    }
+
 }

@@ -24,7 +24,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
 
     private final List<ItemModel> originalList;
     private List<ItemModel> favoriteList;
-    private List<String> favoriteIds;
+    private List<String> favoriteIds= new ArrayList<>();
     private OnChangeListener listener;
     private Context context;
 
@@ -76,7 +76,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
         holder.binding.tvTitle.setText(item.getTitle());
         holder.binding.tvPrice.setText(String.format("$%s", item.getPrice()));
         holder.binding.tvRating.setText(String.valueOf(item.getRating()));
-        boolean isFavorite = favoriteIds.contains(ItemUtils.getFirebaseItemId(item.getItemId()));
+        boolean isFavorite = favoriteIds != null &&
+                favoriteIds.contains(ItemUtils.getFirebaseItemId(item.getItemId()));
         if (isFavorite) {
             holder.binding.imgFavorite.setImageResource(R.drawable.ic_fav_fill);
             holder.binding.imgFavorite.setColorFilter(null);

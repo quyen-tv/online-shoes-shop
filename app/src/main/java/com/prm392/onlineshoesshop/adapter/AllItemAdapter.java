@@ -23,7 +23,7 @@ import java.util.List;
 
 public class AllItemAdapter extends RecyclerView.Adapter<AllItemAdapter.AllItemViewHolder> {
 
-    private final List<ItemModel> items;
+    private List<ItemModel> items;
     private Context context;
     private List<String> favoriteIds = new ArrayList<>();
     private OnChangeListener listener;
@@ -105,4 +105,10 @@ public class AllItemAdapter extends RecyclerView.Adapter<AllItemAdapter.AllItemV
             this.binding = binding;
         }
     }
+
+    public void updateData(List<ItemModel> newData) {
+        this.items = newData;
+        notifyDataSetChanged();
+    }
+
 }
