@@ -39,7 +39,6 @@ import java.util.List;
 import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
 import android.content.Intent;
-import com.prm392.onlineshoesshop.activity.DetailActivity;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -70,12 +69,13 @@ public class AllItemsActivity extends AppCompatActivity {
 
         // Sử dụng resource string cho các mức giá
         priceRanges = new String[] {
-                getString(R.string.price_range_all),
-                getString(R.string.price_range_under_10m),
-                getString(R.string.price_range_10_16m),
-                getString(R.string.price_range_16_22m),
-                getString(R.string.price_range_over_22m)
+                getString(R.string.price_range_all),        // vị trí index 0
+                "Dưới $50",                                 // UNDER_50
+                "$50 - $100",                               // FIFTY_TO_100
+                "$100 - $200",                              // HUNDRED_TO_200
+                "Trên $200"                                 // OVER_200
         };
+
 
         initializeDependencies();
         initializeViews();
@@ -95,7 +95,11 @@ public class AllItemsActivity extends AppCompatActivity {
             filterState = filterState.setPriceRange(minPrice, maxPrice, rangeType);
             updateChipAppearance(binding.chipPriceRange, true);
             updatePriceRangeChipText(minPrice, maxPrice, rangeType);
-            applyFilters();
+
+            if (itemViewModel.allItems.getValue() != null) {
+                setupItemsList(itemViewModel.allItems.getValue());
+            }
+
 
             // Show feedback to user
             String message = getPriceRangeMessage(minPrice, maxPrice, rangeType);
@@ -136,7 +140,11 @@ public class AllItemsActivity extends AppCompatActivity {
         binding.chipInStock.setOnClickListener(v -> {
             filterState = filterState.toggleInStock();
             updateChipAppearance(binding.chipInStock, filterState.isInStockSelected());
-            applyFilters();
+
+            if (itemViewModel.allItems.getValue() != null) {
+                setupItemsList(itemViewModel.allItems.getValue());
+            }
+
         });
 
         binding.chipPriceRange.setOnClickListener(v -> showPriceRangeDialog());
@@ -147,36 +155,102 @@ public class AllItemsActivity extends AppCompatActivity {
         builder.setTitle(getString(R.string.title_select_price_range));
         builder.setSingleChoiceItems(priceRanges, selectedPriceIndex, (dialog, which) -> {
             selectedPriceIndex = which;
-            if (selectedPriceIndex == 0) {
+
+            double minPrice = 0;
+            double maxPrice = Double.MAX_VALUE;
+            FilterState.PriceRangeType selectedRange;
+
+            switch (which) {
+                case 0: // Tất cả
+                    selectedRange = FilterState.PriceRangeType.NONE;
+                    break;
+                case 1: // Dưới 50
+                    selectedRange = FilterState.PriceRangeType.UNDER_50;
+                    maxPrice = 50;
+                    break;
+                case 2: // 50 - 100
+                    selectedRange = FilterState.PriceRangeType.FIFTY_TO_100;
+                    minPrice = 50;
+                    maxPrice = 100;
+                    break;
+                case 3: // 100 - 200
+                    selectedRange = FilterState.PriceRangeType.HUNDRED_TO_200;
+                    minPrice = 100;
+                    maxPrice = 200;
+                    break;
+                case 4: // Trên 200
+                    selectedRange = FilterState.PriceRangeType.OVER_200;
+                    minPrice = 200;
+                    maxPrice = Double.MAX_VALUE;
+                    break;
+                default:
+                    selectedRange = FilterState.PriceRangeType.NONE;
+                    break;
+            }
+
+            // Cập nhật chip text & style
+            if (selectedRange == FilterState.PriceRangeType.NONE) {
                 binding.chipPriceRange.setText(getString(R.string.chip_price_range_default));
                 ChipStyleUtils.applyStyle(this, binding.chipPriceRange, false);
             } else {
                 binding.chipPriceRange.setText(priceRanges[which]);
                 ChipStyleUtils.applyStyle(this, binding.chipPriceRange, true);
             }
+
+            // Cập nhật filterState
+            if (selectedRange == FilterState.PriceRangeType.NONE) {
+                filterState = filterState.togglePriceRange(); // tắt filter nếu chọn "tất cả"
+            } else {
+                filterState = filterState.setPriceRange(minPrice, maxPrice, selectedRange);
+            }
+
+            // Cập nhật giao diện
+            if (itemViewModel.allItems.getValue() != null) {
+                setupItemsList(itemViewModel.allItems.getValue());
+            }
+
             dialog.dismiss();
-            // TODO: Lọc dữ liệu theo khoảng giá đã chọn ở đây
         });
         builder.show();
     }
+
+//private void showPriceRangeDialog() {
+//    priceRangeDialog.show(
+//            filterState.getPriceRangeType(),
+//            filterState.getMinPrice(),
+//            filterState.getMaxPrice()
+//    );
+//}
 
     private void setupSortChips() {
         binding.chipSortPriceLow.setOnClickListener(v -> {
             filterState = filterState.setSortType(FilterState.SortType.PRICE_LOW);
             updateSortChipsAppearance();
-            applyFilters();
+
+            if (itemViewModel.allItems.getValue() != null) {
+                setupItemsList(itemViewModel.allItems.getValue());
+            }
+
         });
 
         binding.chipSortPriceHigh.setOnClickListener(v -> {
             filterState = filterState.setSortType(FilterState.SortType.PRICE_HIGH);
             updateSortChipsAppearance();
-            applyFilters();
+
+            if (itemViewModel.allItems.getValue() != null) {
+                setupItemsList(itemViewModel.allItems.getValue());
+            }
+
         });
 
         binding.chipSortPopular.setOnClickListener(v -> {
             filterState = filterState.setSortType(FilterState.SortType.POPULAR);
             updateSortChipsAppearance();
-            applyFilters();
+
+            if (itemViewModel.allItems.getValue() != null) {
+                setupItemsList(itemViewModel.allItems.getValue());
+            }
+
         });
     }
 
@@ -209,25 +283,30 @@ public class AllItemsActivity extends AppCompatActivity {
         }
     }
 
-    private void applyFilters() {
+    private List<ItemModel> applyFilters(List<ItemModel> allItems) {
         // TODO: Implement actual filtering logic based on filterState
-        // This method can be called whenever filter states change
-        // Example:
-        // if (filterState.isInStockSelected()) {
-        // // Filter items that are in stock
-        // }
-        // if (filterState.isPriceRangeSelected()) {
-        // // Filter items by price range
-        // double minPrice = filterState.getMinPrice();
-        // double maxPrice = filterState.getMaxPrice();
-        // // Apply price filtering
-        // }
-        // if (filterState.getSortType() == FilterState.SortType.PRICE_LOW) {
-        // // Sort items by price low to high
-        // }
+        List<ItemModel> result = new ArrayList<>(allItems);
+
+        if (filterState.isInStockSelected()) {
+            result = filterByInStock(result);
+        }
+
+        if (filterState.isPriceRangeSelected()) {
+            result = filterByPriceRange(result, filterState.getMinPrice(), filterState.getMaxPrice());
+        }
+        Log.d("FILTER", "Price range: " + filterState.getMinPrice() + " - " + filterState.getMaxPrice());
+
+        result = filterItemsByBrand(result, selectedBrandFilter);
+
+        if (filterState.getSortType() == FilterState.SortType.PRICE_LOW ||
+                filterState.getSortType() == FilterState.SortType.PRICE_HIGH) {
+            result = sortByPrice(result, filterState.getSortType());
+        }
+
+        return result;
 
         // For now, just log the filter state
-        System.out.println("Applied filters: " + filterState.toString());
+//        System.out.println("Applied filters: " + filterState.toString());
     }
 
     private void updatePriceRangeChipText(double minPrice, double maxPrice, FilterState.PriceRangeType rangeType) {
@@ -243,12 +322,10 @@ public class AllItemsActivity extends AppCompatActivity {
             case HUNDRED_TO_200:
                 chipText = "$100 - $200";
                 break;
-            case TWO_HUNDRED_TO_500:
-                chipText = "$200 - $500";
+            case OVER_200:
+                chipText = "Trên $200";
                 break;
-            case OVER_500:
-                chipText = "Trên $500";
-                break;
+
             case CUSTOM:
                 if (maxPrice == Double.MAX_VALUE) {
                     chipText = String.format("Từ $%.0f+", minPrice);
@@ -272,10 +349,8 @@ public class AllItemsActivity extends AppCompatActivity {
                 return "$50 - $100";
             case HUNDRED_TO_200:
                 return "$100 - $200";
-            case TWO_HUNDRED_TO_500:
-                return "$200 - $500";
-            case OVER_500:
-                return "Trên $500";
+            case OVER_200:
+                return "Trên $200";
             case CUSTOM:
                 if (maxPrice == Double.MAX_VALUE) {
                     return String.format("Từ $%.0f trở lên", minPrice);
@@ -364,7 +439,7 @@ public class AllItemsActivity extends AppCompatActivity {
         List<ItemModel> allItems = (List<ItemModel>) itemModels;
 
         // 💡 Áp dụng filter theo selectedBrandFilter
-        List<ItemModel> filteredItems = filterItemsByBrand(allItems, selectedBrandFilter);
+        List<ItemModel> filteredItems = applyFilters(allItems);
 
         if (allItemAdapter == null) {
             allItemAdapter = new AllItemAdapter(filteredItems);
@@ -422,7 +497,7 @@ public class AllItemsActivity extends AppCompatActivity {
         mainViewModel.loadBanners();
         mainViewModel.loadCategory();
     }
-    //Brand Filter
+    //Filter theo từng mục
     private List<ItemModel> filterItemsByBrand(List<ItemModel> allItems, String brand) {
         if (brand == null || brand.isEmpty() ) return allItems;
 
@@ -433,6 +508,51 @@ public class AllItemsActivity extends AppCompatActivity {
             }
         }
         return filtered;
+    }
+
+    private List<ItemModel> filterByInStock(List<ItemModel> items) {
+        List<ItemModel> filtered = new ArrayList<>();
+        for (ItemModel item : items) {
+            if (item.getSizeQuantityMap() != null) {
+                for (int quantity : item.getSizeQuantityMap().values()) {
+                    if (quantity > 0) {
+                        filtered.add(item);
+                        break; // Thoát khỏi vòng lặp nếu có ít nhất 1 size còn hàng
+                    }
+                }
+            }
+        }
+        return filtered;
+    }
+
+    private List<ItemModel> filterByPriceRange(List<ItemModel> items, double minPrice, double maxPrice) {
+        List<ItemModel> filtered = new ArrayList<>();
+        for (ItemModel item : items) {
+            Double price = item.getPrice();
+            if (price != null && price >= minPrice && price <= maxPrice) {
+                filtered.add(item);
+            }
+        }
+        return filtered;
+    }
+    private List<ItemModel> sortByPrice(List<ItemModel> items, FilterState.SortType sortType) {
+        List<ItemModel> sorted = new ArrayList<>(items);
+
+        if (sortType == FilterState.SortType.PRICE_LOW) {
+            sorted.sort((item1, item2) -> {
+                Double price1 = item1.getPrice();
+                Double price2 = item2.getPrice();
+                return Double.compare(price1 != null ? price1 : 0.0, price2 != null ? price2 : 0.0);
+            });
+        } else if (sortType == FilterState.SortType.PRICE_HIGH) {
+            sorted.sort((item1, item2) -> {
+                Double price1 = item1.getPrice();
+                Double price2 = item2.getPrice();
+                return Double.compare(price2 != null ? price2 : 0.0, price1 != null ? price1 : 0.0);
+            });
+        }
+
+        return sorted;
     }
 
 }

@@ -173,50 +173,10 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!-- $200 - $500 -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card200to500"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/light_grey">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="12dp"
-                        app:srcCompat="@drawable/ic_price"
-                        app:tint="@color/purple" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="$200 - $500"
-                        android:textSize="16sp"
-                        android:textColor="@color/black" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="200 - 500"
-                        android:textSize="14sp"
-                        android:textColor="@color/light_grey" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
             <!-- Over $500 -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardOver500"
+                android:id="@+id/cardOver200"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
@@ -243,9 +203,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Trên $500"
-                        android:textSize="16sp"
-                        android:textColor="@color/black" />
+                        android:text="Trên $200"
+                        android:textColor="@color/black"
+                        android:textSize="16sp" />
 
                     <TextView
                         android:layout_width="wrap_content"

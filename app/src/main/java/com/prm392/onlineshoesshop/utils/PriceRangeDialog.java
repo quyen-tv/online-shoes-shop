@@ -113,10 +113,8 @@ public class PriceRangeDialog {
         binding.card50to100.setOnClickListener(v -> selectPriceRange(FilterState.PriceRangeType.FIFTY_TO_100, 50, 100));
         binding.card100to200
                 .setOnClickListener(v -> selectPriceRange(FilterState.PriceRangeType.HUNDRED_TO_200, 100, 200));
-        binding.card200to500
-                .setOnClickListener(v -> selectPriceRange(FilterState.PriceRangeType.TWO_HUNDRED_TO_500, 200, 500));
-        binding.cardOver500
-                .setOnClickListener(v -> selectPriceRange(FilterState.PriceRangeType.OVER_500, 500, Double.MAX_VALUE));
+        binding.cardOver200.setOnClickListener(v ->
+                selectPriceRange(FilterState.PriceRangeType.OVER_200, 200, Double.MAX_VALUE));
 
         // Custom range card
         binding.cardCustomRange.setOnClickListener(v -> selectCustomRange());
@@ -142,8 +140,8 @@ public class PriceRangeDialog {
         binding.cardUnder50.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
         binding.card50to100.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
         binding.card100to200.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
-        binding.card200to500.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
-        binding.cardOver500.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
+        binding.cardOver200.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
+
         binding.cardCustomRange.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
     }
 
@@ -160,12 +158,10 @@ public class PriceRangeDialog {
             case HUNDRED_TO_200:
                 selectedCard = binding.card100to200;
                 break;
-            case TWO_HUNDRED_TO_500:
-                selectedCard = binding.card200to500;
+            case OVER_200:
+                selectedCard = binding.cardOver200;
                 break;
-            case OVER_500:
-                selectedCard = binding.cardOver500;
-                break;
+
             case CUSTOM:
                 selectedCard = binding.cardCustomRange;
                 break;
@@ -222,15 +218,12 @@ public class PriceRangeDialog {
                     minPrice = 100;
                     maxPrice = 200;
                     break;
-                case TWO_HUNDRED_TO_500:
+                case OVER_200:
                     minPrice = 200;
-                    maxPrice = 500;
-                    break;
-                case OVER_500:
-                    minPrice = 500;
                     maxPrice = Double.MAX_VALUE;
                     break;
             }
+
         }
 
         if (selectedRangeType != FilterState.PriceRangeType.NONE) {

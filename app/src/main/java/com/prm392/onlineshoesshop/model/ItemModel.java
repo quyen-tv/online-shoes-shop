@@ -5,7 +5,10 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ItemModel implements Parcelable {
 
@@ -14,7 +17,7 @@ public class ItemModel implements Parcelable {
     private String title;
     private String description;
     private List<String> picUrl;
-    private List<String> size;
+    private List<StockEntry> stockEntries; // ✅ Thay vì List<String> size
     private Double price;
     private Double rating;
     private Integer numberInCart;
@@ -23,18 +26,17 @@ public class ItemModel implements Parcelable {
     public ItemModel() {
     }
 
-    public ItemModel(String itemId, String title, String description, List<String> picUrl, List<String> size, Double price, Double rating, Integer numberInCart, String brand) {
+    public ItemModel(String itemId, String title, String description, List<String> picUrl, List<StockEntry> stockEntries, Double price, Double rating, Integer numberInCart, String brand) {
         this.itemId = itemId;
         this.title = title;
         this.description = description;
         this.picUrl = picUrl;
-        this.size = size;
+        this.stockEntries = stockEntries;
         this.price = price;
         this.rating = rating;
         this.numberInCart = numberInCart;
         this.brand = brand;
     }
-
     public String getItemId() {
         return itemId;
     }
@@ -55,8 +57,11 @@ public class ItemModel implements Parcelable {
         return picUrl;
     }
 
-    public List<String> getSize() {
-        return size;
+    public List<StockEntry> getStockEntries() {
+        return stockEntries;
+    }
+    public void setStockEntries(List<StockEntry> stockEntries) {
+        this.stockEntries = stockEntries;
     }
 
     public Double getPrice() {
@@ -91,24 +96,13 @@ public class ItemModel implements Parcelable {
         title = in.readString();
         description = in.readString();
         picUrl = in.createStringArrayList();
-        size = in.createStringArrayList();
+        stockEntries = new ArrayList<>();
+        in.readTypedList(stockEntries, StockEntry.CREATOR);
         brand = in.readString();
 
-        if (in.readByte() == 0) {
-            price = null;
-        } else {
-            price = in.readDouble();
-        }
-        if (in.readByte() == 0) {
-            rating = null;
-        } else {
-            rating = in.readDouble();
-        }
-        if (in.readByte() == 0) {
-            numberInCart = null;
-        } else {
-            numberInCart = in.readInt();
-        }
+        price = in.readByte() == 0 ? null : in.readDouble();
+        rating = in.readByte() == 0 ? null : in.readDouble();
+        numberInCart = in.readByte() == 0 ? null : in.readInt();
     }
 
     public static final Creator<ItemModel> CREATOR = new Creator<>() {
@@ -134,29 +128,80 @@ public class ItemModel implements Parcelable {
         dest.writeString(title);
         dest.writeString(description);
         dest.writeStringList(picUrl);
-        dest.writeStringList(size);
+        dest.writeTypedList(stockEntries);
         dest.writeString(brand);
 
-
-        if (price == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeDouble(price);
+        if (price == null) dest.writeByte((byte) 0); else {
+            dest.writeByte((byte) 1); dest.writeDouble(price);
         }
 
-        if (rating == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeDouble(rating);
+        if (rating == null) dest.writeByte((byte) 0); else {
+            dest.writeByte((byte) 1); dest.writeDouble(rating);
         }
 
-        if (numberInCart == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeInt(numberInCart);
+        if (numberInCart == null) dest.writeByte((byte) 0); else {
+            dest.writeByte((byte) 1); dest.writeInt(numberInCart);
         }
     }
+    // ✅ Class lồng cho từng size và tồn kho
+    public static class StockEntry implements Parcelable {
+        private String size;
+        private int quantity;
+
+        public StockEntry() {}
+
+        public StockEntry(String size, int quantity) {
+            this.size = size;
+            this.quantity = quantity;
+        }
+
+        public String getSize() {
+            return size;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        protected StockEntry(Parcel in) {
+            size = in.readString();
+            quantity = in.readInt();
+        }
+
+        public static final Creator<StockEntry> CREATOR = new Creator<>() {
+            @Override
+            public StockEntry createFromParcel(Parcel in) {
+                return new StockEntry(in);
+            }
+
+            @Override
+            public StockEntry[] newArray(int size) {
+                return new StockEntry[size];
+            }
+        };
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeString(size);
+            dest.writeInt(quantity);
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+    }
+
+    public Map<String, Integer> getSizeQuantityMap() {
+        Map<String, Integer> sizeMap = new LinkedHashMap<>(); // Giữ thứ tự như trong danh sách
+        if (stockEntries != null) {
+            for (StockEntry entry : stockEntries) {
+                sizeMap.put(entry.getSize(), entry.getQuantity());
+            }
+        }
+        return sizeMap;
+    }
+
+
+
 }

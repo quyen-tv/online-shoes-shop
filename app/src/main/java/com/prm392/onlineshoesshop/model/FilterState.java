@@ -120,15 +120,16 @@ public class FilterState {
 
     /**
      * Enum representing different price range types
+     * NONE: No range selected
+     * UNDER_50: Dưới 50
+     * FIFTY_TO_100: 50 - 100
+     * HUNDRED_TO_200: 100 - 200
+     * OVER_200: Trên 200
+     * CUSTOM: Tùy chỉnh
      */
+
     public enum PriceRangeType {
-        NONE,
-        UNDER_50,
-        FIFTY_TO_100,
-        HUNDRED_TO_200,
-        TWO_HUNDRED_TO_500,
-        OVER_500,
-        CUSTOM
+        NONE, UNDER_50, FIFTY_TO_100, HUNDRED_TO_200, OVER_200, CUSTOM
     }
 
     @Override
