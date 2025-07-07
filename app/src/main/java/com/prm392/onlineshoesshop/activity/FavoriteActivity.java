@@ -42,21 +42,21 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
     private String[] priceRanges;
     private FilterState filterState = new FilterState();
     private boolean isDecorationAdded = false;
+    private List<ItemModel> allFavoriteItems = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityFavoriteBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        // Sử dụng resource string cho các mức giá
         priceRanges = new String[] {
-                getString(R.string.price_range_all),
-                getString(R.string.price_range_under_10m),
-                getString(R.string.price_range_10_16m),
-                getString(R.string.price_range_16_22m),
-                getString(R.string.price_range_over_22m)
+                getString(R.string.price_range_all),        // vị trí index 0
+                "Dưới $50",                                 // UNDER_50
+                "$50 - $100",                               // FIFTY_TO_100
+                "$100 - $200",                              // HUNDRED_TO_200
+                "Trên $200"                                 // OVER_200
         };
-
         setupViewModel();
         observeUserData();
         initFilterChips();
@@ -104,10 +104,16 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
                     }
                 }
                 itemViewModel.fetchFavoriteItems(favoriteItems -> {
-                    setupRecyclerView(favoriteItems);
-                    if (adapter != null) {
-                        adapter.setFavoriteIds(favoriteIds);
+                    allFavoriteItems = favoriteItems;
+                    applyFilters(); // áp dụng filter (viết hàm ở bước sau)
+
+                    if (adapter == null) {
+                        setupRecyclerView(favoriteItems); // chỉ tạo adapter 1 lần
                     }
+                    adapter.setFavoriteIds(favoriteIds);
+                    allFavoriteItems = favoriteItems;
+                    applyFilters(); // không tạo lại adapter nữa
+
                     binding.progressBarItems.setVisibility(View.GONE);
                 });
             }
@@ -116,9 +122,11 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
 
     private void initFilterChips() {
         binding.chipInStock.setOnClickListener(v -> {
-            boolean selected = !binding.chipInStock.isChecked();
-            updateChipAppearance(binding.chipInStock, selected);
+            filterState = filterState.toggleInStock();
+            updateChipAppearance(binding.chipInStock, filterState.isInStockSelected());
+            applyFilters();
         });
+
 
         binding.btnBack.setOnClickListener(v -> finish());
 
@@ -127,17 +135,33 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             builder.setTitle(getString(R.string.title_select_price_range));
             builder.setSingleChoiceItems(priceRanges, selectedPriceIndex, (dialog, which) -> {
                 selectedPriceIndex = which;
-                if (selectedPriceIndex == 0) { // Tất cả
+
+                double minPrice = 0, maxPrice = Double.MAX_VALUE;
+                FilterState.PriceRangeType type = FilterState.PriceRangeType.NONE;
+
+                switch (which) {
+                    case 1: maxPrice = 50; type = FilterState.PriceRangeType.UNDER_50; break;
+                    case 2: minPrice = 50; maxPrice = 100; type = FilterState.PriceRangeType.FIFTY_TO_100; break;
+                    case 3: minPrice = 100; maxPrice = 200; type = FilterState.PriceRangeType.HUNDRED_TO_200; break;
+                    case 4: minPrice = 200; maxPrice = Double.MAX_VALUE; type = FilterState.PriceRangeType.OVER_200; break;
+                }
+
+                if (which == 0) {
                     binding.chipPriceRange.setText(getString(R.string.chip_price_range_default));
                     ChipStyleUtils.applyStyle(this, binding.chipPriceRange, false);
+                    filterState = filterState.togglePriceRange();
                 } else {
                     binding.chipPriceRange.setText(priceRanges[which]);
                     ChipStyleUtils.applyStyle(this, binding.chipPriceRange, true);
+                    filterState = filterState.setPriceRange(minPrice, maxPrice, type);
                 }
+
+                applyFilters();
                 dialog.dismiss();
             });
             builder.show();
         });
+
 
         binding.chipSortPriceLow.setOnClickListener(v -> {
             handleSortChipClick(FilterState.SortType.PRICE_LOW);
@@ -147,9 +171,8 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             handleSortChipClick(FilterState.SortType.PRICE_HIGH);
         });
 
-        binding.chipSortPopular.setOnClickListener(v -> {
-            handleSortChipClick(FilterState.SortType.POPULAR);
-        });
+        binding.chipSortPopular.setVisibility(View.GONE);
+
     }
 
     private void handleSortChipClick(FilterState.SortType sortType) {
@@ -159,6 +182,7 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             filterState = filterState.setSortType(sortType);
         }
         updateSortChipsAppearance();
+        applyFilters();
     }
 
     private void updateSortChipsAppearance() {
@@ -211,4 +235,64 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         super.onResume();
         authViewModel.reloadCurrentUser();
     }
+
+    private void applyFilters() {
+        List<ItemModel> filtered = new ArrayList<>(allFavoriteItems);
+
+        if (filterState.isInStockSelected()) {
+            filtered = filterByInStock(filtered);
+        }
+
+        if (filterState.isPriceRangeSelected()) {
+            filtered = filterByPriceRange(filtered, filterState.getMinPrice(), filterState.getMaxPrice());
+        }
+
+        if (filterState.getSortType() == FilterState.SortType.PRICE_LOW ||
+                filterState.getSortType() == FilterState.SortType.PRICE_HIGH) {
+            filtered = sortByPrice(filtered, filterState.getSortType());
+        }
+
+        // Thay vì gọi lại setupRecyclerView()
+        if (adapter != null) {
+            adapter.updateList(filtered);
+        }
+
+    }
+    private List<ItemModel> filterByInStock(List<ItemModel> items) {
+        List<ItemModel> filtered = new ArrayList<>();
+        for (ItemModel item : items) {
+            if (item.getSizeQuantityMap() != null) {
+                for (int quantity : item.getSizeQuantityMap().values()) {
+                    if (quantity > 0) {
+                        filtered.add(item);
+                        break;
+                    }
+                }
+            }
+        }
+        return filtered;
+    }
+    private List<ItemModel> filterByPriceRange(List<ItemModel> items, double minPrice, double maxPrice) {
+        List<ItemModel> filtered = new ArrayList<>();
+        for (ItemModel item : items) {
+            Double price = item.getPrice();
+            if (price != null && price >= minPrice && price <= maxPrice) {
+                filtered.add(item);
+            }
+        }
+        return filtered;
+    }
+    private List<ItemModel> sortByPrice(List<ItemModel> items, FilterState.SortType sortType) {
+        List<ItemModel> sorted = new ArrayList<>(items);
+
+        if (sortType == FilterState.SortType.PRICE_LOW) {
+            sorted.sort(Comparator.comparingDouble(item -> item.getPrice() != null ? item.getPrice() : 0.0));
+        } else if (sortType == FilterState.SortType.PRICE_HIGH) {
+            sorted.sort((a, b) -> Double.compare(b.getPrice() != null ? b.getPrice() : 0.0,
+                    a.getPrice() != null ? a.getPrice() : 0.0));
+        }
+
+        return sorted;
+    }
+
 }
