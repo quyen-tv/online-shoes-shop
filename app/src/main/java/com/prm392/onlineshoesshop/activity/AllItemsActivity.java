@@ -1,6 +1,8 @@
 package com.prm392.onlineshoesshop.activity;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -61,6 +63,8 @@ public class AllItemsActivity extends AppCompatActivity {
     private AllItemAdapter allItemAdapter;
     private AuthViewModel authViewModel;
     private String selectedBrandFilter;
+    private String searchQuery = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,6 +118,22 @@ public class AllItemsActivity extends AppCompatActivity {
         initFilterChips();
         initBackButton();
         updatePriceRangeChipStyle();
+        binding.etTitle.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                searchQuery = s.toString().trim();
+                if (itemViewModel.allItems.getValue() != null) {
+                    setupItemsList(itemViewModel.allItems.getValue());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
     }
 
     private void updatePriceRangeChipStyle() {
@@ -302,6 +322,7 @@ public class AllItemsActivity extends AppCompatActivity {
                 filterState.getSortType() == FilterState.SortType.PRICE_HIGH) {
             result = sortByPrice(result, filterState.getSortType());
         }
+        result = filterByName(result, searchQuery);
 
         return result;
 
@@ -553,6 +574,17 @@ public class AllItemsActivity extends AppCompatActivity {
         }
 
         return sorted;
+    }
+    private List<ItemModel> filterByName(List<ItemModel> items, String query) {
+        if (query == null || query.isEmpty()) return items;
+
+        List<ItemModel> filtered = new ArrayList<>();
+        for (ItemModel item : items) {
+            if (item.getTitle() != null && item.getTitle().toLowerCase().contains(query.toLowerCase())) {
+                filtered.add(item);
+            }
+        }
+        return filtered;
     }
 
 }
