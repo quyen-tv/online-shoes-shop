@@ -114,7 +114,7 @@ public class DetailActivity extends AppCompatActivity {
         binding.tvRating.setText(String.valueOf(item.getRating()));
         binding.btnAddToCart.setOnClickListener(v -> {
             item.setNumberInCart(numberOrder);
-            managementCart.insertFood(item);
+            managementCart.insertItem(item);
         });
         binding.btnBack.setOnClickListener(v -> {
             finish();

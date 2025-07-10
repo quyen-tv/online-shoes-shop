@@ -2,6 +2,7 @@ package com.prm392.onlineshoesshop.Api;
 
 import com.prm392.onlineshoesshop.constant.AppInfo;
 import com.prm392.onlineshoesshop.helper.Helpers;
+import com.prm392.onlineshoesshop.model.CreateOrderResult;
 
 import org.json.JSONObject;
 
@@ -33,21 +34,14 @@ public class CreateOrder {
             EmbedData = "{}";
             Items = "[]";
             BankCode = "zalopayapp";
-            Description = "Merchant pay for order #" + Helpers.getAppTransId();
+            Description = "Merchant pay for order #" + AppTransId;
             String inputHMac = String.format("%s|%s|%s|%s|%s|%s|%s",
-                    this.AppId,
-                    this.AppTransId,
-                    this.AppUser,
-                    this.Amount,
-                    this.AppTime,
-                    this.EmbedData,
-                    this.Items);
-
+                    AppId, AppTransId, AppUser, Amount, AppTime, EmbedData, Items);
             Mac = Helpers.getMac(AppInfo.MAC_KEY, inputHMac);
         }
     }
 
-     public JSONObject createOrder(String amount) throws Exception {
+    public CreateOrderResult createOrder(String amount) throws Exception {
         CreateOrderData input = new CreateOrderData(amount);
 
         RequestBody formBody = new FormBody.Builder()
@@ -63,8 +57,9 @@ public class CreateOrder {
                 .add("mac", input.Mac)
                 .build();
 
-        JSONObject data = HttpProvider.sendPost(AppInfo.URL_CREATE_ORDER, formBody);
-        return data;
+        JSONObject response = HttpProvider.sendPost(AppInfo.URL_CREATE_ORDER, formBody);
+        String token = response.optString("zp_trans_token");
+
+        return new CreateOrderResult(input.AppTransId, token, response);
     }
 }
-
