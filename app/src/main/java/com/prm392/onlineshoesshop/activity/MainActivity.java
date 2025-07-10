@@ -167,6 +167,10 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
                 startActivity(new Intent(this, FavoriteActivity.class));
                 return true;
             }
+            if (item.getItemId() == R.id.navigation_my_order) {
+                startActivity(new Intent(this, TransactionHistoryActivity.class));
+                return true;
+            }
             return false;
         });
     }

@@ -226,6 +226,11 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
                 finish();
                 return true;
             }
+            if (item.getItemId() == R.id.navigation_my_order) {
+                startActivity(new Intent(this, TransactionHistoryActivity.class));
+                finish();
+                return true;
+            }
             return false;
         });
     }

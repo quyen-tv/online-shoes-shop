@@ -17,6 +17,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.prm392.onlineshoesshop.Api.CreateOrder;
 import com.prm392.onlineshoesshop.adapter.CartAdapter;
 import com.prm392.onlineshoesshop.constant.AppInfo;
@@ -108,22 +109,47 @@ public class CartActivity extends AppCompatActivity {
 
     private void calculateCart() {
         double percentTax = 0.02;
-        double deliveryFee = 10.0;
+        double itemTotal = managementCart.getTotalFee();
 
-        tax = Math.round((managementCart.getTotalFee() * percentTax) * 100.0) / 100.0;
+        if (itemTotal == 0) {
+            // Giỏ hàng trống
+            binding.totalFeeTxt.setText("$0.00");
+            binding.taxTxt.setText("$0.00");
+            binding.deliveryTxt.setText("$0.00");
+            binding.totalTxt.setText("$0.00");
+            binding.btnCheckOut.setEnabled(false);
+            return;
+        }
 
-        double total = Math.round((managementCart.getTotalFee() + tax + deliveryFee) * 100.0) / 100.0;
-        double itemTotal = Math.round(managementCart.getTotalFee() * 100.0) / 100.0;
+        // Giỏ hàng có hàng
+        binding.btnCheckOut.setEnabled(true);
 
-        binding.totalFeeTxt.setText("$" + itemTotal);
-        binding.taxTxt.setText("$" + tax);
-        binding.deliveryTxt.setText("$" + deliveryFee);
-        binding.totalTxt.setText("$" + total);
+        tax = Math.round((itemTotal * percentTax) * 100.0) / 100.0;
+
+        double deliveryFee;
+        if (itemTotal >= 100.0) {
+            deliveryFee = 0.0;
+        } else {
+            deliveryFee = 10.0;
+        }
+
+        double total = Math.round((itemTotal + tax + deliveryFee) * 100.0) / 100.0;
+
+        // Cập nhật UI
+        binding.totalFeeTxt.setText("$" + String.format("%.2f", itemTotal));
+        binding.taxTxt.setText("$" + String.format("%.2f", tax));
+        binding.deliveryTxt.setText("$" + String.format("%.2f", deliveryFee));
+        binding.totalTxt.setText("$" + String.format("%.2f", total));
     }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("SetTextI18n")
     private void handleCheckOut() {
-        String usdAmountStr = binding.totalTxt.getText().toString().replace("$", "").trim();
+        String usdAmountStr = binding.totalTxt.getText().toString()
+                .replace("$", "")
+                .replace(",", ".")  // ✅ fix dấu phẩy
+                .trim();
+
 
         try {
             double usd = Double.parseDouble(usdAmountStr);
@@ -131,7 +157,10 @@ public class CartActivity extends AppCompatActivity {
             long vnd = Math.round(usd * rate);
 
             Log.d("ZaloPayDebug", "USD: " + usd + " | VND: " + vnd);
-
+            if (usdAmountStr.isEmpty()) {
+                Toast.makeText(this, "Không thể xử lý giá trị rỗng!", Toast.LENGTH_SHORT).show();
+                return;
+            }
             showLoading();
 
             Executors.newSingleThreadExecutor().execute(() -> {
@@ -151,7 +180,7 @@ public class CartActivity extends AppCompatActivity {
                                 // Tạo giao dịch trạng thái PENDING
                                 transactionRepository.createPendingTransaction(
                                         result.appTransId,
-                                        "demo_user_id",  // sau này dùng FirebaseAuth.getInstance().getUid()
+                                        FirebaseAuth.getInstance().getUid(),  // sau này dùng FirebaseAuth.getInstance().getUid()
                                         usd,
                                         tax,
                                         10.0,
@@ -204,7 +233,7 @@ public class CartActivity extends AppCompatActivity {
                     // ✅ Refresh lại UI (ẩn cart, hiện empty)
                     initCartList();
                     calculateCart();
-                    
+
                 });
             }
 
@@ -216,7 +245,7 @@ public class CartActivity extends AppCompatActivity {
                     // ❌ Người dùng huỷ → Failed (hoặc dùng CANCELED nếu bạn định nghĩa thêm enum)
                     transactionRepository.updateTransactionStatus(appTransID, Transaction.Status.FAILED, null);
                     showAlertDialog("User Cancel Payment",
-                            String.format("zpTransToken: %s", zpTransToken));
+                            String.format("This payment is cancelled"));
                 });
             }
 
