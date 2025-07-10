@@ -1,24 +1,47 @@
 package com.prm392.onlineshoesshop.activity;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.util.Consumer;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.prm392.onlineshoesshop.Api.CreateOrder;
 import com.prm392.onlineshoesshop.adapter.CartAdapter;
+import com.prm392.onlineshoesshop.constant.AppInfo;
 import com.prm392.onlineshoesshop.databinding.ActivityCartBinding;
 import com.prm392.onlineshoesshop.helper.ChangeNumberItemsListener;
 import com.prm392.onlineshoesshop.helper.ManagementCart;
+
+import org.json.JSONObject;
+
+import java.util.concurrent.Executors;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import vn.zalopay.sdk.Environment;
+import vn.zalopay.sdk.ZaloPayError;
+import vn.zalopay.sdk.ZaloPaySDK;
+import vn.zalopay.sdk.listeners.PayOrderListener;
 
 public class CartActivity extends AppCompatActivity {
 
     private ActivityCartBinding binding;
     private ManagementCart managementCart;
     private double tax;
-
+    private String orderToken;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +70,15 @@ public class CartActivity extends AppCompatActivity {
 
     private void setVariable() {
         binding.backBtn.setOnClickListener(v -> finish());
+        // ZaloPay SDK Init
+        ZaloPaySDK.init(AppInfo.APP_ID, Environment.SANDBOX);
+        // handle CreateOrder
+
+        binding.btnCheckOut.setOnClickListener(v -> {
+            handleCheckOut();
+
+        });
+
     }
 
     private void initCartList() {
@@ -82,4 +114,102 @@ public class CartActivity extends AppCompatActivity {
         binding.deliveryTxt.setText("$" + deliveryFee);
         binding.totalTxt.setText("$" + total);
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @SuppressLint("SetTextI18n")
+    private void handleCheckOut() {
+        // Bước 1: Lấy giá trị USD (vd: "$210.00")
+        String usdAmountStr = binding.totalTxt.getText().toString().replace("$", "").trim();
+
+        try {
+            double usd = Double.parseDouble(usdAmountStr);
+            double rate = 25000; // tỷ giá cố định
+            long vnd = Math.round(usd * rate);
+
+            Log.d("ZaloPayDebug", "USD: " + usd + " | VND: " + vnd);
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                try {
+                    JSONObject data = new CreateOrder().createOrder(String.valueOf(vnd));
+                    Log.d("ZaloPayDebug", "CreateOrder response: " + data.toString());
+
+                    runOnUiThread(() -> {
+                        try {
+                            String code = data.getString("return_code");
+                            Log.d("ZaloPayDebug", "Return code: " + code);
+
+                            if (code.equals("1")) {
+                                orderToken = data.getString("zp_trans_token");
+                                Log.d("ZaloPayDebug", "Token: " + orderToken);
+                                handlePayOrder();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Tạo đơn hàng thất bại", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.e("ZaloPayDebug", "Lỗi xử lý JSON: " + e.getMessage());
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e("ZaloPayDebug", "Lỗi gọi API tạo đơn: " + e.getMessage());
+                }
+            });
+
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Giá trị không hợp lệ: " + usdAmountStr, Toast.LENGTH_SHORT).show();
+            Log.e("ZaloPayDebug", "Lỗi parse USD: " + e.getMessage());
+        }
+    }
+
+
+    private void handlePayOrder() {
+        String token = orderToken;
+
+        ZaloPaySDK.getInstance().payOrder(this, token, "demozpdk://app", new PayOrderListener() {
+            @Override
+            public void onPaymentSucceeded(final String transactionId, final String transToken, final String appTransID) {
+                runOnUiThread(() -> showAlertDialog(
+                        "Payment Success",
+                        String.format("TransactionId: %s\nTransToken: %s", transactionId, transToken)
+                ));
+            }
+
+            @Override
+            public void onPaymentCanceled(String zpTransToken, String appTransID) {
+                showAlertDialog(
+                        "User Cancel Payment",
+                        String.format("zpTransToken: %s", zpTransToken)
+                );
+            }
+
+            @Override
+            public void onPaymentError(ZaloPayError zaloPayError, String zpTransToken, String appTransID) {
+                showAlertDialog(
+                        "Payment Fail",
+                        String.format("ZaloPayErrorCode: %s\nTransToken: %s", zaloPayError.toString(), zpTransToken)
+                );
+            }
+        });
+    }
+    private void showAlertDialog(String title, String message) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent); // rất quan trọng nếu bạn muốn đọc intent sau đó
+
+        Log.d("ZaloPayDebug", "onNewIntent called: " + intent.getDataString());
+
+        // Đảm bảo SDK xử lý callback
+        ZaloPaySDK.getInstance().onResult(intent);
+    }
+
+
 }
