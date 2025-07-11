@@ -104,8 +104,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:layout_marginEnd="8dp"
-                                app:srcCompat="@drawable/search_icon"
-                                app:tint="@color/grey" />
+                                app:srcCompat="@drawable/search_icon" />
 
                             <EditText
                                 android:id="@+id/etSearchQuery"
