@@ -1,8 +1,14 @@
 package com.prm392.onlineshoesshop.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
+import java.util.ArrayList;
 import java.util.List;
 
-public class Transaction {
+public class Transaction implements Parcelable {
     public enum Status {
         PENDING, SUCCESS, FAILED
     }
@@ -104,5 +110,51 @@ public class Transaction {
     }
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    // Parcelable implementation
+    protected Transaction(Parcel in) {
+        transactionId = in.readString();
+        appTransId = in.readString();
+        userId = in.readString();
+        createdAt = in.readLong();
+        totalAmount = in.readDouble();
+        tax = in.readDouble();
+        deliveryFee = in.readDouble();
+        items = new ArrayList<>();
+        in.readTypedList(items, ItemModel.CREATOR);
+        status = Status.valueOf(in.readString());
+        paymentMethod = in.readString();
+    }
+
+    public static final Creator<Transaction> CREATOR = new Creator<Transaction>() {
+        @Override
+        public Transaction createFromParcel(Parcel in) {
+            return new Transaction(in);
+        }
+
+        @Override
+        public Transaction[] newArray(int size) {
+            return new Transaction[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(transactionId);
+        dest.writeString(appTransId);
+        dest.writeString(userId);
+        dest.writeLong(createdAt);
+        dest.writeDouble(totalAmount);
+        dest.writeDouble(tax);
+        dest.writeDouble(deliveryFee);
+        dest.writeTypedList(items);
+        dest.writeString(status.name());
+        dest.writeString(paymentMethod);
     }
 }

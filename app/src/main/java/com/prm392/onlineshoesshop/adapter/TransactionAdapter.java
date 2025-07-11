@@ -2,6 +2,7 @@ package com.prm392.onlineshoesshop.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.prm392.onlineshoesshop.R;
+import com.prm392.onlineshoesshop.activity.TransactionDetailActivity;
 import com.prm392.onlineshoesshop.model.Transaction;
 
 import java.text.SimpleDateFormat;
@@ -60,6 +62,13 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                 holder.tvStatus.setTextColor(context.getColor(R.color.red)); // define in colors.xml
                 break;
         }
+
+        // Add click listener to navigate to detail
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, TransactionDetailActivity.class);
+            intent.putExtra("transaction", transaction);
+            context.startActivity(intent);
+        });
     }
 
     @Override
