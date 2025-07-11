@@ -216,6 +216,19 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
             @Override
             public void afterTextChanged(android.text.Editable s) {}
         });
+
+        binding.etSearchQuery.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH || 
+                (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER)) {
+                // Hide keyboard
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(binding.etSearchQuery.getWindowToken(), 0);
+                }
+                return true;
+            }
+            return false;
+        });
     }
 
     private void toggleSearchBar() {
