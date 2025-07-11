@@ -1,8 +1,10 @@
 package com.prm392.onlineshoesshop.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -39,6 +41,10 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
     private ActivityMainBinding binding;
     private String selectedBrandFilter = "";
     private boolean isItemDecorationAdded = false;
+    private String currentSearchQuery = "";
+
+    // Search functionality
+    private boolean isSearchExpanded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
         setUpListeners();
         initCategory();
         initBottomNavigation();
+        initSearchBar();
     }
 
     private void initWelcome() {
@@ -89,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
     private void initPopular() {
         binding.progressBarPopular.setVisibility(View.VISIBLE);
         viewModel.populars.observe(this, itemModels -> {
-            List<ItemModel> filteredItems = filterItemsByBrand(itemModels, selectedBrandFilter);
+            List<ItemModel> filteredItems = filterItems(itemModels, selectedBrandFilter, currentSearchQuery);
 
             binding.viewPopular.setLayoutManager(new GridLayoutManager(this, 2));
             PopularAdapter popularAdapter = new PopularAdapter(filteredItems);
@@ -177,6 +184,119 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
         });
     }
 
+    private void initSearchBar() {
+        // Set up search icon click listener
+        binding.ivSearchIcon.setOnClickListener(v -> toggleSearchBar());
+
+        // Set up clear search click listener
+        binding.ivClearSearch.setOnClickListener(v -> {
+            binding.etSearchQuery.setText("");
+            binding.etSearchQuery.clearFocus();
+            // Reset to show all items when search is cleared
+            performSearch("");
+        });
+
+        // Set up back button behavior when search is expanded
+        binding.etSearchQuery.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus && binding.etSearchQuery.getText().toString().trim().isEmpty()) {
+                collapseSearchBar();
+            }
+        });
+
+        // Set up text change listener for real-time search
+        binding.etSearchQuery.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                performSearch(s.toString().trim());
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
+    }
+
+    private void toggleSearchBar() {
+        if (isSearchExpanded) {
+            collapseSearchBar();
+        } else {
+            expandSearchBar();
+        }
+    }
+
+    private void expandSearchBar() {
+        isSearchExpanded = true;
+
+        // Animate out normal header
+        binding.layoutNormalHeader.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction(() -> {
+                binding.layoutNormalHeader.setVisibility(View.GONE);
+                
+                // Show and animate in expanded search layout
+                binding.layoutSearchExpanded.setVisibility(View.VISIBLE);
+                binding.layoutSearchExpanded.setAlpha(0f);
+                binding.layoutSearchExpanded.animate()
+                    .alpha(1f)
+                    .setDuration(200)
+                    .withEndAction(() -> {
+                        // Request focus on EditText and show keyboard
+                        binding.etSearchQuery.requestFocus();
+                        
+                        // Show keyboard
+                        InputMethodManager imm =
+                                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.showSoftInput(binding.etSearchQuery, InputMethodManager.SHOW_IMPLICIT);
+                        }
+                    })
+                    .start();
+            })
+            .start();
+    }
+
+    private void collapseSearchBar() {
+        isSearchExpanded = false;
+
+        // Clear search text and reset search
+        binding.etSearchQuery.setText("");
+        binding.etSearchQuery.clearFocus();
+        performSearch(""); // Reset search when collapsing
+
+        // Hide keyboard
+        InputMethodManager imm =
+                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(binding.etSearchQuery.getWindowToken(), 0);
+        }
+
+        // Animate out expanded search layout
+        binding.layoutSearchExpanded.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction(() -> {
+                binding.layoutSearchExpanded.setVisibility(View.GONE);
+                
+                // Show and animate in normal header
+                binding.layoutNormalHeader.setVisibility(View.VISIBLE);
+                binding.layoutNormalHeader.setAlpha(0f);
+                binding.layoutNormalHeader.animate()
+                    .alpha(1f)
+                    .setDuration(200)
+                    .start();
+            })
+            .start();
+    }
+
+    private void performSearch(String query) {
+        currentSearchQuery = query;
+        // Reload the popular items with the new search query
+        viewModel.loadPopulars();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -190,7 +310,45 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
 
     @Override
     public void onClick(ItemModel item) {
-        startActivity(new Intent(this, DetailActivity.class).putExtra("object", item));
+        Intent intent = new Intent(this, DetailActivity.class);
+        intent.putExtra("object", item);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isSearchExpanded) {
+            collapseSearchBar();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private List<ItemModel> filterItems(List<ItemModel> allItems, String brand, String searchQuery) {
+        List<ItemModel> filtered = new ArrayList<>();
+        
+        for (ItemModel item : allItems) {
+            boolean matchesBrand = true;
+            boolean matchesSearch = true;
+            
+            // Filter by brand if specified
+            if (brand != null && !brand.isEmpty()) {
+                matchesBrand = item.getBrand() != null && item.getBrand().equalsIgnoreCase(brand);
+            }
+            
+            // Filter by search query if specified
+            if (searchQuery != null && !searchQuery.isEmpty()) {
+                matchesSearch = item.getTitle() != null && 
+                    item.getTitle().toLowerCase().contains(searchQuery.toLowerCase());
+            }
+            
+            // Item must match both brand and search criteria
+            if (matchesBrand && matchesSearch) {
+                filtered.add(item);
+            }
+        }
+        
+        return filtered;
     }
 
     private List<ItemModel> filterItemsByBrand(List<ItemModel> allItems, String brand) {
