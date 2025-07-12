@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.prm392.onlineshoesshop"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -43,6 +43,11 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.firebase.auth)
+    implementation(fileTree(mapOf(
+        "dir" to "K:\\Mobile\\online-shoes-shop\\app\\libs",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -61,7 +66,11 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
     // OkHttp client
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
+    //
+    implementation("commons-codec:commons-codec:1.14")
     // (Tùy chọn) Logging Interceptor để debug request/response
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+
 }
+

@@ -23,5 +23,8 @@
     <color name="input_hint_color">#757575</color>
     <color name="custom_blue">#2196F3</color> <!-- hoặc bất kỳ mã nào -->
     <color name="hint_color">#808080</color> <!-- hoặc màu giống TextInputLayout -->
+    <color name="green">#4CAF50</color>
+    <color name="red">#F44336</color>
+    <color name="orange">#FFA726</color>
 
 </resources>
