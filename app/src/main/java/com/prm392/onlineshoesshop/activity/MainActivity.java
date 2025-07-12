@@ -172,10 +172,14 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
             }
             if (item.getItemId() == R.id.navigation_favorite) {
                 startActivity(new Intent(this, FavoriteActivity.class));
+                finish();
+
                 return true;
             }
             if (item.getItemId() == R.id.navigation_my_order) {
                 startActivity(new Intent(this, TransactionHistoryActivity.class));
+                finish();
+
                 return true;
             }
             return false;

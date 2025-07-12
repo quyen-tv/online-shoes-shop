@@ -38,7 +38,6 @@ public class TransactionHistoryActivity extends AppCompatActivity {
 
         setupRecyclerView();
         loadTransactions();
-        binding.backBtn.setOnClickListener(v -> finish());
         initBottomNavigation();
     }
 
@@ -64,17 +63,18 @@ public class TransactionHistoryActivity extends AppCompatActivity {
                         for (DataSnapshot child : snapshot.getChildren()) {
                             Transaction transaction = child.getValue(Transaction.class);
                             if (transaction != null) {
+                                // ✅ Không còn xoá PENDING nữa, thêm tất cả các giao dịch
                                 transactionList.add(transaction);
                             }
                         }
 
-                        // Sắp xếp theo thời gian giảm dần
+                        // Sắp xếp theo thời gian mới nhất
                         Collections.sort(transactionList, (a, b) -> Long.compare(b.getCreatedAt(), a.getCreatedAt()));
 
                         transactionAdapter.notifyDataSetChanged();
                         binding.emptyTxt.setVisibility(transactionList.isEmpty() ? View.VISIBLE : View.GONE);
 
-                        Log.d("TransactionActivity", "Loaded " + transactionList.size() + " transactions.");
+                        Log.d("TransactionActivity", "Loaded " + transactionList.size() + " transactions (bao gồm PENDING/FAILED/SUCCESS).");
                     }
 
                     @Override
@@ -94,6 +94,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
             }
             if (item.getItemId() == R.id.navigation_explorer) {
                 startActivity(new Intent(this, MainActivity.class));
+                finish();
                 return true;
             }
             if (item.getItemId() == R.id.navigation_profile) {
@@ -102,6 +103,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
             }
             if (item.getItemId() == R.id.navigation_favorite) {
                 startActivity(new Intent(this, FavoriteActivity.class));
+                finish();
                 return true;
             }
             return false;
