@@ -20,6 +20,9 @@
             android:name=".activity.TransactionHistoryActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.TransactionDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.FavoriteActivity"
             android:exported="false" />
         <activity
