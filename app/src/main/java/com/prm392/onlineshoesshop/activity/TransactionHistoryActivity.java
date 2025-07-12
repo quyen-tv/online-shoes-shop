@@ -38,7 +38,6 @@ public class TransactionHistoryActivity extends AppCompatActivity {
 
         setupRecyclerView();
         loadTransactions();
-        binding.backBtn.setOnClickListener(v -> finish());
         initBottomNavigation();
     }
 
@@ -64,17 +63,25 @@ public class TransactionHistoryActivity extends AppCompatActivity {
                         for (DataSnapshot child : snapshot.getChildren()) {
                             Transaction transaction = child.getValue(Transaction.class);
                             if (transaction != null) {
-                                transactionList.add(transaction);
+                                if (transaction.getStatus() == Transaction.Status.PENDING) {
+                                    // ❌ Xoá transaction nếu là PENDING
+                                    ref.child(child.getKey()).removeValue()
+                                            .addOnSuccessListener(unused -> Log.d("TransactionActivity", "Xoá PENDING: " + child.getKey()))
+                                            .addOnFailureListener(e -> Log.e("TransactionActivity", "Xoá lỗi: " + e.getMessage()));
+                                } else {
+                                    // ✅ Thêm vào list nếu không phải PENDING
+                                    transactionList.add(transaction);
+                                }
                             }
                         }
 
-                        // Sắp xếp theo thời gian giảm dần
+                        // Sắp xếp theo thời gian mới nhất
                         Collections.sort(transactionList, (a, b) -> Long.compare(b.getCreatedAt(), a.getCreatedAt()));
 
                         transactionAdapter.notifyDataSetChanged();
                         binding.emptyTxt.setVisibility(transactionList.isEmpty() ? View.VISIBLE : View.GONE);
 
-                        Log.d("TransactionActivity", "Loaded " + transactionList.size() + " transactions.");
+                        Log.d("TransactionActivity", "Loaded " + transactionList.size() + " valid transactions.");
                     }
 
                     @Override
@@ -94,6 +101,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
             }
             if (item.getItemId() == R.id.navigation_explorer) {
                 startActivity(new Intent(this, MainActivity.class));
+                finish();
                 return true;
             }
             if (item.getItemId() == R.id.navigation_profile) {
@@ -102,6 +110,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
             }
             if (item.getItemId() == R.id.navigation_favorite) {
                 startActivity(new Intent(this, FavoriteActivity.class));
+                finish();
                 return true;
             }
             return false;

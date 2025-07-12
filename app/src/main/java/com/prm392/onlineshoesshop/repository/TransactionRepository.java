@@ -51,4 +51,10 @@ public class TransactionRepository {
             transactionRef.child(appTransId).child("transactionId").setValue(transactionId);
         }
     }
+    public void deleteTransaction(@NonNull String appTransId) {
+        transactionRef.child(appTransId).removeValue()
+                .addOnSuccessListener(unused -> Log.d("TransactionRepo", "Pending transaction deleted"))
+                .addOnFailureListener(e -> Log.e("TransactionRepo", "Error deleting transaction", e));
+    }
+
 }

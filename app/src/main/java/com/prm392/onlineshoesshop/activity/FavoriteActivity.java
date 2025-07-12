@@ -128,8 +128,6 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         });
 
 
-        binding.btnBack.setOnClickListener(v -> finish());
-
         binding.chipPriceRange.setOnClickListener(v -> {
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
             builder.setTitle(getString(R.string.title_select_price_range));
@@ -218,7 +216,6 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             }
             if (item.getItemId() == R.id.navigation_profile) {
                 startActivity(new Intent(this, UserSettingsActivity.class));
-                finish();
                 return true;
             }
             if (item.getItemId() == R.id.navigation_explorer) {
