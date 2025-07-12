@@ -63,15 +63,8 @@ public class TransactionHistoryActivity extends AppCompatActivity {
                         for (DataSnapshot child : snapshot.getChildren()) {
                             Transaction transaction = child.getValue(Transaction.class);
                             if (transaction != null) {
-                                if (transaction.getStatus() == Transaction.Status.PENDING) {
-                                    // ❌ Xoá transaction nếu là PENDING
-                                    ref.child(child.getKey()).removeValue()
-                                            .addOnSuccessListener(unused -> Log.d("TransactionActivity", "Xoá PENDING: " + child.getKey()))
-                                            .addOnFailureListener(e -> Log.e("TransactionActivity", "Xoá lỗi: " + e.getMessage()));
-                                } else {
-                                    // ✅ Thêm vào list nếu không phải PENDING
-                                    transactionList.add(transaction);
-                                }
+                                // ✅ Không còn xoá PENDING nữa, thêm tất cả các giao dịch
+                                transactionList.add(transaction);
                             }
                         }
 
@@ -81,7 +74,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
                         transactionAdapter.notifyDataSetChanged();
                         binding.emptyTxt.setVisibility(transactionList.isEmpty() ? View.VISIBLE : View.GONE);
 
-                        Log.d("TransactionActivity", "Loaded " + transactionList.size() + " valid transactions.");
+                        Log.d("TransactionActivity", "Loaded " + transactionList.size() + " transactions (bao gồm PENDING/FAILED/SUCCESS).");
                     }
 
                     @Override
