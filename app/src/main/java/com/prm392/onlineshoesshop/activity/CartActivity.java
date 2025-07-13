@@ -18,18 +18,26 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.prm392.onlineshoesshop.Api.CreateOrder;
 import com.prm392.onlineshoesshop.adapter.CartAdapter;
 import com.prm392.onlineshoesshop.constant.AppInfo;
 import com.prm392.onlineshoesshop.databinding.ActivityCartBinding;
 import com.prm392.onlineshoesshop.helper.ChangeNumberItemsListener;
 import com.prm392.onlineshoesshop.helper.ManagementCart;
+import com.prm392.onlineshoesshop.model.CartItem;
 import com.prm392.onlineshoesshop.model.CreateOrderResult;
+import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.Transaction;
+import com.prm392.onlineshoesshop.model.TransactionItem;
 import com.prm392.onlineshoesshop.repository.TransactionRepository;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import okhttp3.OkHttpClient;
@@ -89,16 +97,12 @@ public class CartActivity extends AppCompatActivity {
     }
 
     private void initCartList() {
+        ArrayList<CartItem> cartList = managementCart.getCartItems();
+
         binding.viewCart.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        binding.viewCart.setAdapter(new CartAdapter(cartList, this, () -> calculateCart()));
 
-        binding.viewCart.setAdapter(new CartAdapter(managementCart.getItemList(), this, new ChangeNumberItemsListener() {
-            @Override
-            public void onChanged() {
-                calculateCart();
-            }
-        }));
-
-        if (managementCart.getItemList().isEmpty()) {
+        if (cartList.isEmpty()) {
             binding.emptyTxt.setVisibility(View.VISIBLE);
             binding.scrollView2.setVisibility(View.GONE);
         } else {
@@ -106,6 +110,7 @@ public class CartActivity extends AppCompatActivity {
             binding.scrollView2.setVisibility(View.VISIBLE);
         }
     }
+
 
     private void calculateCart() {
         double percentTax = 0.02;
@@ -150,7 +155,6 @@ public class CartActivity extends AppCompatActivity {
                 .replace(",", ".")  // ✅ fix dấu phẩy
                 .trim();
 
-
         try {
             double usd = Double.parseDouble(usdAmountStr);
             double rate = 25000;
@@ -177,14 +181,28 @@ public class CartActivity extends AppCompatActivity {
                                 // Gán token để xử lý tiếp
                                 orderToken = result.zpTransToken;
 
+                                List<TransactionItem> simplifiedItems = new ArrayList<>();
+                                for (CartItem ci : managementCart.getCartItems()) {
+                                    ItemModel item = ci.getItem();
+                                    simplifiedItems.add(new TransactionItem(
+                                            item.getItemId(),
+                                            item.getTitle(),
+                                            ci.getQuantity(),
+                                            item.getPrice(),
+                                            ci.getSelectedSize(),
+                                            item.getPicUrl() != null && !item.getPicUrl().isEmpty() ? item.getPicUrl().get(0) : "" // ✅ lấy ảnh đầu tiên
+                                    ));
+
+                                }
+
                                 // Tạo giao dịch trạng thái PENDING
                                 transactionRepository.createPendingTransaction(
                                         result.appTransId,
-                                        FirebaseAuth.getInstance().getUid(),  // sau này dùng FirebaseAuth.getInstance().getUid()
+                                        FirebaseAuth.getInstance().getUid(),
                                         usd,
                                         tax,
                                         10.0,
-                                        managementCart.getItemList(),
+                                        simplifiedItems,
                                         "ZaloPay"
                                 );
 
@@ -224,6 +242,8 @@ public class CartActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     hideLoading();
 
+                    List<CartItem> cartItems = managementCart.getCartItems();
+                    updateStockInFirebase(cartItems);
                     // ✅ Cập nhật trạng thái thành công
                     transactionRepository.updateTransactionStatus(appTransID, Transaction.Status.SUCCESS, transactionId);
 
@@ -291,5 +311,31 @@ public class CartActivity extends AppCompatActivity {
         binding.btnCheckOut.setEnabled(true);
     }
 
+    private void updateStockInFirebase(List<CartItem> cartItems) {
+        DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference("Items");
+
+        for (CartItem cartItem : cartItems) {
+            String itemId = cartItem.getItem().getItemId();
+            String selectedSize = cartItem.getSelectedSize();
+            int quantityToSubtract = cartItem.getQuantity();
+
+            DatabaseReference stockRef = itemsRef.child(itemId).child("stockEntries");
+
+            stockRef.get().addOnSuccessListener(dataSnapshot -> {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    ItemModel.StockEntry entry = snapshot.getValue(ItemModel.StockEntry.class);
+                    if (entry == null || entry.getSize() == null) continue;
+
+                    if (entry.getSize().equals(selectedSize)) {
+                        int newQty = Math.max(entry.getQuantity() - quantityToSubtract, 0);
+                        snapshot.getRef().child("quantity").setValue(newQty);
+                        break; // Đã cập nhật xong → thoát vòng lặp
+                    }
+                }
+            }).addOnFailureListener(e -> {
+                Log.e("StockUpdate", "Lỗi cập nhật tồn kho: " + e.getMessage());
+            });
+        }
+    }
 
 }

@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.prm392.onlineshoesshop.model.CartItem;
 import com.prm392.onlineshoesshop.model.ItemModel;
 
 import java.io.File;
@@ -597,4 +598,39 @@ public class TinyDB {
             throw new NullPointerException();
         }
     }
+
+    public ArrayList<CartItem> getCartItemList(String key) {
+        Gson gson = new Gson();
+        ArrayList<String> objStrings = getListString(key);
+
+        ArrayList<CartItem> cartList = new ArrayList<>();
+        for (String jObjString : objStrings) {
+            if (jObjString == null || jObjString.trim().isEmpty()) continue; // ✅ Bỏ qua chuỗi rỗng
+
+            try {
+                CartItem item = gson.fromJson(jObjString, CartItem.class);
+                if (item != null && item.getItem() != null && item.getItem().getItemId() != null) {
+                    cartList.add(item);
+                } else {
+                    Log.w("TinyDB", "Invalid CartItem found, skipping...");
+                }
+            } catch (Exception e) {
+                Log.e("TinyDB", "Error parsing CartItem JSON", e);
+            }
+        }
+
+        return cartList;
+    }
+
+
+    public void putCartItemList(String key, ArrayList<CartItem> cartList) {
+        checkForNullKey(key);
+        Gson gson = new Gson();
+        ArrayList<String> objStrings = new ArrayList<>();
+        for (CartItem item : cartList) {
+            objStrings.add(gson.toJson(item));
+        }
+        putListString(key, objStrings);
+    }
+
 }

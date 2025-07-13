@@ -8,6 +8,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.Transaction;
+import com.prm392.onlineshoesshop.model.TransactionItem;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class TransactionRepository {
                                          double totalAmount,
                                          double tax,
                                          double deliveryFee,
-                                         @NonNull List<ItemModel> items,
+                                         @NonNull List<TransactionItem> items,
                                          @NonNull String paymentMethod) {
 
         Transaction transaction = new Transaction(

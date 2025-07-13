@@ -20,7 +20,7 @@ public class Transaction implements Parcelable {
     private double totalAmount;      // Tổng tiền đơn hàng (USD)
     private double tax;              // Thuế
     private double deliveryFee;      // Phí giao hàng
-    private List<ItemModel> items;   // Danh sách sản phẩm trong đơn hàng
+    private List<TransactionItem> items;// Danh sách sản phẩm trong đơn hàng
     private Status status;           // Trạng thái giao dịch
     private String paymentMethod;    // "ZaloPay" hoặc sau này bạn có thể thêm "COD", "Momo"...
 
@@ -28,7 +28,7 @@ public class Transaction implements Parcelable {
 
     public Transaction(String appTransId, String userId, long createdAt,
                        double totalAmount, double tax, double deliveryFee,
-                       List<ItemModel> items, Status status, String paymentMethod) {
+                       List<TransactionItem> items, Status status, String paymentMethod) {
         this.appTransId = appTransId;
         this.userId = userId;
         this.createdAt = createdAt;
@@ -39,6 +39,7 @@ public class Transaction implements Parcelable {
         this.status = status;
         this.paymentMethod = paymentMethod;
     }
+
 
     // Getter/setter
 
@@ -91,13 +92,12 @@ public class Transaction implements Parcelable {
         this.deliveryFee = deliveryFee;
     }
 
-    public List<ItemModel> getItems() {
+    public List<TransactionItem> getItems() {
         return items;
     }
-    public void setItems(List<ItemModel> items) {
+    public void setItems(List<TransactionItem> items) {
         this.items = items;
     }
-
     public Status getStatus() {
         return status;
     }
@@ -122,7 +122,7 @@ public class Transaction implements Parcelable {
         tax = in.readDouble();
         deliveryFee = in.readDouble();
         items = new ArrayList<>();
-        in.readTypedList(items, ItemModel.CREATOR);
+        in.readTypedList(items, TransactionItem.CREATOR);
         status = Status.valueOf(in.readString());
         paymentMethod = in.readString();
     }
