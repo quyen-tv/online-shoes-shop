@@ -32,10 +32,12 @@
                     android:layout_weight="1"
                     android:text="@string/my_favorites"
                     android:textColor="@color/black"
-                    android:textSize="18sp"
+                    android:textSize="22sp"
                     android:textStyle="bold"
-                    tools:layout_editor_absoluteX="139dp"
-                    tools:layout_editor_absoluteY="4dp" />
+                    android:textAlignment="center"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
