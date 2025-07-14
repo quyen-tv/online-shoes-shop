@@ -11,6 +11,7 @@ import com.prm392.onlineshoesshop.adapter.TransactionDetailAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityTransactionDetailBinding;
 import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.Transaction;
+import com.prm392.onlineshoesshop.model.TransactionItem;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -74,11 +75,12 @@ public class TransactionDetailActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        List<ItemModel> items = transaction.getItems();
+        List<TransactionItem> items = transaction.getItems(); // đúng kiểu
         if (items == null) {
             items = new ArrayList<>();
         }
-        
+
+        if (items == null) items = new ArrayList<>();
         adapter = new TransactionDetailAdapter(items, this);
         binding.itemsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         binding.itemsRecyclerView.setAdapter(adapter);

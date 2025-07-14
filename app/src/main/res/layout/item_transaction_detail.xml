@@ -37,6 +37,13 @@
             android:text="Qty: 1"
             android:textColor="@color/grey"
             android:textSize="12sp" />
+        <TextView
+            android:id="@+id/itemSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Size: M"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
 
     </LinearLayout>
 

@@ -3,6 +3,7 @@ package com.prm392.onlineshoesshop.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
@@ -331,10 +332,15 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
 
     @Override
     public void onClick(ItemModel item) {
+        if (item == null) {
+            Log.e("MainActivity", "Item is null before passing to DetailActivity");
+            return;
+        }
         Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra("object", item);
         startActivity(intent);
     }
+
 
     @Override
     public void onBackPressed() {

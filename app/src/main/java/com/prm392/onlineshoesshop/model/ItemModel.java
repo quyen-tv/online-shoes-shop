@@ -201,7 +201,12 @@ public class ItemModel implements Parcelable {
         }
         return sizeMap;
     }
-
-
+    public int getStockForSize(String size) {
+        if (stockEntries == null) return 0;
+        for (StockEntry entry : stockEntries) {
+            if (entry.getSize().equals(size)) return entry.getQuantity();
+        }
+        return 0;
+    }
 
 }

@@ -2,7 +2,9 @@ package com.prm392.onlineshoesshop.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,6 +38,7 @@ public class DetailActivity extends AppCompatActivity {
     private ItemModel item;
     private int numberOrder = 1;
     private ManagementCart managementCart;
+    private SizeAdapter sizeAdapter; // ✅ thêm dòng này
 
     private ColorAdapter colorAdapter;
     private SliderAdapter sliderAdapter;
@@ -57,22 +60,27 @@ public class DetailActivity extends AppCompatActivity {
                 itemViewModelFactory)
                 .get(ItemViewModel.class);
 
+        getBundle(); // ⬅ Đảm bảo gọi ngay từ đầu
+        if (item == null) return; // ⛔ Nếu null thì dừng
 
-        getBundle();
+        banners();
+        initLists();
         banners();
         initLists();
         setupObservers();
 
         binding.btnCart.setOnClickListener(v -> {
             startActivity(new Intent(this, CartActivity.class));
+            finish();
         });
 
         setupSynchronization();
     }
 
     private void initLists() {
-        SizeAdapter sizeAdapter = new SizeAdapter(item.getSizeQuantityMap());
+        sizeAdapter = new SizeAdapter(item.getSizeQuantityMap()); // ✅ thay vì tạo biến cục bộ
         binding.sizeList.setAdapter(sizeAdapter);
+
         binding.sizeList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
         List<String> colorList = new ArrayList<>(item.getPicUrl());
@@ -108,14 +116,33 @@ public class DetailActivity extends AppCompatActivity {
 
     private void getBundle() {
         item = getIntent().getParcelableExtra("object");
+        if (item == null || item.getItemId() == null) {
+            Log.e("DetailActivity", "Received null item or itemId from intent"+item.getItemId());
+            Toast.makeText(this, "Error: Item is null or missing ID", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+
         binding.tvTitle.setText(item.getTitle());
         binding.tvDescription.setText(item.getDescription());
         binding.tvPrice.setText(String.format("$%.2f", item.getPrice()));
         binding.tvRating.setText(String.valueOf(item.getRating()));
         binding.btnAddToCart.setOnClickListener(v -> {
-            item.setNumberInCart(numberOrder);
-            managementCart.insertItem(item);
+            String selectedSize = sizeAdapter.getSelectedSize();
+            if (selectedSize == null) {
+                UiUtils.showSnackbarWithBackground(
+                        binding.getRoot(),
+                        "Please select a size!",
+                        Snackbar.LENGTH_SHORT,
+                        getResources().getColor(R.color.orange)
+                );
+                return;
+            }
+            item.setNumberInCart(numberOrder); // vẫn giữ
+            managementCart.insertItem(item, selectedSize, numberOrder); // ✅ dùng đúng hàm
         });
+
         binding.btnBack.setOnClickListener(v -> {
             finish();
         });

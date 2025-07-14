@@ -81,4 +81,12 @@ public class SizeAdapter extends RecyclerView.Adapter<SizeAdapter.SizeViewHolder
             this.binding = binding;
         }
     }
+
+    // ✅ Trả về size đã chọn
+    public String getSelectedSize() {
+        if (selectedPosition >= 0 && selectedPosition < items.size()) {
+            return items.get(selectedPosition).getKey();
+        }
+        return null;
+    }
 }
