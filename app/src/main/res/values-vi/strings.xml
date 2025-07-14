@@ -52,7 +52,7 @@
     <string name="cart">Giỏ hàng</string>
     <string name="favorite">Yêu thích</string>
     <string name="my_order">Lịch sử</string>
-    <string name="profile">Tài khoản</string>
+    <string name="profile">Tôi</string>
 
     <!-- Item detail related strings -->
     <string name="select_size">Kích cỡ</string>

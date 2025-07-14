@@ -52,7 +52,7 @@
     <string name="cart">Cart</string>
     <string name="favorite">Favorite</string>
     <string name="my_order">My Order</string>
-    <string name="profile">Profile</string>
+    <string name="profile">Me</string>
 
     <!-- Item detail related strings -->
     <string name="select_size">Select size</string>

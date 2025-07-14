@@ -44,7 +44,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.firebase.auth)
     implementation(fileTree(mapOf(
-        "dir" to "K:\\Mobile\\online-shoes-shop\\app\\libs",
+        "dir" to "libs",
         "include" to listOf("*.aar", "*.jar"),
         "exclude" to listOf("")
     )))
