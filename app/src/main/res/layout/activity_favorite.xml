@@ -25,6 +25,21 @@
                 android:layout_marginTop="32dp"
                 android:layout_marginEnd="16dp">
 
+                <!-- Nút back bên trái -->
+                <ImageButton
+                    android:id="@+id/btnBack"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="6dp"
+                    android:visibility="gone"
+                    android:layout_marginEnd="10dp"
+                    app:srcCompat="@drawable/arrow_left_stroke"
+                    tools:ignore="ContentDescription"
+                    app:layout_constraintEnd_toStartOf="@id/tvFavorite"
+                    app:layout_constraintTop_toTopOf="@id/tvFavorite"
+                    app:layout_constraintBottom_toBottomOf="@id/tvFavorite"/>
+
                 <TextView
                     android:id="@+id/tvFavorite"
                     android:layout_width="0dp"
@@ -35,7 +50,7 @@
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:textAlignment="center"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/btnBack"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
 
@@ -116,6 +131,7 @@
 
             <!-- Cụm filter tiêu chí -->
             <LinearLayout
+                android:id="@+id/filterCriteriaLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -172,6 +188,7 @@
 
             <!-- Cụm sort -->
             <LinearLayout
+                android:id="@+id/sortLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -283,6 +300,7 @@
     </ScrollView>
     <!-- Navigation bar -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"

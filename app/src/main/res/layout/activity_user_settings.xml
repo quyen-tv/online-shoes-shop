@@ -233,15 +233,16 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:srcCompat="@drawable/megaphone_alt" />
+                        app:srcCompat="@drawable/clock_8"
+                        app:tint="@color/white"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <TextView
-                    android:id="@+id/tvAnnouncement"
+                    android:id="@+id/ctrlViewHistory"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="28dp"
-                    android:text="@string/settings_notification"
+                    android:text="@string/settings_view_history"
                     android:textSize="20sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/ctrlAnnouncement"
@@ -249,6 +250,7 @@
                     app:layout_constraintVertical_bias="0.457" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/btnHistoryRedirect"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
