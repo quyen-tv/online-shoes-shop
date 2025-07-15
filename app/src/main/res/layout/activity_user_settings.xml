@@ -85,26 +85,40 @@
                             android:contentDescription="Upload Avatar"
                             android:scaleType="centerInside"
                             android:src="@drawable/ic_upload"
-                            android:tint="@color/white" />
+                            app:tint="@color/white" />
                     </FrameLayout>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-                <TextView
-                    android:id="@+id/textView"
+                <!-- Icon giỏ hàng bên phải cùng -->
+                <FrameLayout
+                    android:id="@+id/cartIconContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Settings"
-                    android:textColor="@color/white"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="32dp"
-                    android:layout_marginEnd="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="32dp"
+                    android:layout_marginEnd="16dp">
+
+                    <ImageView
+                        android:id="@+id/ivBellIcon"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        app:srcCompat="@drawable/cart"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:id="@+id/tvCartBadge"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="end|top"
+                        android:background="@drawable/badge_background"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        android:text="0"/>
+                </FrameLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

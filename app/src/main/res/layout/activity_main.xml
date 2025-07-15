@@ -66,66 +66,30 @@
                         app:tint="@color/black"
                         app:srcCompat="@drawable/search" />
 
-                    <ImageView
-                        android:id="@+id/ivBellIcon"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        app:srcCompat="@drawable/cart"
-                        app:tint="@color/black" />
-                </LinearLayout>
-
-                <!-- Expanded search bar (hidden by default) -->
-                <LinearLayout
-                    android:id="@+id/layoutSearchExpanded"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:visibility="gone"
-                    tools:visibility="visible"
-                    android:layout_marginTop="8dp">
-                    <ImageView
+                    <FrameLayout
+                        android:id="@+id/cartIconContainer"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:tint="@color/black"
-                        android:src="@drawable/arrow_left_stroke"/>
+                        android:layout_height="wrap_content">
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/textFieldTitle"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        app:boxStrokeColor="@color/purple"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        android:layout_marginStart="12dp"
-                        android:layout_marginEnd="12dp"
-                        android:layout_marginBottom="3dp"
-                        app:endIconDrawable="@drawable/camera"
-                        app:endIconTint="@color/black"
-                        app:endIconMode="custom"
-                        app:placeholderText="@string/hint_search_products">
+                        <ImageView
+                            android:id="@+id/ivBellIcon"
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            app:srcCompat="@drawable/cart"
+                            app:tint="@color/black" />
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etSearchQuery"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textCapSentences"
-                            android:textColor="@color/black"
-                            android:hint="@string/hint_search"
-                            android:padding="12dp" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-
-                    <ImageView
-                        android:id="@+id/ivBellIconExpanded"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        app:srcCompat="@drawable/cart"
-                        app:tint="@color/black" />
+                        <TextView
+                            android:id="@+id/tvCartBadge"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="end|top"
+                            android:background="@drawable/badge_background"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp"
+                            android:gravity="center"
+                            android:visibility="gone"
+                            android:text="0"/>
+                    </FrameLayout>
                 </LinearLayout>
             </LinearLayout>
 

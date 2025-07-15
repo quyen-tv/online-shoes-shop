@@ -61,7 +61,8 @@ public class DetailActivity extends AppCompatActivity {
                 .get(ItemViewModel.class);
 
         getBundle(); // ⬅ Đảm bảo gọi ngay từ đầu
-        if (item == null) return; // ⛔ Nếu null thì dừng
+        if (item == null)
+            return; // ⛔ Nếu null thì dừng
 
         banners();
         initLists();
@@ -69,12 +70,33 @@ public class DetailActivity extends AppCompatActivity {
         initLists();
         setupObservers();
 
-        binding.btnCart.setOnClickListener(v -> {
-            startActivity(new Intent(this, CartActivity.class));
-            finish();
+        // Sự kiện click icon cart: mở CartActivity
+        binding.cartIconContainer.setOnClickListener(v -> {
+            Intent intent = new Intent(DetailActivity.this, CartActivity.class);
+            startActivity(intent);
         });
 
         setupSynchronization();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateCartBadge();
+    }
+
+    private void updateCartBadge() {
+        ManagementCart managementCart = new ManagementCart(this);
+        int count = managementCart.getCartItems().size();
+        android.widget.TextView tvCartBadge = findViewById(R.id.tvCartBadge);
+        if (tvCartBadge != null) {
+            if (count > 0) {
+                tvCartBadge.setText(String.valueOf(count));
+                tvCartBadge.setVisibility(android.view.View.VISIBLE);
+            } else {
+                tvCartBadge.setVisibility(android.view.View.GONE);
+            }
+        }
     }
 
     private void initLists() {
@@ -117,12 +139,11 @@ public class DetailActivity extends AppCompatActivity {
     private void getBundle() {
         item = getIntent().getParcelableExtra("object");
         if (item == null || item.getItemId() == null) {
-            Log.e("DetailActivity", "Received null item or itemId from intent"+item.getItemId());
+            Log.e("DetailActivity", "Received null item or itemId from intent" + item.getItemId());
             Toast.makeText(this, "Error: Item is null or missing ID", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-
 
         binding.tvTitle.setText(item.getTitle());
         binding.tvDescription.setText(item.getDescription());
@@ -135,8 +156,7 @@ public class DetailActivity extends AppCompatActivity {
                         binding.getRoot(),
                         "Please select a size!",
                         Snackbar.LENGTH_SHORT,
-                        getResources().getColor(R.color.orange)
-                );
+                        getResources().getColor(R.color.orange));
                 return;
             }
             item.setNumberInCart(numberOrder); // vẫn giữ
@@ -148,12 +168,9 @@ public class DetailActivity extends AppCompatActivity {
         binding.btnBack.setOnClickListener(v -> {
             finish();
         });
-        binding.btnFavorite.setOnClickListener(v -> {
-            itemViewModel.toggleFavorite(item.getItemId());
-        });
-
-
-
+        // binding.btnFavorite.setOnClickListener(v -> {
+        // itemViewModel.toggleFavorite(item.getItemId());
+        // });
     }
 
     /**
@@ -161,7 +178,8 @@ public class DetailActivity extends AppCompatActivity {
      * - isLoading: Hiển thị/ẩn ProgressBar và vô hiệu hóa/kích hoạt các phần tử UI.
      * - errorMessage: Hiển thị Snackbar với thông báo lỗi nếu có.
      * - authSuccess: Đặt lại form nếu đăng nhập/đăng ký thành công.
-     * - currentUserData: Nếu đăng nhập thành công và có dữ liệu người dùng, chuyển đến MainActivity.
+     * - currentUserData: Nếu đăng nhập thành công và có dữ liệu người dùng, chuyển
+     * đến MainActivity.
      */
     private void setupObservers() {
 
@@ -175,13 +193,15 @@ public class DetailActivity extends AppCompatActivity {
             }
         });
 
-        itemViewModel.isItemFavorite(item.getItemId()).observe(this, isFav -> {
-            if (isFav) {
-                binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.fav_icon_fill));
-            } else {
-                binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.fav_icon));
-            }
-        });
+        // itemViewModel.isItemFavorite(item.getItemId()).observe(this, isFav -> {
+        // if (isFav) {
+        // binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this,
+        // R.drawable.fav_icon_fill));
+        // } else {
+        // binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this,
+        // R.drawable.fav_icon));
+        // }
+        // });
     }
 
     private void setupSynchronization() {
