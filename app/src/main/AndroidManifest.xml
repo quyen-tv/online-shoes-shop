@@ -73,6 +73,12 @@
         <activity
             android:name=".activity.IntroActivity"
             android:exported="false" />
+        <activity
+            android:name=".activity.SearchActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.SearchResultActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

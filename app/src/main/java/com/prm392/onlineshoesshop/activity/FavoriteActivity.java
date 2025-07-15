@@ -52,11 +52,12 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         // Sử dụng resource string cho các mức giá
         priceRanges = new String[] {
                 getString(R.string.price_range_all),        // vị trí index 0
-                "Dưới $50",                                 // UNDER_50
-                "$50 - $100",                               // FIFTY_TO_100
-                "$100 - $200",                              // HUNDRED_TO_200
-                "Trên $200"                                 // OVER_200
+                getString(R.string.chip_price_range_under_50),                                 // UNDER_50
+                getString(R.string.chip_price_range_50_100),                               // FIFTY_TO_100
+                getString(R.string.chip_price_range_100_200),                              // HUNDRED_TO_200
+                getString(R.string.chip_price_range_over_200)                                 // OVER_200
         };
+
         setupViewModel();
         observeUserData();
         initFilterChips();
@@ -130,7 +131,7 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
 
         binding.chipPriceRange.setOnClickListener(v -> {
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-            builder.setTitle(getString(R.string.title_select_price_range));
+            builder.setTitle(getString(R.string.chip_price_range_default));
             builder.setSingleChoiceItems(priceRanges, selectedPriceIndex, (dialog, which) -> {
                 selectedPriceIndex = which;
 
@@ -209,7 +210,7 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         binding.bottomNavigationView.setSelectedItemId(R.id.navigation_favorite);
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.navigation_cart) {
+            if (item.getItemId() == R.id.navigation_notification) {
                 startActivity(new Intent(this, CartActivity.class));
 
                 return false;

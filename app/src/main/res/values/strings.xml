@@ -49,7 +49,7 @@
 
     <!-- Navigation related strings -->
     <string name="explorer">Explorer</string>
-    <string name="cart">Cart</string>
+    <string name="notification">Notification</string>
     <string name="favorite">Favorite</string>
     <string name="my_order">My Order</string>
     <string name="profile">Me</string>
@@ -71,7 +71,6 @@
     <string name="settings_logout">Log out</string>
 
     <!-- Price range filter strings -->
-    <string name="title_select_price_range">Select price range</string>
     <string name="price_range_all">All</string>
     <string name="price_range_under_10m">Under 10 million</string>
     <string name="price_range_10_16m">10 – 16 million</string>
@@ -84,8 +83,7 @@
     <string name="chip_price_range_under_50">Under $50</string>
     <string name="chip_price_range_50_100">$50 - $100</string>
     <string name="chip_price_range_100_200">$100 - $200</string>
-    <string name="chip_price_range_200_500">$200 - $500</string>
-    <string name="chip_price_range_over_500">Over $500</string>
+    <string name="chip_price_range_over_200">Over $200</string>
     <string name="chip_price_range_custom_from">From $%1$.0f+</string>
     <string name="chip_price_range_custom_range">$%1$.0f - $%2$.0f</string>
     <string name="log_applied_filters">Applied filters: %1$s</string>
@@ -99,4 +97,9 @@
 
     <!-- Favorite related text -->
     <string name="my_favorites">My favorites</string>
+    <string name="search_history_title">Search history</string>
+    <string name="search_result_title">Search results</string>
+    <string name="search_no_result">No matching products found</string>
+    <string name="search_empty_query">Please enter a search keyword</string>
+    <string name="search_found_count">Found %1$d products</string>
 </resources>
