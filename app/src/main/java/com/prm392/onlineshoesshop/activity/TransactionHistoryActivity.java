@@ -88,7 +88,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
         binding.bottomNavigationView.setSelectedItemId(R.id.navigation_my_order);
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.navigation_cart) {
+            if (item.getItemId() == R.id.navigation_notification) {
                 startActivity(new Intent(this, CartActivity.class));
                 return true;
             }

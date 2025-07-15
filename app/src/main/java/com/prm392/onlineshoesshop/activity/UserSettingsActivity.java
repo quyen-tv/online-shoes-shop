@@ -91,7 +91,7 @@ public class UserSettingsActivity extends AppCompatActivity {
                 finish();
                 return true;
             }
-            if (item.getItemId() == R.id.navigation_cart) {
+            if (item.getItemId() == R.id.navigation_notification) {
                 startActivity(new Intent(this, CartActivity.class));
                 finish();
                 return true;
