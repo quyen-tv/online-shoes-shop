@@ -210,7 +210,7 @@ public class PaymentActivity extends AppCompatActivity {
                 transactionRepository.updateTransactionStatus(appTransId, Transaction.Status.PENDING, appTransId);
 
                 managementCart.clearCart();
-
+                updateStockInFirebase(cartItems);
                 runOnUiThread(() -> {
                     hideLoading();
                     Toast.makeText(this, "Đặt hàng thành công. Vui lòng thanh toán khi nhận hàng.", Toast.LENGTH_LONG).show();
@@ -365,7 +365,7 @@ public class PaymentActivity extends AppCompatActivity {
             if (snapshot.exists()) {
                 String name = snapshot.child("fullName").getValue(String.class);
                 String email = snapshot.child("email").getValue(String.class);
-
+                String phone = snapshot.child("phoneNumber").getValue(String.class);
                 Address address = snapshot.child("address").getValue(Address.class);
 
                 // Gộp địa chỉ
@@ -383,6 +383,7 @@ public class PaymentActivity extends AppCompatActivity {
 
                 binding.userNameTxt.setText(name != null ? name : "...");
                 binding.userEmailTxt.setText(email != null ? email : "...");
+                binding.userPhoneTxt.setText(phone != null ? phone : "...");
                 binding.userAddressTxt.setText(fullAddress.length() > 0 ? fullAddress.toString() : "...");
             } else {
                 Toast.makeText(this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
