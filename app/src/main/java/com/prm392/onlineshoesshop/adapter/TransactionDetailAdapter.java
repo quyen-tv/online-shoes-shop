@@ -14,7 +14,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.prm392.onlineshoesshop.R;
-import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.TransactionItem;
 
 import java.util.List;
@@ -65,11 +64,11 @@ public class TransactionDetailAdapter extends RecyclerView.Adapter<TransactionDe
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            itemImage = itemView.findViewById(R.id.itemImage);
+            itemImage = itemView.findViewById(R.id.itemPaymentImage);
             itemTitle = itemView.findViewById(R.id.itemTitle);
-            itemQuantity = itemView.findViewById(R.id.itemQuantity);
+            itemQuantity = itemView.findViewById(R.id.itemPaymentQuantity);
             itemPrice = itemView.findViewById(R.id.itemPrice);
-            itemSize = itemView.findViewById(R.id.itemSize);
+            itemSize = itemView.findViewById(R.id.itemPaymentSize);
 
         }
     }

@@ -1,8 +1,6 @@
 package com.prm392.onlineshoesshop.activity;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,51 +8,31 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.util.Consumer;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.prm392.onlineshoesshop.Api.CreateOrder;
 import com.prm392.onlineshoesshop.adapter.CartAdapter;
-import com.prm392.onlineshoesshop.constant.AppInfo;
 import com.prm392.onlineshoesshop.databinding.ActivityCartBinding;
-import com.prm392.onlineshoesshop.helper.ChangeNumberItemsListener;
 import com.prm392.onlineshoesshop.helper.ManagementCart;
+import com.prm392.onlineshoesshop.model.Address;
 import com.prm392.onlineshoesshop.model.CartItem;
-import com.prm392.onlineshoesshop.model.CreateOrderResult;
-import com.prm392.onlineshoesshop.model.ItemModel;
-import com.prm392.onlineshoesshop.model.Transaction;
-import com.prm392.onlineshoesshop.model.TransactionItem;
 import com.prm392.onlineshoesshop.repository.TransactionRepository;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import vn.zalopay.sdk.Environment;
-import vn.zalopay.sdk.ZaloPayError;
-import vn.zalopay.sdk.ZaloPaySDK;
-import vn.zalopay.sdk.listeners.PayOrderListener;
+
 
 public class CartActivity extends AppCompatActivity {
 
     private ActivityCartBinding binding;
     private ManagementCart managementCart;
     private double tax;
-    private String orderToken;
-    private TransactionRepository transactionRepository;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +54,6 @@ public class CartActivity extends AppCompatActivity {
         });
 
         managementCart = new ManagementCart(this);
-        transactionRepository = new TransactionRepository();
 
         setVariable();
         initCartList();
@@ -85,14 +62,12 @@ public class CartActivity extends AppCompatActivity {
 
     private void setVariable() {
         binding.backBtn.setOnClickListener(v -> finish());
-        // ZaloPay SDK Init
-        ZaloPaySDK.init(AppInfo.APP_ID, Environment.SANDBOX);
-        // handle CreateOrder
+
 
         binding.btnCheckOut.setOnClickListener(v -> {
-            handleCheckOut();
-
+            checkUserInfo();  // gọi kiểm tra trước khi xử lý thanh toán
         });
+
 
     }
 
@@ -146,196 +121,70 @@ public class CartActivity extends AppCompatActivity {
         binding.deliveryTxt.setText("$" + String.format("%.2f", deliveryFee));
         binding.totalTxt.setText("$" + String.format("%.2f", total));
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @SuppressLint("SetTextI18n")
     private void handleCheckOut() {
-        String usdAmountStr = binding.totalTxt.getText().toString()
-                .replace("$", "")
-                .replace(",", ".")  // ✅ fix dấu phẩy
-                .trim();
-
-        try {
-            double usd = Double.parseDouble(usdAmountStr);
-            double rate = 25000;
-            long vnd = Math.round(usd * rate);
-
-            Log.d("ZaloPayDebug", "USD: " + usd + " | VND: " + vnd);
-            if (usdAmountStr.isEmpty()) {
-                Toast.makeText(this, "Không thể xử lý giá trị rỗng!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            showLoading();
-
-            Executors.newSingleThreadExecutor().execute(() -> {
-                try {
-                    CreateOrderResult result = new CreateOrder().createOrder(String.valueOf(vnd));
-                    Log.d("ZaloPayDebug", "CreateOrder response: " + result.rawData.toString());
-
-                    runOnUiThread(() -> {
-                        try {
-                            String code = result.rawData.getString("return_code");
-                            Log.d("ZaloPayDebug", "Return code: " + code);
-
-                            if (code.equals("1")) {
-                                // Gán token để xử lý tiếp
-                                orderToken = result.zpTransToken;
-
-                                List<TransactionItem> simplifiedItems = new ArrayList<>();
-                                for (CartItem ci : managementCart.getCartItems()) {
-                                    ItemModel item = ci.getItem();
-                                    simplifiedItems.add(new TransactionItem(
-                                            item.getItemId(),
-                                            item.getTitle(),
-                                            ci.getQuantity(),
-                                            item.getPrice(),
-                                            ci.getSelectedSize(),
-                                            item.getPicUrl() != null && !item.getPicUrl().isEmpty() ? item.getPicUrl().get(0) : "" // ✅ lấy ảnh đầu tiên
-                                    ));
-
-                                }
-
-                                // Tạo giao dịch trạng thái PENDING
-                                transactionRepository.createPendingTransaction(
-                                        result.appTransId,
-                                        FirebaseAuth.getInstance().getUid(),
-                                        usd,
-                                        tax,
-                                        10.0,
-                                        simplifiedItems,
-                                        "ZaloPay"
-                                );
-
-                                // Thanh toán
-                                handlePayOrder();
-                            } else {
-                                hideLoading();
-                                Toast.makeText(getApplicationContext(), "Tạo đơn hàng thất bại", Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            hideLoading();
-                            Log.e("ZaloPayDebug", "Lỗi xử lý JSON: " + e.getMessage());
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    runOnUiThread(this::hideLoading);
-                    Log.e("ZaloPayDebug", "Lỗi gọi API tạo đơn: " + e.getMessage());
-                }
-            });
-
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Giá trị không hợp lệ: " + usdAmountStr, Toast.LENGTH_SHORT).show();
-            Log.e("ZaloPayDebug", "Lỗi parse USD: " + e.getMessage());
+        ArrayList<CartItem> cartList = managementCart.getCartItems();
+        if (cartList.isEmpty()) {
+            Toast.makeText(this, "Giỏ hàng trống", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        double itemTotal = managementCart.getTotalFee();
+        double tax = Math.round(itemTotal * 0.02 * 100.0) / 100.0;
+        double deliveryFee = itemTotal >= 100.0 ? 0.0 : 10.0;
+        double totalAmount = Math.round((itemTotal + tax + deliveryFee) * 100.0) / 100.0;
+
+        Intent intent = new Intent(CartActivity.this, PaymentActivity.class);
+        intent.putParcelableArrayListExtra("cartItems", new ArrayList<>(cartList));
+        intent.putExtra("tax", tax);
+        intent.putExtra("deliveryFee", deliveryFee);
+        intent.putExtra("totalAmount", totalAmount);
+        startActivity(intent);
+
     }
+    private void checkUserInfo() {
+        String userId = FirebaseAuth.getInstance().getUid();
 
+        if (userId == null) {
+            Toast.makeText(this, "Không xác định được người dùng!", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        DatabaseReference userRef = FirebaseDatabase.getInstance()
+                .getReference("Users")
+                .child(userId);
 
-    private void handlePayOrder() {
-        String token = orderToken;
+        userRef.get().addOnSuccessListener(snapshot -> {
+            String name = snapshot.child("fullName").getValue(String.class);
+            Address addressObj = snapshot.child("address").getValue(Address.class);
 
-        ZaloPaySDK.getInstance().payOrder(this, token, "demozpdk://app", new PayOrderListener() {
-            @Override
-            public void onPaymentSucceeded(final String transactionId, final String transToken, final String appTransID) {
-                runOnUiThread(() -> {
-                    hideLoading();
+            boolean isAddressIncomplete = (addressObj == null
+                    || addressObj.getStreet() == null || addressObj.getStreet().trim().isEmpty()
+                    || addressObj.getCity() == null || addressObj.getCity().getCode() == -1
+                    || addressObj.getDistrict() == null || addressObj.getDistrict().getCode() == -1
+                    || addressObj.getWard() == null || addressObj.getWard().getCode() == -1);
 
-                    List<CartItem> cartItems = managementCart.getCartItems();
-                    updateStockInFirebase(cartItems);
-                    // ✅ Cập nhật trạng thái thành công
-                    transactionRepository.updateTransactionStatus(appTransID, Transaction.Status.SUCCESS, transactionId);
-
-                    // ✅ Xoá giỏ hàng
-                    managementCart.clearCart();
-
-                    // ✅ Refresh lại UI (ẩn cart, hiện empty)
-                    initCartList();
-                    calculateCart();
-
-                });
+            if (name == null || name.trim().isEmpty() || isAddressIncomplete) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Thiếu thông tin cá nhân")
+                        .setMessage("Bạn cần cập nhật họ tên và địa chỉ giao hàng trước khi thanh toán.")
+                        .setPositiveButton("Cập nhật ngay", (dialog, which) -> {
+                            Intent intent = new Intent(this, UserProfileActivity.class);
+                            startActivity(intent);
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
+            } else {
+                handleCheckOut(); // Đã đủ thông tin → tiếp tục
             }
 
-
-            @Override
-            public void onPaymentCanceled(String zpTransToken, String appTransID) {
-                runOnUiThread(() -> {
-                    hideLoading();
-                    // ❌ Người dùng huỷ → Failed (hoặc dùng CANCELED nếu bạn định nghĩa thêm enum)
-                    transactionRepository.updateTransactionStatus(appTransID, Transaction.Status.FAILED, null);
-                    showAlertDialog("User Cancel Payment",
-                            String.format("This payment is cancelled"));
-                });
-            }
-
-            @Override
-            public void onPaymentError(ZaloPayError zaloPayError, String zpTransToken, String appTransID) {
-                runOnUiThread(() -> {
-                    hideLoading();
-                    // ❌ Lỗi kỹ thuật → Failed
-                    transactionRepository.updateTransactionStatus(appTransID, Transaction.Status.FAILED, null);
-                    showAlertDialog("Payment Fail",
-                            String.format("ZaloPayErrorCode: %s\nTransToken: %s", zaloPayError.toString(), zpTransToken));
-                });
-            }
+        }).addOnFailureListener(e -> {
+            Toast.makeText(this, "Lỗi khi kiểm tra thông tin người dùng", Toast.LENGTH_SHORT).show();
         });
     }
 
-    private void showAlertDialog(String title, String message) {
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent); // rất quan trọng nếu bạn muốn đọc intent sau đó
 
-        Log.d("ZaloPayDebug", "onNewIntent called: " + intent.getDataString());
 
-        // Đảm bảo SDK xử lý callback
-        ZaloPaySDK.getInstance().onResult(intent);
-    }
-    private void showLoading() {
-        binding.progressBarPayment.setVisibility(View.VISIBLE);
-        binding.btnCheckOut.setEnabled(false);
-    }
 
-    private void hideLoading() {
-        binding.progressBarPayment.setVisibility(View.GONE);
-        binding.btnCheckOut.setEnabled(true);
-    }
-
-    private void updateStockInFirebase(List<CartItem> cartItems) {
-        DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference("Items");
-
-        for (CartItem cartItem : cartItems) {
-            String itemId = cartItem.getItem().getItemId();
-            String selectedSize = cartItem.getSelectedSize();
-            int quantityToSubtract = cartItem.getQuantity();
-
-            DatabaseReference stockRef = itemsRef.child(itemId).child("stockEntries");
-
-            stockRef.get().addOnSuccessListener(dataSnapshot -> {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    ItemModel.StockEntry entry = snapshot.getValue(ItemModel.StockEntry.class);
-                    if (entry == null || entry.getSize() == null) continue;
-
-                    if (entry.getSize().equals(selectedSize)) {
-                        int newQty = Math.max(entry.getQuantity() - quantityToSubtract, 0);
-                        snapshot.getRef().child("quantity").setValue(newQty);
-                        break; // Đã cập nhật xong → thoát vòng lặp
-                    }
-                }
-            }).addOnFailureListener(e -> {
-                Log.e("StockUpdate", "Lỗi cập nhật tồn kho: " + e.getMessage());
-            });
-        }
-    }
 
 }
