@@ -60,6 +60,8 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
                 getString(R.string.chip_price_range_over_200) // OVER_200
         };
 
+        binding.btnBack.setVisibility(View.GONE);
+
         setupViewModel();
         observeUserData();
         initFilterChips();

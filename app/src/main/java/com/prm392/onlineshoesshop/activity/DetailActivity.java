@@ -21,6 +21,7 @@ import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityDetailBinding;
 import com.prm392.onlineshoesshop.factory.ItemViewModelFactory;
 import com.prm392.onlineshoesshop.helper.ManagementCart;
+import com.prm392.onlineshoesshop.helper.TinyDB;
 import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.SliderModel;
 import com.prm392.onlineshoesshop.repository.ItemRepository;
@@ -44,6 +45,7 @@ public class DetailActivity extends AppCompatActivity {
     private SliderAdapter sliderAdapter;
 
     private ItemViewModel itemViewModel;
+    private TinyDB tinyDB; // Thêm biến TinyDB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,7 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         managementCart = new ManagementCart(this);
+        tinyDB = new TinyDB(this);
         UserRepository userRepository = new UserRepository();
         ItemRepository itemRepository = new ItemRepository();
         ItemViewModelFactory itemViewModelFactory = new ItemViewModelFactory(userRepository, itemRepository);
@@ -60,9 +63,11 @@ public class DetailActivity extends AppCompatActivity {
                 itemViewModelFactory)
                 .get(ItemViewModel.class);
 
-        getBundle(); // ⬅ Đảm bảo gọi ngay từ đầu
+        getBundle();
         if (item == null)
-            return; // ⛔ Nếu null thì dừng
+            return;
+
+        saveViewHistory(item);
 
         banners();
         initLists();
@@ -215,5 +220,26 @@ public class DetailActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    // Thêm hàm lưu lịch sử xem sản phẩm
+    private void saveViewHistory(ItemModel viewedItem) {
+        ArrayList<ItemModel> historyList = tinyDB.getListObject("ViewHistoryList");
+        if (historyList == null)
+            historyList = new ArrayList<>();
+        // Xóa sản phẩm nếu đã có trong lịch sử (tránh trùng lặp)
+        for (int i = 0; i < historyList.size(); i++) {
+            if (historyList.get(i).getItemId().equals(viewedItem.getItemId())) {
+                historyList.remove(i);
+                break;
+            }
+        }
+        // Thêm sản phẩm mới vào đầu danh sách
+        historyList.add(0, viewedItem);
+        // Giới hạn số lượng lịch sử (20 sản phẩm)
+        if (historyList.size() > 20) {
+            historyList = new ArrayList<>(historyList.subList(0, 20));
+        }
+        tinyDB.putListObject("ViewHistoryList", historyList);
     }
 }

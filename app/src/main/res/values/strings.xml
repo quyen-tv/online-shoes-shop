@@ -66,7 +66,7 @@
 
     <!-- Settings related strings -->
     <string name="settings_profile">User profile</string>
-    <string name="settings_notification">Notification</string>
+    <string name="settings_view_history">Recently viewed</string>
     <string name="settings_tos">Term of services</string>
     <string name="settings_logout">Log out</string>
 

@@ -17,7 +17,7 @@ public class ItemModel implements Parcelable {
     private String title;
     private String description;
     private List<String> picUrl;
-    private List<StockEntry> stockEntries; // ✅ Thay vì List<String> size
+    private List<StockEntry> stockEntries;
     private Double price;
     private Double rating;
     private Integer numberInCart;

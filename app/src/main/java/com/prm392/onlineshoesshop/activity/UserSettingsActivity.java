@@ -65,6 +65,10 @@ public class UserSettingsActivity extends AppCompatActivity {
             startActivity(new Intent(this, UserProfileActivity.class));
         });
 
+        binding.btnHistoryRedirect.setOnClickListener(v -> {
+            startActivity(new Intent(this, ViewHistoryActivity.class));
+        });
+
         binding.ctrlLogout.setOnClickListener(v -> {
             showLogoutDialog();
         });
