@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -22,6 +22,7 @@ import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityMainBinding;
 import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
 import com.prm392.onlineshoesshop.factory.ItemViewModelFactory;
+import com.prm392.onlineshoesshop.helper.ManagementCart;
 import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.SliderModel;
 import com.prm392.onlineshoesshop.repository.ItemRepository;
@@ -43,9 +44,6 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
     private String selectedBrandFilter = "";
     private boolean isItemDecorationAdded = false;
     private String currentSearchQuery = "";
-
-    // Search functionality
-    private boolean isSearchExpanded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
         setUpListeners();
         initCategory();
         initBottomNavigation();
-        initSearchBar();
+        binding.ivSearchIcon.setOnClickListener(v -> startActivity(new Intent(this, SearchActivity.class)));
     }
 
     private void initWelcome() {
@@ -193,135 +191,24 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
         binding.ivBellIcon.setOnClickListener(v -> startActivity(new Intent(this, CartActivity.class)));
     }
 
-    private void initSearchBar() {
-        // Set up search icon click listener
-        binding.ivSearchIcon.setOnClickListener(v -> startActivity(new Intent(this, SearchActivity.class)));
-
-        // Set up clear search click listener
-        binding.textFieldTitle.setEndIconOnClickListener(v -> {
-            binding.etSearchQuery.setText("");
-            binding.etSearchQuery.clearFocus();
-            // Reset to show all items when search is cleared
-            performSearch("");
-        });
-
-        // Set up back button behavior when search is expanded
-        binding.etSearchQuery.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus && binding.etSearchQuery.getText().toString().trim().isEmpty()) {
-                collapseSearchBar();
+    private void updateCartBadge() {
+        ManagementCart managementCart = new ManagementCart(this);
+        int count = managementCart.getCartItems().size();
+        TextView tvCartBadge = findViewById(R.id.tvCartBadge);
+        if (tvCartBadge != null) {
+            if (count > 0) {
+                tvCartBadge.setText(String.valueOf(count));
+                tvCartBadge.setVisibility(View.VISIBLE);
+            } else {
+                tvCartBadge.setVisibility(View.GONE);
             }
-        });
-
-        // Set up text change listener for real-time search
-        binding.etSearchQuery.addTextChangedListener(new android.text.TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                performSearch(s.toString().trim());
-            }
-
-            @Override
-            public void afterTextChanged(android.text.Editable s) {}
-        });
-
-        binding.etSearchQuery.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
-                (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER)) {
-                // Hide keyboard
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (imm != null) {
-                    imm.hideSoftInputFromWindow(binding.etSearchQuery.getWindowToken(), 0);
-                }
-                return true;
-            }
-            return false;
-        });
-    }
-
-    private void toggleSearchBar() {
-        if (isSearchExpanded) {
-            collapseSearchBar();
-        } else {
-            expandSearchBar();
         }
-    }
-
-    private void expandSearchBar() {
-        isSearchExpanded = true;
-
-        // Animate out normal header
-        binding.layoutNormalHeader.animate()
-            .alpha(0f)
-            .setDuration(200)
-            .withEndAction(() -> {
-                binding.layoutNormalHeader.setVisibility(View.GONE);
-
-                // Show and animate in expanded search layout
-                binding.layoutSearchExpanded.setVisibility(View.VISIBLE);
-                binding.layoutSearchExpanded.setAlpha(0f);
-                binding.layoutSearchExpanded.animate()
-                    .alpha(1f)
-                    .setDuration(200)
-                    .withEndAction(() -> {
-                        // Request focus on EditText and show keyboard
-                        binding.etSearchQuery.requestFocus();
-
-                        // Show keyboard
-                        InputMethodManager imm =
-                                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                        if (imm != null) {
-                            imm.showSoftInput(binding.etSearchQuery, InputMethodManager.SHOW_IMPLICIT);
-                        }
-                    })
-                    .start();
-            })
-            .start();
-    }
-
-    private void collapseSearchBar() {
-        isSearchExpanded = false;
-
-        // Clear search text and reset search
-        binding.etSearchQuery.setText("");
-        binding.etSearchQuery.clearFocus();
-        performSearch(""); // Reset search when collapsing
-
-        // Hide keyboard
-        InputMethodManager imm =
-                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null) {
-            imm.hideSoftInputFromWindow(binding.etSearchQuery.getWindowToken(), 0);
-        }
-
-        // Animate out expanded search layout
-        binding.layoutSearchExpanded.animate()
-            .alpha(0f)
-            .setDuration(200)
-            .withEndAction(() -> {
-                binding.layoutSearchExpanded.setVisibility(View.GONE);
-                
-                // Show and animate in normal header
-                binding.layoutNormalHeader.setVisibility(View.VISIBLE);
-                binding.layoutNormalHeader.setAlpha(0f);
-                binding.layoutNormalHeader.animate()
-                    .alpha(1f)
-                    .setDuration(200)
-                    .start();
-            })
-            .start();
-    }
-
-    private void performSearch(String query) {
-        currentSearchQuery = query;
-        // Reload the popular items with the new search query
-        viewModel.loadPopulars();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        updateCartBadge();
         authViewModel.reloadCurrentUser();
     }
 
@@ -341,45 +228,36 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
         startActivity(intent);
     }
 
-
-    @Override
-    public void onBackPressed() {
-        if (isSearchExpanded) {
-            collapseSearchBar();
-        } else {
-            super.onBackPressed();
-        }
-    }
-
     private List<ItemModel> filterItems(List<ItemModel> allItems, String brand, String searchQuery) {
         List<ItemModel> filtered = new ArrayList<>();
-        
+
         for (ItemModel item : allItems) {
             boolean matchesBrand = true;
             boolean matchesSearch = true;
-            
+
             // Filter by brand if specified
             if (brand != null && !brand.isEmpty()) {
                 matchesBrand = item.getBrand() != null && item.getBrand().equalsIgnoreCase(brand);
             }
-            
+
             // Filter by search query if specified
             if (searchQuery != null && !searchQuery.isEmpty()) {
-                matchesSearch = item.getTitle() != null && 
-                    item.getTitle().toLowerCase().contains(searchQuery.toLowerCase());
+                matchesSearch = item.getTitle() != null &&
+                        item.getTitle().toLowerCase().contains(searchQuery.toLowerCase());
             }
-            
+
             // Item must match both brand and search criteria
             if (matchesBrand && matchesSearch) {
                 filtered.add(item);
             }
         }
-        
+
         return filtered;
     }
 
     private List<ItemModel> filterItemsByBrand(List<ItemModel> allItems, String brand) {
-        if (brand == null || brand.isEmpty()) return allItems;
+        if (brand == null || brand.isEmpty())
+            return allItems;
 
         List<ItemModel> filtered = new ArrayList<>();
         for (ItemModel item : allItems) {

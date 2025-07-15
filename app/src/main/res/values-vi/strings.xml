@@ -77,6 +77,7 @@
     <string name="price_range_over_22m">Trên 22 Triệu</string>
 
     <!-- AllItemsActivity text -->
+    <string name="all_products">Tất cả sản phẩm</string>
     <string name="msg_applied">Đã áp dụng: %1$s</string>
     <string name="chip_price_range_default">Chọn khoảng giá</string>
     <string name="chip_price_range_under_50">Dưới $50</string>

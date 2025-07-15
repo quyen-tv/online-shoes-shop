@@ -18,6 +18,7 @@ import com.prm392.onlineshoesshop.adapter.FavoriteAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityFavoriteBinding;
 import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
 import com.prm392.onlineshoesshop.factory.ItemViewModelFactory;
+import com.prm392.onlineshoesshop.helper.ManagementCart;
 import com.prm392.onlineshoesshop.model.FilterState;
 import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.repository.ItemRepository;
@@ -43,6 +44,7 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
     private FilterState filterState = new FilterState();
     private boolean isDecorationAdded = false;
     private List<ItemModel> allFavoriteItems = new ArrayList<>();
+    private String currentSearchQuery = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,17 +53,73 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         setContentView(binding.getRoot());
         // Sử dụng resource string cho các mức giá
         priceRanges = new String[] {
-                getString(R.string.price_range_all),        // vị trí index 0
-                getString(R.string.chip_price_range_under_50),                                 // UNDER_50
-                getString(R.string.chip_price_range_50_100),                               // FIFTY_TO_100
-                getString(R.string.chip_price_range_100_200),                              // HUNDRED_TO_200
-                getString(R.string.chip_price_range_over_200)                                 // OVER_200
+                getString(R.string.price_range_all), // vị trí index 0
+                getString(R.string.chip_price_range_under_50), // UNDER_50
+                getString(R.string.chip_price_range_50_100), // FIFTY_TO_100
+                getString(R.string.chip_price_range_100_200), // HUNDRED_TO_200
+                getString(R.string.chip_price_range_over_200) // OVER_200
         };
 
         setupViewModel();
         observeUserData();
         initFilterChips();
         initBottomNavigation();
+
+        // Sự kiện click nút search: ẩn title, hiện ô search, focus, ẩn icon search
+        binding.ivSearchIcon.setOnClickListener(v -> {
+            binding.tvFavorite.setVisibility(View.GONE);
+            binding.textInputLayoutSearch.setVisibility(View.VISIBLE);
+            binding.etSearch.requestFocus();
+            binding.ivSearchIcon.setVisibility(View.GONE);
+            // Hiện bàn phím
+            binding.etSearch.post(() -> {
+                android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(
+                        INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.showSoftInput(binding.etSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                }
+            });
+        });
+
+        // Khi nhập search realtime
+        binding.etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentSearchQuery = s.toString().trim();
+                applyFilters();
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
+        });
+
+        // Sự kiện click icon end (ic_close) trong ô search: hiện lại title, ẩn ô
+        // search, hiện lại icon search, xóa text search
+        binding.textInputLayoutSearch.setEndIconOnClickListener(v -> {
+            binding.textInputLayoutSearch.setVisibility(View.GONE);
+            binding.tvFavorite.setVisibility(View.VISIBLE);
+            binding.ivSearchIcon.setVisibility(View.VISIBLE);
+            binding.etSearch.setText("");
+            currentSearchQuery = "";
+            applyFilters();
+            // Ẩn bàn phím
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(
+                    INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(binding.etSearch.getWindowToken(), 0);
+            }
+        });
+
+        // Sự kiện click nút cart
+        binding.cartIconContainer.setOnClickListener(v -> {
+            Intent intent = new Intent(FavoriteActivity.this, CartActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void setupViewModel() {
@@ -128,7 +186,6 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             applyFilters();
         });
 
-
         binding.chipPriceRange.setOnClickListener(v -> {
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
             builder.setTitle(getString(R.string.chip_price_range_default));
@@ -139,10 +196,25 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
                 FilterState.PriceRangeType type = FilterState.PriceRangeType.NONE;
 
                 switch (which) {
-                    case 1: maxPrice = 50; type = FilterState.PriceRangeType.UNDER_50; break;
-                    case 2: minPrice = 50; maxPrice = 100; type = FilterState.PriceRangeType.FIFTY_TO_100; break;
-                    case 3: minPrice = 100; maxPrice = 200; type = FilterState.PriceRangeType.HUNDRED_TO_200; break;
-                    case 4: minPrice = 200; maxPrice = Double.MAX_VALUE; type = FilterState.PriceRangeType.OVER_200; break;
+                    case 1:
+                        maxPrice = 50;
+                        type = FilterState.PriceRangeType.UNDER_50;
+                        break;
+                    case 2:
+                        minPrice = 50;
+                        maxPrice = 100;
+                        type = FilterState.PriceRangeType.FIFTY_TO_100;
+                        break;
+                    case 3:
+                        minPrice = 100;
+                        maxPrice = 200;
+                        type = FilterState.PriceRangeType.HUNDRED_TO_200;
+                        break;
+                    case 4:
+                        minPrice = 200;
+                        maxPrice = Double.MAX_VALUE;
+                        type = FilterState.PriceRangeType.OVER_200;
+                        break;
                 }
 
                 if (which == 0) {
@@ -160,7 +232,6 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             });
             builder.show();
         });
-
 
         binding.chipSortPriceLow.setOnClickListener(v -> {
             handleSortChipClick(FilterState.SortType.PRICE_LOW);
@@ -237,10 +308,34 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
     protected void onResume() {
         super.onResume();
         authViewModel.reloadCurrentUser();
+        updateCartBadge();
+    }
+
+    private void updateCartBadge() {
+        ManagementCart managementCart = new ManagementCart(this);
+        int count = managementCart.getCartItems().size();
+        if (count > 0) {
+            binding.tvCartBadge.setText(String.valueOf(count));
+            binding.tvCartBadge.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvCartBadge.setVisibility(View.GONE);
+        }
     }
 
     private void applyFilters() {
         List<ItemModel> filtered = new ArrayList<>(allFavoriteItems);
+
+        // Lọc theo search query
+        if (currentSearchQuery != null && !currentSearchQuery.isEmpty()) {
+            List<ItemModel> searchFiltered = new ArrayList<>();
+            for (ItemModel item : filtered) {
+                if (item.getTitle() != null
+                        && item.getTitle().toLowerCase().contains(currentSearchQuery.toLowerCase())) {
+                    searchFiltered.add(item);
+                }
+            }
+            filtered = searchFiltered;
+        }
 
         if (filterState.isInStockSelected()) {
             filtered = filterByInStock(filtered);
@@ -255,12 +350,20 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             filtered = sortByPrice(filtered, filterState.getSortType());
         }
 
-        // Thay vì gọi lại setupRecyclerView()
         if (adapter != null) {
             adapter.updateList(filtered);
         }
 
+        // Hiển thị thông báo nếu không có sản phẩm
+        if (filtered.isEmpty()) {
+            binding.viewFavorites.setVisibility(View.GONE);
+            binding.tvNoResult.setVisibility(View.VISIBLE);
+        } else {
+            binding.viewFavorites.setVisibility(View.VISIBLE);
+            binding.tvNoResult.setVisibility(View.GONE);
+        }
     }
+
     private List<ItemModel> filterByInStock(List<ItemModel> items) {
         List<ItemModel> filtered = new ArrayList<>();
         for (ItemModel item : items) {
@@ -275,6 +378,7 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         }
         return filtered;
     }
+
     private List<ItemModel> filterByPriceRange(List<ItemModel> items, double minPrice, double maxPrice) {
         List<ItemModel> filtered = new ArrayList<>();
         for (ItemModel item : items) {
@@ -285,6 +389,7 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         }
         return filtered;
     }
+
     private List<ItemModel> sortByPrice(List<ItemModel> items, FilterState.SortType sortType) {
         List<ItemModel> sorted = new ArrayList<>(items);
 

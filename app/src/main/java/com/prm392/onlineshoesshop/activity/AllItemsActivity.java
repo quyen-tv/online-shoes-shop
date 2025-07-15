@@ -35,14 +35,11 @@ import com.prm392.onlineshoesshop.utils.ChipStyleUtils;
 import com.prm392.onlineshoesshop.utils.PriceRangeDialog;
 import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
 import com.prm392.onlineshoesshop.viewmodel.MainViewModel;
-
-import java.util.List;
-
 import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
 import android.content.Intent;
-
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class AllItemsActivity extends AppCompatActivity {
@@ -56,7 +53,6 @@ public class AllItemsActivity extends AppCompatActivity {
     private final MainViewModel mainViewModel = new MainViewModel();
     private ItemViewModel itemViewModel;
     private FilterState filterState = new FilterState();
-    private PriceRangeDialog priceRangeDialog;
     private String[] priceRanges;
     private int selectedPriceIndex = 0;
     private List<String> favoriteIds = new ArrayList<>();
@@ -73,17 +69,28 @@ public class AllItemsActivity extends AppCompatActivity {
 
         // Sử dụng resource string cho các mức giá
         priceRanges = new String[] {
-                getString(R.string.price_range_all),        // vị trí index 0
-                getString(R.string.chip_price_range_under_50),                                 // UNDER_50
-                getString(R.string.chip_price_range_50_100),                               // FIFTY_TO_100
-                getString(R.string.chip_price_range_100_200),                              // HUNDRED_TO_200
-                getString(R.string.chip_price_range_over_200)                                 // OVER_200
+                getString(R.string.price_range_all), // vị trí index 0
+                getString(R.string.chip_price_range_under_50), // UNDER_50
+                getString(R.string.chip_price_range_50_100), // FIFTY_TO_100
+                getString(R.string.chip_price_range_100_200), // HUNDRED_TO_200
+                getString(R.string.chip_price_range_over_200) // OVER_200
         };
-
 
         initializeDependencies();
         initializeViews();
         setupObservers();
+
+        // Sự kiện click icon search: mở SearchActivity
+        binding.ivSearchIcon.setOnClickListener(v -> {
+            Intent intent = new Intent(AllItemsActivity.this, SearchActivity.class);
+            startActivity(intent);
+        });
+
+        // Sự kiện click icon cart: mở CartActivity
+        binding.cartIconContainer.setOnClickListener(v -> {
+            Intent intent = new Intent(AllItemsActivity.this, CartActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void initializeDependencies() {
@@ -95,7 +102,7 @@ public class AllItemsActivity extends AppCompatActivity {
         authViewModel = new ViewModelProvider(this, authViewModelFactory).get(AuthViewModel.class);
 
         // Initialize price range dialog
-        priceRangeDialog = new PriceRangeDialog(this, (minPrice, maxPrice, rangeType) -> {
+        PriceRangeDialog priceRangeDialog = new PriceRangeDialog(this, (minPrice, maxPrice, rangeType) -> {
             filterState = filterState.setPriceRange(minPrice, maxPrice, rangeType);
             updateChipAppearance(binding.chipPriceRange, true);
             updatePriceRangeChipText(minPrice, maxPrice, rangeType);
@@ -103,7 +110,6 @@ public class AllItemsActivity extends AppCompatActivity {
             if (itemViewModel.allItems.getValue() != null) {
                 setupItemsList(itemViewModel.allItems.getValue());
             }
-
 
             // Show feedback to user
             String message = getPriceRangeMessage(minPrice, maxPrice, rangeType);
@@ -118,22 +124,6 @@ public class AllItemsActivity extends AppCompatActivity {
         initFilterChips();
         initBackButton();
         updatePriceRangeChipStyle();
-        binding.etTitle.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                searchQuery = s.toString().trim();
-                if (itemViewModel.allItems.getValue() != null) {
-                    setupItemsList(itemViewModel.allItems.getValue());
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
     }
 
     private void updatePriceRangeChipStyle() {
@@ -234,14 +224,6 @@ public class AllItemsActivity extends AppCompatActivity {
         builder.show();
     }
 
-//private void showPriceRangeDialog() {
-//    priceRangeDialog.show(
-//            filterState.getPriceRangeType(),
-//            filterState.getMinPrice(),
-//            filterState.getMaxPrice()
-//    );
-//}
-
     private void setupSortChips() {
         binding.chipSortPriceLow.setOnClickListener(v -> {
             filterState = filterState.setSortType(FilterState.SortType.PRICE_LOW);
@@ -327,7 +309,7 @@ public class AllItemsActivity extends AppCompatActivity {
         return result;
 
         // For now, just log the filter state
-//        System.out.println("Applied filters: " + filterState.toString());
+        // System.out.println("Applied filters: " + filterState.toString());
     }
 
     private void updatePriceRangeChipText(double minPrice, double maxPrice, FilterState.PriceRangeType rangeType) {
@@ -512,15 +494,33 @@ public class AllItemsActivity extends AppCompatActivity {
         super.onResume();
         loadData();
         authViewModel.reloadCurrentUser();
+        updateCartBadge();
     }
 
     private void loadData() {
         mainViewModel.loadBanners();
         mainViewModel.loadCategory();
     }
-    //Filter theo từng mục
+
+    private void updateCartBadge() {
+        com.prm392.onlineshoesshop.helper.ManagementCart managementCart = new com.prm392.onlineshoesshop.helper.ManagementCart(
+                this);
+        int count = managementCart.getCartItems().size();
+        android.widget.TextView tvCartBadge = findViewById(R.id.tvCartBadge);
+        if (tvCartBadge != null) {
+            if (count > 0) {
+                tvCartBadge.setText(String.valueOf(count));
+                tvCartBadge.setVisibility(android.view.View.VISIBLE);
+            } else {
+                tvCartBadge.setVisibility(android.view.View.GONE);
+            }
+        }
+    }
+
+    // Filter theo từng mục
     private List<ItemModel> filterItemsByBrand(List<ItemModel> allItems, String brand) {
-        if (brand == null || brand.isEmpty() ) return allItems;
+        if (brand == null || brand.isEmpty())
+            return allItems;
 
         List<ItemModel> filtered = new ArrayList<>();
         for (ItemModel item : allItems) {
@@ -556,6 +556,7 @@ public class AllItemsActivity extends AppCompatActivity {
         }
         return filtered;
     }
+
     private List<ItemModel> sortByPrice(List<ItemModel> items, FilterState.SortType sortType) {
         List<ItemModel> sorted = new ArrayList<>(items);
 
@@ -575,8 +576,10 @@ public class AllItemsActivity extends AppCompatActivity {
 
         return sorted;
     }
+
     private List<ItemModel> filterByName(List<ItemModel> items, String query) {
-        if (query == null || query.isEmpty()) return items;
+        if (query == null || query.isEmpty())
+            return items;
 
         List<ItemModel> filtered = new ArrayList<>();
         for (ItemModel item : items) {

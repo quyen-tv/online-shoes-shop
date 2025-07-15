@@ -25,58 +25,73 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="16dp"
-                android:background="@drawable/white_bg"
                 android:elevation="4dp"
                 android:padding="10dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:clipToOutline="true">
 
+                <!-- Nút back bên trái -->
                 <ImageButton
                     android:id="@+id/btnBack"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:padding="6dp"
-                    app:srcCompat="@drawable/back"
+                    android:layout_marginEnd="10dp"
+                    app:srcCompat="@drawable/arrow_left_stroke"
                     tools:ignore="ContentDescription" />
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/textFieldTitle"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
+                <TextView
+                    android:id="@+id/tvFavorite"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:boxStrokeColor="@color/purple"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginBottom="3dp"
-                    app:endIconDrawable="@drawable/ic_search_big"
-                    app:endIconMode="custom"
-                    app:placeholderText="@string/hint_search_products">
+                    android:text="@string/all_products"
+                    android:textColor="@color/black"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"/>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etTitle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textCapSentences"
-                        android:textColor="@color/black"
-                        android:hint="@string/hint_search"
-                        android:padding="12dp" />
-                </com.google.android.material.textfield.TextInputLayout>
+                <!-- Khoảng trống đẩy icon sang phải -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
 
-                <ImageButton
-                    android:id="@+id/ivBellIcon"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:padding="6dp"
-                    app:srcCompat="@drawable/bell_icon"
-                    tools:ignore="ContentDescription" />
+                <!-- Icon search bên phải -->
+                <ImageView
+                    android:id="@+id/ivSearchIcon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginEnd="16dp"
+                    app:tint="@color/black"
+                    app:srcCompat="@drawable/search" />
+
+                <!-- Icon giỏ hàng bên phải cùng -->
+                <FrameLayout
+                    android:id="@+id/cartIconContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/ivBellIcon"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        app:srcCompat="@drawable/cart"
+                        app:tint="@color/black" />
+
+                    <TextView
+                        android:id="@+id/tvCartBadge"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="end|top"
+                        android:background="@drawable/badge_background"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        android:text="0"/>
+                </FrameLayout>
             </LinearLayout>
 
             <!-- Banner -->

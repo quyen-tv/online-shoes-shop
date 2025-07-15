@@ -25,13 +25,39 @@ public class UserSettingsActivity extends AppCompatActivity {
 
         authViewModel = new ViewModelProvider(
                 this,
-                new SignUpActivity.AuthViewModelFactory(new UserRepository())
-        ).get(AuthViewModel.class);
+                new SignUpActivity.AuthViewModelFactory(new UserRepository())).get(AuthViewModel.class);
 
         setupUI();
         updateUI();
         observeLogoutState();
         initBottomNavigation();
+
+        // Sự kiện click icon cart: mở CartActivity
+        binding.cartIconContainer.setOnClickListener(v -> {
+            Intent intent = new Intent(UserSettingsActivity.this, CartActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateCartBadge();
+    }
+
+    private void updateCartBadge() {
+        com.prm392.onlineshoesshop.helper.ManagementCart managementCart = new com.prm392.onlineshoesshop.helper.ManagementCart(
+                this);
+        int count = managementCart.getCartItems().size();
+        android.widget.TextView tvCartBadge = findViewById(R.id.tvCartBadge);
+        if (tvCartBadge != null) {
+            if (count > 0) {
+                tvCartBadge.setText(String.valueOf(count));
+                tvCartBadge.setVisibility(android.view.View.VISIBLE);
+            } else {
+                tvCartBadge.setVisibility(android.view.View.GONE);
+            }
+        }
     }
 
     private void setupUI() {
@@ -46,12 +72,14 @@ public class UserSettingsActivity extends AppCompatActivity {
 
     private void updateUI() {
         authViewModel.currentUserData.observe(this, user -> {
-            if(user != null) {
-                if(!user.getFullName().isEmpty()) binding.tvFullName.setText(user.getFullName());
+            if (user != null) {
+                if (!user.getFullName().isEmpty())
+                    binding.tvFullName.setText(user.getFullName());
                 binding.tvEmail.setText(user.getEmail());
             }
         });
     }
+
     private void showLogoutDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Confirm Logout")
