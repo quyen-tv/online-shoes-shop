@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
         binding.bottomNavigationView.setSelectedItemId(R.id.navigation_explorer);
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.navigation_cart) {
+            if (item.getItemId() == R.id.navigation_notification) {
                 startActivity(new Intent(this, CartActivity.class));
                 return false;
             }
@@ -188,17 +188,17 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
     }
 
     private void setUpListeners() {
-        binding.tvSeeAllRecommendation.setOnClickListener(v -> {
-            startActivity(new Intent(this, AllItemsActivity.class));
-        });
+        binding.tvSeeAllRecommendation.setOnClickListener(v -> startActivity(new Intent(this, AllItemsActivity.class)));
+
+        binding.ivBellIcon.setOnClickListener(v -> startActivity(new Intent(this, CartActivity.class)));
     }
 
     private void initSearchBar() {
         // Set up search icon click listener
-        binding.ivSearchIcon.setOnClickListener(v -> toggleSearchBar());
+        binding.ivSearchIcon.setOnClickListener(v -> startActivity(new Intent(this, SearchActivity.class)));
 
         // Set up clear search click listener
-        binding.ivClearSearch.setOnClickListener(v -> {
+        binding.textFieldTitle.setEndIconOnClickListener(v -> {
             binding.etSearchQuery.setText("");
             binding.etSearchQuery.clearFocus();
             // Reset to show all items when search is cleared
@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
         });
 
         binding.etSearchQuery.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH || 
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
                 (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER)) {
                 // Hide keyboard
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -257,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
             .setDuration(200)
             .withEndAction(() -> {
                 binding.layoutNormalHeader.setVisibility(View.GONE);
-                
+
                 // Show and animate in expanded search layout
                 binding.layoutSearchExpanded.setVisibility(View.VISIBLE);
                 binding.layoutSearchExpanded.setAlpha(0f);
@@ -267,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
                     .withEndAction(() -> {
                         // Request focus on EditText and show keyboard
                         binding.etSearchQuery.requestFocus();
-                        
+
                         // Show keyboard
                         InputMethodManager imm =
                                 (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);

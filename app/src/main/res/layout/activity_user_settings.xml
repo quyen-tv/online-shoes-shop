@@ -97,37 +97,14 @@
                     android:layout_height="wrap_content"
                     android:text="Settings"
                     android:textColor="@color/white"
-                    android:textSize="35sp"
-                    app:layout_constraintBottom_toTopOf="@+id/imageView"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.498"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.192" />
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:layout_marginStart="32dp"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="16dp"
                     android:layout_marginTop="32dp"
-                    android:background="@drawable/oval"
+                    android:layout_marginEnd="16dp"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <ImageView
-                        android:id="@+id/imgBack"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:layout_marginEnd="4dp"
-                        android:layout_marginBottom="4dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.0"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_bias="0.0"
-                        app:srcCompat="@drawable/back" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                    app:layout_constraintTop_toTopOf="parent"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -399,4 +376,27 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <!-- Navigation bar -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@drawable/purple_button_bg"
+            app:itemIconTint="@color/white"
+            app:itemRippleColor="@color/purple_500"
+            app:itemTextColor="@color/white"
+            app:menu="@menu/bottom_nav_menu"/>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

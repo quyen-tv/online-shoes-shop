@@ -49,10 +49,10 @@
 
     <!-- Navigation related strings -->
     <string name="explorer">Khám phá</string>
-    <string name="cart">Giỏ hàng</string>
+    <string name="notification">Thông báo</string>
     <string name="favorite">Yêu thích</string>
     <string name="my_order">Lịch sử</string>
-    <string name="profile">Tài khoản</string>
+    <string name="profile">Tôi</string>
 
     <!-- Item detail related strings -->
     <string name="select_size">Kích cỡ</string>
@@ -70,7 +70,6 @@
     <string name="hint_search">Tìm kiếm</string>
 
     <!-- Price range filter strings -->
-    <string name="title_select_price_range">Chọn khoảng giá</string>
     <string name="price_range_all">Tất cả</string>
     <string name="price_range_under_10m">Dưới 10 Triệu</string>
     <string name="price_range_10_16m">Từ 10 - 16 Triệu</string>
@@ -83,8 +82,7 @@
     <string name="chip_price_range_under_50">Dưới $50</string>
     <string name="chip_price_range_50_100">$50 - $100</string>
     <string name="chip_price_range_100_200">$100 - $200</string>
-    <string name="chip_price_range_200_500">$200 - $500</string>
-    <string name="chip_price_range_over_500">Trên $500</string>
+    <string name="chip_price_range_over_200">Trên $200</string>
     <string name="chip_price_range_custom_from">Từ $%1$.0f+</string>
     <string name="chip_price_range_custom_range">$%1$.0f - $%2$.0f</string>
     <string name="log_applied_filters">Đã áp dụng filter: %1$s</string>
@@ -115,4 +113,9 @@
     <string name="payment_label_email">Email</string>
     <string name="payment_label_name">Họ và tên:</string>
     <string name="payment_label_address">Địa chỉ:</string>
+    <string name="search_history_title">Lịch sử tìm kiếm</string>
+    <string name="search_result_title">Kết quả tìm kiếm</string>
+    <string name="search_no_result">Không tìm thấy sản phẩm phù hợp</string>
+    <string name="search_empty_query">Vui lòng nhập từ khóa tìm kiếm</string>
+    <string name="search_found_count">Tìm thấy %1$d sản phẩm</string>
 </resources>

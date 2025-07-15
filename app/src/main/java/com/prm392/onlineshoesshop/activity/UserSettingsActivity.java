@@ -8,6 +8,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.databinding.ActivityUserSettingsBinding;
 import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
@@ -30,15 +31,12 @@ public class UserSettingsActivity extends AppCompatActivity {
         setupUI();
         updateUI();
         observeLogoutState();
+        initBottomNavigation();
     }
 
     private void setupUI() {
         binding.btnToggleProfile.setOnClickListener(v -> {
             startActivity(new Intent(this, UserProfileActivity.class));
-        });
-
-        binding.imgBack.setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
         });
 
         binding.ctrlLogout.setOnClickListener(v -> {
@@ -82,6 +80,33 @@ public class UserSettingsActivity extends AppCompatActivity {
             if (error != null) {
                 Toast.makeText(this, "Logout failed: " + error, Toast.LENGTH_SHORT).show();
             }
+        });
+    }
+
+    private void initBottomNavigation() {
+        binding.bottomNavigationView.setSelectedItemId(R.id.navigation_profile);
+        binding.bottomNavigationView.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.navigation_explorer) {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+                return true;
+            }
+            if (item.getItemId() == R.id.navigation_notification) {
+                startActivity(new Intent(this, CartActivity.class));
+                finish();
+                return true;
+            }
+            if (item.getItemId() == R.id.navigation_favorite) {
+                startActivity(new Intent(this, FavoriteActivity.class));
+                finish();
+                return true;
+            }
+            if (item.getItemId() == R.id.navigation_my_order) {
+                startActivity(new Intent(this, TransactionHistoryActivity.class));
+                finish();
+                return true;
+            }
+            return false;
         });
     }
 }
