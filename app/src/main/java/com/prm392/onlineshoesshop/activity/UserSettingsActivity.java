@@ -72,6 +72,8 @@ public class UserSettingsActivity extends AppCompatActivity {
         binding.ctrlLogout.setOnClickListener(v -> {
             showLogoutDialog();
         });
+
+        binding.ivChat.setOnClickListener(v -> startActivity(new Intent(this, ChatbotActivity.class)));
     }
 
     private void updateUI() {

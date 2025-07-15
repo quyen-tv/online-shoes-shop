@@ -1,8 +1,6 @@
 package com.prm392.onlineshoesshop.activity;
 
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -91,6 +89,8 @@ public class AllItemsActivity extends AppCompatActivity {
             Intent intent = new Intent(AllItemsActivity.this, CartActivity.class);
             startActivity(intent);
         });
+
+        binding.ivChat.setOnClickListener(v -> startActivity(new Intent(this, ChatbotActivity.class)));
     }
 
     private void initializeDependencies() {

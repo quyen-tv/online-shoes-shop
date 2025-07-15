@@ -36,6 +36,7 @@ public class ViewHistoryActivity extends AppCompatActivity implements AllItemAda
         setContentView(binding.getRoot());
         binding.tvFavorite.setText(getString(R.string.settings_view_history));
         binding.cartIconContainer.setVisibility(View.GONE);
+        binding.ivChat.setVisibility(View.GONE);
         binding.navigation.setVisibility(View.GONE);
         binding.btnBack.setVisibility(View.VISIBLE);
         binding.filterCriteriaLayout.setVisibility(View.GONE);

@@ -15,8 +15,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="100dp">
+            android:orientation="vertical">
 
             <!-- Header thân thiện, hiện đại -->
             <LinearLayout
@@ -63,21 +62,22 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_marginEnd="16dp"
-                    app:tint="@color/black"
+                    app:tint="@color/dark_grey"
                     app:srcCompat="@drawable/search" />
 
                 <!-- Icon giỏ hàng bên phải cùng -->
                 <FrameLayout
                     android:id="@+id/cartIconContainer"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp">
 
                     <ImageView
                         android:id="@+id/ivBellIcon"
                         android:layout_width="34dp"
                         android:layout_height="34dp"
                         app:srcCompat="@drawable/cart"
-                        app:tint="@color/black" />
+                        app:tint="@color/dark_grey" />
 
                     <TextView
                         android:id="@+id/tvCartBadge"
@@ -91,6 +91,13 @@
                         android:visibility="gone"
                         android:text="0"/>
                 </FrameLayout>
+
+                <ImageView
+                    android:id="@+id/ivChat"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    app:tint="@color/grey"
+                    app:srcCompat="@drawable/ic_message_circle_dots" />
             </LinearLayout>
 
             <!-- Banner -->

@@ -18,7 +18,9 @@ import com.prm392.onlineshoesshop.helper.ManagementCart;
 import com.prm392.onlineshoesshop.model.CartItem;
 import com.prm392.onlineshoesshop.model.ItemModel;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
@@ -48,8 +50,20 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
         holder.binding.titleTxt.setText(item.getTitle());
         holder.binding.sizeTxt.setText("Size: " + cartItem.getSelectedSize());
-        holder.binding.feeEachItem.setText("$" + item.getPrice());
-        holder.binding.totalEachItem.setText("$" + Math.round(item.getPrice() * cartItem.getQuantity()));
+        try {
+            String priceStr = String.valueOf(item.getPrice());
+            double price = Double.parseDouble(priceStr);
+            NumberFormat format = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
+            holder.binding.feeEachItem.setText(String.format("₫%s", format.format(price)));
+        } catch (Exception e) {
+            holder.binding.feeEachItem.setText(String.format("₫%s", item.getPrice()));
+        }
+        try {
+            NumberFormat format = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
+            holder.binding.totalEachItem.setText(String.format("₫%s", format.format(Math.round(item.getPrice() * cartItem.getQuantity()))));
+        } catch (Exception e) {
+            holder.binding.totalEachItem.setText(String.format("₫%s", Math.round(item.getPrice() * cartItem.getQuantity())));
+        }
         holder.binding.numberItemTxt.setText(String.valueOf(cartItem.getQuantity()));
 
         Glide.with(holder.itemView.getContext())

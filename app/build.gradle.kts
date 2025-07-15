@@ -70,7 +70,7 @@ dependencies {
     implementation("commons-codec:commons-codec:1.14")
     // (Tùy chọn) Logging Interceptor để debug request/response
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
+    implementation(libs.core)
 
 }
 

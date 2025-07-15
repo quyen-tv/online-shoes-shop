@@ -19,6 +19,7 @@ import com.prm392.onlineshoesshop.utils.ItemUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.PopularViewHolder> {
 
@@ -35,6 +36,7 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.PopularV
 
     public interface OnChangeListener {
         void onToggleFavorite(String itemId);
+
         void onClick(ItemModel item);
     }
 
@@ -52,7 +54,8 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.PopularV
     @Override
     public PopularAdapter.PopularViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         context = parent.getContext();
-        ViewholderRecommendedBinding binding = ViewholderRecommendedBinding.inflate(LayoutInflater.from(context), parent, false);
+        ViewholderRecommendedBinding binding = ViewholderRecommendedBinding.inflate(LayoutInflater.from(context),
+                parent, false);
         return new PopularViewHolder(binding);
     }
 
@@ -62,7 +65,29 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.PopularV
         context = holder.itemView.getContext();
 
         holder.binding.tvTitle.setText(item.getTitle());
-        holder.binding.tvPrice.setText(String.format("$%s", item.getPrice()));
+        Integer sold = item.getSold();
+        String soldText;
+        if (sold == null) {
+            soldText = "Đã bán: 0";
+        } else if (sold >= 1000) {
+            double soldK = sold / 1000.0;
+            if (sold % 1000 == 0) {
+                soldText = String.format("Đã bán: %dk", sold / 1000);
+            } else {
+                soldText = String.format("Đã bán: %.1fk", soldK);
+            }
+        } else {
+            soldText = String.format("Đã bán: %d", sold);
+        }
+        holder.binding.tvSold.setText(soldText);
+        try {
+            String priceStr = String.valueOf(item.getPrice());
+            double price = Double.parseDouble(priceStr);
+            java.text.NumberFormat format = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
+            holder.binding.tvPrice.setText(String.format("₫%s", format.format(price)));
+        } catch (Exception e) {
+            holder.binding.tvPrice.setText(String.format("₫%s", item.getPrice()));
+        }
         holder.binding.tvRating.setText(String.valueOf(item.getRating()));
         boolean isFavorite = favoriteIds.contains(ItemUtils.getFirebaseItemId(item.getItemId()));
         if (isFavorite) {
@@ -71,8 +96,7 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.PopularV
         } else {
             holder.binding.imgFavorite.setImageResource(R.drawable.ic_fav);
             holder.binding.imgFavorite.setColorFilter(
-                    ContextCompat.getColor(context, R.color.grey), android.graphics.PorterDuff.Mode.SRC_IN
-            );
+                    ContextCompat.getColor(context, R.color.grey), android.graphics.PorterDuff.Mode.SRC_IN);
         }
 
         RequestOptions options = new RequestOptions().transform(new CenterCrop());
@@ -93,6 +117,7 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.PopularV
 
     public static class PopularViewHolder extends RecyclerView.ViewHolder {
         ViewholderRecommendedBinding binding;
+
         public PopularViewHolder(ViewholderRecommendedBinding binding) {
             super(binding.getRoot());
             this.binding = binding;

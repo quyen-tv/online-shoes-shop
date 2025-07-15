@@ -187,6 +187,8 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
         binding.tvSeeAllRecommendation.setOnClickListener(v -> startActivity(new Intent(this, AllItemsActivity.class)));
 
         binding.ivBellIcon.setOnClickListener(v -> startActivity(new Intent(this, CartActivity.class)));
+
+        binding.ivChat.setOnClickListener(v -> startActivity(new Intent(this, ChatbotActivity.class)));
     }
 
     private void updateCartBadge() {
@@ -228,29 +230,36 @@ public class MainActivity extends AppCompatActivity implements PopularAdapter.On
 
     private List<ItemModel> filterItems(List<ItemModel> allItems, String brand, String searchQuery) {
         List<ItemModel> filtered = new ArrayList<>();
-
         for (ItemModel item : allItems) {
             boolean matchesBrand = true;
             boolean matchesSearch = true;
-
+            boolean matchesSold = item.getSold() != null && item.getSold() >= 1000; // Chỉ lấy sản phẩm bán chạy
             // Filter by brand if specified
             if (brand != null && !brand.isEmpty()) {
                 matchesBrand = item.getBrand() != null && item.getBrand().equalsIgnoreCase(brand);
             }
-
             // Filter by search query if specified
             if (searchQuery != null && !searchQuery.isEmpty()) {
                 matchesSearch = item.getTitle() != null &&
                         item.getTitle().toLowerCase().contains(searchQuery.toLowerCase());
             }
-
-            // Item must match both brand and search criteria
-            if (matchesBrand && matchesSearch) {
+            // Item must match all criteria
+            if (matchesBrand && matchesSearch && matchesSold) {
                 filtered.add(item);
             }
         }
-
         return filtered;
+    }
+
+    // Hàm lấy danh sách sản phẩm bán chạy (sold > 1000)
+    private List<ItemModel> getBestSellingItems(List<ItemModel> allItems) {
+        List<ItemModel> bestSellers = new ArrayList<>();
+        for (ItemModel item : allItems) {
+            if (item.getSold() != null && item.getSold() > 1000) {
+                bestSellers.add(item);
+            }
+        }
+        return bestSellers;
     }
 
     private List<ItemModel> filterItemsByBrand(List<ItemModel> allItems, String brand) {

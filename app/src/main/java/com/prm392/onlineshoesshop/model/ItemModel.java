@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class ItemModel implements Parcelable {
 
-
     private String itemId;
     private String title;
     private String description;
@@ -22,11 +21,18 @@ public class ItemModel implements Parcelable {
     private Double rating;
     private Integer numberInCart;
     private String brand;
+    private String category;
+    private String color;
+    private String features;
+    private String targetUser;
+    private Integer sold;
 
     public ItemModel() {
     }
 
-    public ItemModel(String itemId, String title, String description, List<String> picUrl, List<StockEntry> stockEntries, Double price, Double rating, Integer numberInCart, String brand) {
+    public ItemModel(String itemId, String title, String description, List<String> picUrl,
+            List<StockEntry> stockEntries, Double price, Double rating, Integer numberInCart, String brand,
+            String category, String color, String features, String targetUser, Integer sold) {
         this.itemId = itemId;
         this.title = title;
         this.description = description;
@@ -36,7 +42,13 @@ public class ItemModel implements Parcelable {
         this.rating = rating;
         this.numberInCart = numberInCart;
         this.brand = brand;
+        this.category = category;
+        this.color = color;
+        this.features = features;
+        this.targetUser = targetUser;
+        this.sold = sold;
     }
+
     public String getItemId() {
         return itemId;
     }
@@ -60,6 +72,7 @@ public class ItemModel implements Parcelable {
     public List<StockEntry> getStockEntries() {
         return stockEntries;
     }
+
     public void setStockEntries(List<StockEntry> stockEntries) {
         this.stockEntries = stockEntries;
     }
@@ -83,12 +96,53 @@ public class ItemModel implements Parcelable {
     public void setNumberInCart(Integer numberInCart) {
         this.numberInCart = numberInCart;
     }
+
     public String getBrand() {
         return brand;
     }
 
     public void setBrand(String brand) {
         this.brand = brand;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(String features) {
+        this.features = features;
+    }
+
+    public String getTargetUser() {
+        return targetUser;
+    }
+
+    public void setTargetUser(String targetUser) {
+        this.targetUser = targetUser;
+    }
+
+    public Integer getSold() {
+        return sold;
+    }
+
+    public void setSold(Integer sold) {
+        this.sold = sold;
     }
 
     protected ItemModel(Parcel in) {
@@ -99,7 +153,11 @@ public class ItemModel implements Parcelable {
         stockEntries = new ArrayList<>();
         in.readTypedList(stockEntries, StockEntry.CREATOR);
         brand = in.readString();
-
+        category = in.readString();
+        color = in.readString();
+        features = in.readString();
+        targetUser = in.readString();
+        sold = in.readByte() == 0 ? null : in.readInt();
         price = in.readByte() == 0 ? null : in.readDouble();
         rating = in.readByte() == 0 ? null : in.readDouble();
         numberInCart = in.readByte() == 0 ? null : in.readInt();
@@ -130,25 +188,42 @@ public class ItemModel implements Parcelable {
         dest.writeStringList(picUrl);
         dest.writeTypedList(stockEntries);
         dest.writeString(brand);
-
-        if (price == null) dest.writeByte((byte) 0); else {
-            dest.writeByte((byte) 1); dest.writeDouble(price);
+        dest.writeString(category);
+        dest.writeString(color);
+        dest.writeString(features);
+        dest.writeString(targetUser);
+        if (sold == null)
+            dest.writeByte((byte) 0);
+        else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(sold);
         }
-
-        if (rating == null) dest.writeByte((byte) 0); else {
-            dest.writeByte((byte) 1); dest.writeDouble(rating);
+        if (price == null)
+            dest.writeByte((byte) 0);
+        else {
+            dest.writeByte((byte) 1);
+            dest.writeDouble(price);
         }
-
-        if (numberInCart == null) dest.writeByte((byte) 0); else {
-            dest.writeByte((byte) 1); dest.writeInt(numberInCart);
+        if (rating == null)
+            dest.writeByte((byte) 0);
+        else {
+            dest.writeByte((byte) 1);
+            dest.writeDouble(rating);
+        }
+        if (numberInCart == null)
+            dest.writeByte((byte) 0);
+        else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(numberInCart);
         }
     }
-    // ✅ Class lồng cho từng size và tồn kho
+
     public static class StockEntry implements Parcelable {
         private String size;
         private int quantity;
 
-        public StockEntry() {}
+        public StockEntry() {
+        }
 
         public StockEntry(String size, int quantity) {
             this.size = size;
@@ -201,10 +276,13 @@ public class ItemModel implements Parcelable {
         }
         return sizeMap;
     }
+
     public int getStockForSize(String size) {
-        if (stockEntries == null) return 0;
+        if (stockEntries == null)
+            return 0;
         for (StockEntry entry : stockEntries) {
-            if (entry.getSize().equals(size)) return entry.getQuantity();
+            if (entry.getSize().equals(size))
+                return entry.getQuantity();
         }
         return 0;
     }
