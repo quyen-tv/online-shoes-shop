@@ -23,16 +23,14 @@ import com.prm392.onlineshoesshop.model.Address;
 import com.prm392.onlineshoesshop.model.CartItem;
 import com.prm392.onlineshoesshop.repository.TransactionRepository;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
-
-
 
 public class CartActivity extends AppCompatActivity {
 
     private ActivityCartBinding binding;
     private ManagementCart managementCart;
     private double tax;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,11 +61,9 @@ public class CartActivity extends AppCompatActivity {
     private void setVariable() {
         binding.backBtn.setOnClickListener(v -> finish());
 
-
         binding.btnCheckOut.setOnClickListener(v -> {
-            checkUserInfo();  // gọi kiểm tra trước khi xử lý thanh toán
+            checkUserInfo(); // gọi kiểm tra trước khi xử lý thanh toán
         });
-
 
     }
 
@@ -86,17 +82,16 @@ public class CartActivity extends AppCompatActivity {
         }
     }
 
-
     private void calculateCart() {
         double percentTax = 0.02;
         double itemTotal = managementCart.getTotalFee();
 
         if (itemTotal == 0) {
             // Giỏ hàng trống
-            binding.totalFeeTxt.setText("$0.00");
-            binding.taxTxt.setText("$0.00");
-            binding.deliveryTxt.setText("$0.00");
-            binding.totalTxt.setText("$0.00");
+            binding.totalFeeTxt.setText("₫0");
+            binding.taxTxt.setText("₫0");
+            binding.deliveryTxt.setText("₫0");
+            binding.totalTxt.setText("₫0");
             binding.btnCheckOut.setEnabled(false);
             return;
         }
@@ -115,12 +110,14 @@ public class CartActivity extends AppCompatActivity {
 
         double total = Math.round((itemTotal + tax + deliveryFee) * 100.0) / 100.0;
 
-        // Cập nhật UI
-        binding.totalFeeTxt.setText("$" + String.format("%.2f", itemTotal));
-        binding.taxTxt.setText("$" + String.format("%.2f", tax));
-        binding.deliveryTxt.setText("$" + String.format("%.2f", deliveryFee));
-        binding.totalTxt.setText("$" + String.format("%.2f", total));
+        // Cập nhật UI (định dạng tiền Việt)
+        NumberFormat format = NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+        binding.totalFeeTxt.setText("₫" + format.format(itemTotal));
+        binding.taxTxt.setText("₫" + format.format(tax));
+        binding.deliveryTxt.setText("₫" + format.format(deliveryFee));
+        binding.totalTxt.setText("₫" + format.format(total));
     }
+
     private void handleCheckOut() {
         ArrayList<CartItem> cartList = managementCart.getCartItems();
         if (cartList.isEmpty()) {
@@ -141,6 +138,7 @@ public class CartActivity extends AppCompatActivity {
         startActivity(intent);
 
     }
+
     private void checkUserInfo() {
         String userId = FirebaseAuth.getInstance().getUid();
 
@@ -181,10 +179,5 @@ public class CartActivity extends AppCompatActivity {
             Toast.makeText(this, "Lỗi khi kiểm tra thông tin người dùng", Toast.LENGTH_SHORT).show();
         });
     }
-
-
-
-
-
 
 }

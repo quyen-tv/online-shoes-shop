@@ -29,8 +29,10 @@ import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.utils.UiUtils;
 import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class DetailActivity extends AppCompatActivity {
@@ -152,7 +154,14 @@ public class DetailActivity extends AppCompatActivity {
 
         binding.tvTitle.setText(item.getTitle());
         binding.tvDescription.setText(item.getDescription());
-        binding.tvPrice.setText(String.format("$%.2f", item.getPrice()));
+        try {
+            String priceStr = String.valueOf(item.getPrice());
+            double price = Double.parseDouble(priceStr);
+            NumberFormat format = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
+            binding.tvPrice.setText(String.format("₫%s", format.format(price)));
+        } catch (Exception e) {
+            binding.tvPrice.setText(String.format("₫%s", item.getPrice()));
+        }
         binding.tvRating.setText(String.valueOf(item.getRating()));
         binding.btnAddToCart.setOnClickListener(v -> {
             String selectedSize = sizeAdapter.getSelectedSize();

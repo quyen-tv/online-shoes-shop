@@ -21,11 +21,14 @@
     <color name="input_border_default">#BDBDBD</color>
     <color name="input_border_focused">#6200EE</color>
     <color name="input_hint_color">#757575</color>
-    <color name="custom_blue">#2196F3</color> <!-- hoặc bất kỳ mã nào -->
-    <color name="hint_color">#808080</color> <!-- hoặc màu giống TextInputLayout -->
+    <color name="custom_blue">#2196F3</color> 
+    <color name="hint_color">#808080</color>
     <color name="green">#4CAF50</color>
     <color name="red">#F44336</color>
     <color name="orange">#FFA726</color>
     <color name="lightGrey">#F5F5F5</color>
+    <color name="chat_status_sending">#888888</color>
+    <color name="chat_status_sent">#388E3C</color>
+    <color name="chat_status_failed">#D32F2F</color>
 
 </resources>

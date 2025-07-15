@@ -44,8 +44,8 @@
     <!-- Home related strings -->
     <string name="welcome_back">Xin chào</string>
     <string name="official_brand">Thương Hiệu</string>
-    <string name="see_all">Xem tất cả</string>
-    <string name="recommendation">Đề xuất cho bạn</string>
+    <string name="see_all">Tất cả sản phẩm</string>
+    <string name="recommendation">Đang bán chạy</string>
 
     <!-- Navigation related strings -->
     <string name="explorer">Khám phá</string>

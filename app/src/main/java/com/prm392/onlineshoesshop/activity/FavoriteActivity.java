@@ -122,6 +122,8 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             Intent intent = new Intent(FavoriteActivity.this, CartActivity.class);
             startActivity(intent);
         });
+
+        binding.ivChat.setOnClickListener(v -> startActivity(new Intent(this, ChatbotActivity.class)));
     }
 
     private void setupViewModel() {

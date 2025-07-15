@@ -19,6 +19,7 @@ import com.prm392.onlineshoesshop.utils.ItemUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.FavoriteViewHolder> {
 
@@ -74,7 +75,29 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
         context = holder.itemView.getContext();
 
         holder.binding.tvTitle.setText(item.getTitle());
-        holder.binding.tvPrice.setText(String.format("$%s", item.getPrice()));
+        Integer sold = item.getSold();
+        String soldText;
+        if (sold == null) {
+            soldText = "Đã bán: 0";
+        } else if (sold >= 1000) {
+            double soldK = sold / 1000.0;
+            if (sold % 1000 == 0) {
+                soldText = String.format("Đã bán: %dk", sold / 1000);
+            } else {
+                soldText = String.format("Đã bán: %.1fk", soldK);
+            }
+        } else {
+            soldText = String.format("Đã bán: %d", sold);
+        }
+        holder.binding.tvSold.setText(soldText);
+        try {
+            String priceStr = String.valueOf(item.getPrice());
+            double price = Double.parseDouble(priceStr);
+            java.text.NumberFormat format = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
+            holder.binding.tvPrice.setText(String.format("₫%s", format.format(price)));
+        } catch (Exception e) {
+            holder.binding.tvPrice.setText(String.format("₫%s", item.getPrice()));
+        }
         holder.binding.tvRating.setText(String.valueOf(item.getRating()));
         boolean isFavorite = favoriteIds != null &&
                 favoriteIds.contains(ItemUtils.getFirebaseItemId(item.getItemId()));
