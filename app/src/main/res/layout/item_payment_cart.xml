@@ -1,0 +1,47 @@
+<!-- res/layout/item_payment_cart.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:background="@drawable/white_border"
+    android:layout_marginBottom="8dp">
+
+    <ImageView
+        android:id="@+id/itemPaymentImage"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/no_image"
+        android:background="@drawable/image_border"
+        android:layout_marginEnd="12dp" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/itemPaymentName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="@string/item_no_name"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/itemPaymentSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/item_size_label" />
+
+        <TextView
+            android:id="@+id/itemPaymentQuantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/item_quantity_label"
+            android:textStyle="italic" />
+    </LinearLayout>
+</LinearLayout>

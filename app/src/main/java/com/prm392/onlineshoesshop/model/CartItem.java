@@ -1,8 +1,11 @@
 package com.prm392.onlineshoesshop.model;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class CartItem implements Serializable {
+import androidx.annotation.NonNull;
+
+public class CartItem implements Parcelable {
     private ItemModel item;
     private String selectedSize;
     private int quantity;
@@ -11,6 +14,36 @@ public class CartItem implements Serializable {
         this.item = item;
         this.selectedSize = selectedSize;
         this.quantity = quantity;
+    }
+
+    protected CartItem(Parcel in) {
+        item = in.readParcelable(ItemModel.class.getClassLoader());
+        selectedSize = in.readString();
+        quantity = in.readInt();
+    }
+
+    public static final Creator<CartItem> CREATOR = new Creator<CartItem>() {
+        @Override
+        public CartItem createFromParcel(Parcel in) {
+            return new CartItem(in);
+        }
+
+        @Override
+        public CartItem[] newArray(int size) {
+            return new CartItem[size];
+        }
+    };
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(item, flags);
+        dest.writeString(selectedSize);
+        dest.writeInt(quantity);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     public ItemModel getItem() {

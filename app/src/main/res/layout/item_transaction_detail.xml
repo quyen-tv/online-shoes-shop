@@ -7,7 +7,7 @@
     android:padding="8dp">
 
     <ImageView
-        android:id="@+id/itemImage"
+        android:id="@+id/itemPaymentImage"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_marginEnd="12dp"
@@ -30,7 +30,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/itemQuantity"
+            android:id="@+id/itemPaymentQuantity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -38,7 +38,7 @@
             android:textColor="@color/grey"
             android:textSize="12sp" />
         <TextView
-            android:id="@+id/itemSize"
+            android:id="@+id/itemPaymentSize"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Size: M"

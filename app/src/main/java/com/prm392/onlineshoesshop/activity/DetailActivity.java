@@ -141,6 +141,8 @@ public class DetailActivity extends AppCompatActivity {
             }
             item.setNumberInCart(numberOrder); // vẫn giữ
             managementCart.insertItem(item, selectedSize, numberOrder); // ✅ dùng đúng hàm
+            startActivity(new Intent(this, CartActivity.class));
+            finish();
         });
 
         binding.btnBack.setOnClickListener(v -> {

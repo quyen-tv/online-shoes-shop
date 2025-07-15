@@ -95,6 +95,24 @@
     <string name="chip_sort_popular">Xem nhiều</string>
 
     <string name="my_favorites">Lượt thích</string>
+
+    <string name="payment_checkout_title">Thanh toán</string>
+    <string name="payment_user_title">Thông tin người nhận</string>
+    <string name="payment_method">Phương thức thanh toán</string>
+    <string name="payment_zalopay">ZaloPay</string>
+    <string name="payment_cash">Thanh toán khi nhận hàng</string>
+    <string name="payment_subtotal">Tổng tiền hàng</string>
+    <string name="payment_delivery_fee">Phí vận chuyển</string>
+    <string name="payment_tax">Thuế</string>
+    <string name="payment_total">Tổng thanh toán</string>
+    <string name="payment_place_order">Đặt hàng</string>
+    <!-- Payment Cart Item -->
+    <string name="item_size_label">Size: %1$s</string>
+    <string name="item_quantity_label">x%1$d</string>
+    <string name="item_no_name">Sản phẩm không tên</string>
+    <string name="payment_label_email">Email</string>
+    <string name="payment_label_name">Họ và tên:</string>
+    <string name="payment_label_address">Địa chỉ:</string>
     <string name="search_history_title">Lịch sử tìm kiếm</string>
     <string name="search_result_title">Kết quả tìm kiếm</string>
     <string name="search_no_result">Không tìm thấy sản phẩm phù hợp</string>

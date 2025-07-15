@@ -102,4 +102,26 @@
     <string name="search_no_result">No matching products found</string>
     <string name="search_empty_query">Please enter a search keyword</string>
     <string name="search_found_count">Found %1$d products</string>
+    <!-- Payment related text -->
+
+
+    <string name="payment_checkout_title">Checkout</string>
+    <string name="payment_user_title">Receiver Information</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="payment_zalopay">ZaloPay</string>
+    <string name="payment_cash">Cash on Delivery</string>
+    <string name="payment_subtotal">Subtotal</string>
+    <string name="payment_delivery_fee">Delivery Fee</string>
+    <string name="payment_tax">Tax</string>
+    <string name="payment_total">Total Payment</string>
+    <string name="payment_place_order">Place Order</string>
+
+    <!-- Payment Cart Item -->
+    <string name="item_size_label">Size: %1$s</string>
+    <string name="item_quantity_label">x%1$d</string>
+    <string name="item_no_name">Empty Name</string>
+    <string name="payment_label_email">Email</string>
+    <string name="payment_label_name">Name</string>
+    <string name="payment_label_address">Address</string>
+    <string name="payment_lable_phone">Phone Number:</string>
 </resources>

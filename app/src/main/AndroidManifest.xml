@@ -17,6 +17,21 @@
         android:theme="@style/Theme.OnlineShoesShop"
         tools:targetApi="31">
         <activity
+            android:name=".activity.OrderSuccessActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.PaymentActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="demozpdk" android:host="app" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".activity.TransactionHistoryActivity"
             android:exported="false" />
         <activity
@@ -37,18 +52,8 @@
         <activity
             android:name=".activity.CartActivity"
             android:exported="true"
-            android:launchMode="singleTop">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
+            android:launchMode="singleTop" />
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="app"
-                    android:scheme="demozpdk" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".activity.DetailActivity"
             android:exported="false" />
