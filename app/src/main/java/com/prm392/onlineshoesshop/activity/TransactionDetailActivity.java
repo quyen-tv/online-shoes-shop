@@ -51,39 +51,46 @@ public class TransactionDetailActivity extends AppCompatActivity {
     }
 
     private void setupViews() {
-        binding.tvTransactionId.setText(transaction.getAppTransId());
-        binding.tvDate.setText(formatDate(transaction.getCreatedAt()));
-        binding.tvPaymentMethod.setText(transaction.getPaymentMethod());
+        binding.tvTransactionId.setText("" + transaction.getAppTransId());
+        binding.tvDate.setText("" + formatDate(transaction.getCreatedAt()));
+        binding.tvPaymentMethod.setText("" + transaction.getPaymentMethod());
 
-        binding.tvPaymentStatus.setText(transaction.getPaymentStatus().name());
-        binding.tvOrderStatus.setText(transaction.getOrderStatus().name());
-
+        // Trạng thái thanh toán
         switch (transaction.getPaymentStatus()) {
             case PENDING:
+                binding.tvPaymentStatus.setText("Đang xử lý");
                 binding.tvPaymentStatus.setTextColor(getColor(R.color.orange));
                 break;
             case SUCCESS:
+                binding.tvPaymentStatus.setText("Thành công");
                 binding.tvPaymentStatus.setTextColor(getColor(R.color.green));
                 break;
             case FAILED:
+                binding.tvPaymentStatus.setText("Thất bại");
                 binding.tvPaymentStatus.setTextColor(getColor(R.color.red));
                 break;
         }
 
+        // Trạng thái đơn hàng
         switch (transaction.getOrderStatus()) {
             case WAITING_CONFIRMATION:
+                binding.tvOrderStatus.setText("Chờ xác nhận");
                 binding.tvOrderStatus.setTextColor(getColor(R.color.purple_700));
                 break;
             case WAITING_FOR_PICKUP:
+                binding.tvOrderStatus.setText("Chờ lấy hàng");
                 binding.tvOrderStatus.setTextColor(getColor(R.color.orange));
                 break;
             case DELIVERING:
+                binding.tvOrderStatus.setText("Đang giao");
                 binding.tvOrderStatus.setTextColor(getColor(R.color.custom_blue));
                 break;
             case DELIVERED:
+                binding.tvOrderStatus.setText("Đã giao");
                 binding.tvOrderStatus.setTextColor(getColor(R.color.green));
                 break;
             case CANCELLED:
+                binding.tvOrderStatus.setText("Đã huỷ");
                 binding.tvOrderStatus.setTextColor(getColor(R.color.red));
                 break;
         }
@@ -91,16 +98,16 @@ public class TransactionDetailActivity extends AppCompatActivity {
         // ✅ Format tiền
         NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
         double subtotal = transaction.getTotalAmount() - transaction.getTax() - transaction.getDeliveryFee();
-        binding.tvSubtotal.setText("₫" + currencyFormat.format(subtotal));
-        binding.tvTax.setText("₫" + currencyFormat.format(transaction.getTax()));
-        binding.tvDeliveryFee.setText("₫" + currencyFormat.format(transaction.getDeliveryFee()));
-        binding.tvTotal.setText("₫" + currencyFormat.format(transaction.getTotalAmount()));
+        binding.tvSubtotal.setText(currencyFormat.format(subtotal) + "₫");
+        binding.tvTax.setText(currencyFormat.format(transaction.getTax()) + "₫");
+        binding.tvDeliveryFee.setText(currencyFormat.format(transaction.getDeliveryFee())+  "₫" );
+        binding.tvTotal.setText(currencyFormat.format(transaction.getTotalAmount())  + "₫");
+
         if (transaction.getPaymentStatus() == Transaction.PaymentStatus.SUCCESS && transaction.getPaidAt() > 0) {
-            binding.tvPaidAt.setText(formatDate(transaction.getPaidAt()));
+            binding.tvPaidAt.setText("" + formatDate(transaction.getPaidAt()));
         } else {
             binding.tvPaidAt.setText("Chưa thanh toán");
         }
-
 
         if (transaction.getPaymentStatus() == Transaction.PaymentStatus.PENDING
                 && transaction.getOrderStatus() == Transaction.OrderStatus.WAITING_CONFIRMATION) {
@@ -122,14 +129,13 @@ public class TransactionDetailActivity extends AppCompatActivity {
             binding.btnCancelOrder.setOnClickListener(v -> {
                 new AlertDialog.Builder(this)
                         .setTitle("Xác nhận huỷ đơn")
-                        .setMessage("Bạn có chắc muốn huỷ đơn hàng này không?")
+                        .setMessage("Bạn có chắc chắn muốn huỷ đơn hàng này không?")
                         .setPositiveButton("Huỷ đơn", (dialog, which) -> {
                             TransactionRepository repo = new TransactionRepository();
                             String transId = transaction.getAppTransId();
 
                             repo.updateOrderStatus(transId, Transaction.OrderStatus.CANCELLED);
 
-                            // 👇 Nếu là COD thì cần rollback stock và sold
                             if ("CashOnDelivery".equalsIgnoreCase(transaction.getPaymentMethod())) {
                                 increaseStock(transaction.getItems());
                                 decreaseSold(transaction.getItems());
@@ -137,18 +143,16 @@ public class TransactionDetailActivity extends AppCompatActivity {
 
                             Toast.makeText(this, "Đơn hàng đã được huỷ", Toast.LENGTH_SHORT).show();
                             binding.actionButtonsLayout.setVisibility(View.GONE);
-                            binding.tvOrderStatus.setText("CANCELLED");
+                            binding.tvOrderStatus.setText("Đã huỷ");
                             binding.tvOrderStatus.setTextColor(getColor(R.color.red));
                         })
                         .setNegativeButton("Không", null)
                         .show();
             });
 
-
         } else {
             binding.actionButtonsLayout.setVisibility(View.GONE);
         }
-
     }
 
     private void setupRecyclerView() {

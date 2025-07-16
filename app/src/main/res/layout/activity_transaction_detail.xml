@@ -36,7 +36,7 @@
             android:id="@+id/titleTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Transaction Detail"
+            android:text="Chi tiết giao dịch"
             android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -77,7 +77,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Transaction Information"
+                        android:text="Thông tin giao dịch"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -99,7 +99,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Transaction ID:"
+                            android:text="Mã giao dịch:"
                             android:textColor="@color/grey"
                             android:textSize="14sp" />
 
@@ -133,7 +133,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Payment Status:"
+                                android:text="Trạng thái thanh toán:"
                                 android:textColor="@color/grey"
                                 android:textSize="14sp" />
 
@@ -160,7 +160,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Order Status:"
+                                android:text="Trạng thái đơn hàng:"
                                 android:textColor="@color/grey"
                                 android:textSize="14sp" />
 
@@ -190,7 +190,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Date:"
+                            android:text="Ngày tạo:"
                             android:textColor="@color/grey"
                             android:textSize="14sp" />
 
@@ -216,7 +216,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Paid At:"
+                            android:text="Đã thanh toán lúc:"
                             android:textColor="@color/grey"
                             android:textSize="14sp" />
 
@@ -241,7 +241,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Payment Method:"
+                            android:text="Phương thức thanh toán:"
                             android:textColor="@color/grey"
                             android:textSize="14sp" />
 
@@ -278,7 +278,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Items"
+                        android:text="Sản phẩm"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -316,7 +316,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Order Summary"
+                        android:text="Tóm tắt đơn hàng"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -338,7 +338,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Subtotal:"
+                            android:text="Tạm tính:"
                             android:textColor="@color/grey"
                             android:textSize="14sp" />
 
@@ -365,7 +365,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Tax:"
+                            android:text="Thuế:"
                             android:textColor="@color/grey"
                             android:textSize="14sp" />
 
@@ -392,7 +392,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Delivery Fee:"
+                            android:text="Phí giao hàng:"
                             android:textColor="@color/grey"
                             android:textSize="14sp" />
 
@@ -424,7 +424,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Total:"
+                            android:text="Tổng cộng:"
                             android:textColor="@color/black"
                             android:textSize="16sp"
                             android:textStyle="bold" />

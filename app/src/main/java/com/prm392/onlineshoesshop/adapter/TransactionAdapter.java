@@ -43,48 +43,54 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
     public void onBindViewHolder(@NonNull TransactionViewHolder holder, int position) {
         Transaction transaction = transactionList.get(position);
 
-        holder.tvTransactionId.setText("ID: " + transaction.getAppTransId());
+        holder.tvTransactionId.setText("Mã đơn: " + transaction.getAppTransId());
         holder.tvTimestamp.setText(formatDate(transaction.getCreatedAt()));
 
         // Format VNĐ
         NumberFormat format = NumberFormat.getInstance(new Locale("vi", "VN"));
-        String formattedAmount = "₫" + format.format(transaction.getTotalAmount());
-        holder.tvTotalAmount.setText("Total: " + formattedAmount);
+        String formattedAmount = format.format(transaction.getTotalAmount())+"₫"  ;
+        holder.tvTotalAmount.setText("Tổng tiền: " + formattedAmount);
 
-        holder.tvMethod.setText("Method: " + transaction.getPaymentMethod());
+        holder.tvMethod.setText("Phương thức: " + transaction.getPaymentMethod());
 
         // Trạng thái thanh toán
         Transaction.PaymentStatus paymentStatus = transaction.getPaymentStatus();
-        holder.tvPaymentStatus.setText("Payment: " + paymentStatus.name());
         switch (paymentStatus) {
             case PENDING:
+                holder.tvPaymentStatus.setText("Thanh toán: Đang xử lý");
                 holder.tvPaymentStatus.setTextColor(context.getColor(R.color.orange));
                 break;
             case SUCCESS:
+                holder.tvPaymentStatus.setText("Thanh toán: Thành công");
                 holder.tvPaymentStatus.setTextColor(context.getColor(R.color.green));
                 break;
             case FAILED:
+                holder.tvPaymentStatus.setText("Thanh toán: Thất bại");
                 holder.tvPaymentStatus.setTextColor(context.getColor(R.color.red));
                 break;
         }
 
         // Trạng thái đơn hàng
         Transaction.OrderStatus orderStatus = transaction.getOrderStatus();
-        holder.tvOrderStatus.setText("Order: " + orderStatus.name());
         switch (orderStatus) {
             case WAITING_CONFIRMATION:
+                holder.tvOrderStatus.setText("Trạng thái: Chờ xác nhận");
                 holder.tvOrderStatus.setTextColor(context.getColor(R.color.purple_700));
                 break;
             case WAITING_FOR_PICKUP:
+                holder.tvOrderStatus.setText("Trạng thái: Chờ lấy hàng");
                 holder.tvOrderStatus.setTextColor(context.getColor(R.color.orange));
                 break;
             case DELIVERING:
+                holder.tvOrderStatus.setText("Trạng thái: Đang giao");
                 holder.tvOrderStatus.setTextColor(context.getColor(R.color.custom_blue));
                 break;
             case DELIVERED:
+                holder.tvOrderStatus.setText("Trạng thái: Đã giao");
                 holder.tvOrderStatus.setTextColor(context.getColor(R.color.green));
                 break;
             case CANCELLED:
+                holder.tvOrderStatus.setText("Trạng thái: Đã huỷ");
                 holder.tvOrderStatus.setTextColor(context.getColor(R.color.red));
                 break;
         }

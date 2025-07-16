@@ -48,7 +48,7 @@ public class TransactionDetailAdapter extends RecyclerView.Adapter<TransactionDe
 
         // ✅ Format giá tiền (VND)
         NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
-        holder.itemPrice.setText("₫" + currencyFormat.format(item.getPrice()));
+        holder.itemPrice.setText(currencyFormat.format(item.getPrice()) +"₫" );
 
         Glide.with(context)
                 .load(item.getPicUrl())
