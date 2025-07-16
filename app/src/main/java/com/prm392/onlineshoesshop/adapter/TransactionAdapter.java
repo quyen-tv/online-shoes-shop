@@ -16,6 +16,7 @@ import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.activity.TransactionDetailActivity;
 import com.prm392.onlineshoesshop.model.Transaction;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -44,26 +45,50 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
         holder.tvTransactionId.setText("ID: " + transaction.getAppTransId());
         holder.tvTimestamp.setText(formatDate(transaction.getCreatedAt()));
-        holder.tvTotalAmount.setText("Total: $" + transaction.getTotalAmount());
+
+        // Format VNĐ
+        NumberFormat format = NumberFormat.getInstance(new Locale("vi", "VN"));
+        String formattedAmount = "₫" + format.format(transaction.getTotalAmount());
+        holder.tvTotalAmount.setText("Total: " + formattedAmount);
+
         holder.tvMethod.setText("Method: " + transaction.getPaymentMethod());
 
-        // Trạng thái
-        Transaction.Status status = transaction.getStatus();
-        holder.tvStatus.setText("Status: " + status.name());
-
-        switch (status) {
+        // Trạng thái thanh toán
+        Transaction.PaymentStatus paymentStatus = transaction.getPaymentStatus();
+        holder.tvPaymentStatus.setText("Payment: " + paymentStatus.name());
+        switch (paymentStatus) {
             case PENDING:
-                holder.tvStatus.setTextColor(context.getColor(R.color.orange)); // define in colors.xml
+                holder.tvPaymentStatus.setTextColor(context.getColor(R.color.orange));
                 break;
             case SUCCESS:
-                holder.tvStatus.setTextColor(context.getColor(R.color.green)); // define in colors.xml
+                holder.tvPaymentStatus.setTextColor(context.getColor(R.color.green));
                 break;
             case FAILED:
-                holder.tvStatus.setTextColor(context.getColor(R.color.red)); // define in colors.xml
+                holder.tvPaymentStatus.setTextColor(context.getColor(R.color.red));
                 break;
         }
 
-        // Add click listener to navigate to detail
+        // Trạng thái đơn hàng
+        Transaction.OrderStatus orderStatus = transaction.getOrderStatus();
+        holder.tvOrderStatus.setText("Order: " + orderStatus.name());
+        switch (orderStatus) {
+            case WAITING_CONFIRMATION:
+                holder.tvOrderStatus.setTextColor(context.getColor(R.color.purple_700));
+                break;
+            case WAITING_FOR_PICKUP:
+                holder.tvOrderStatus.setTextColor(context.getColor(R.color.orange));
+                break;
+            case DELIVERING:
+                holder.tvOrderStatus.setTextColor(context.getColor(R.color.custom_blue));
+                break;
+            case DELIVERED:
+                holder.tvOrderStatus.setTextColor(context.getColor(R.color.green));
+                break;
+            case CANCELLED:
+                holder.tvOrderStatus.setTextColor(context.getColor(R.color.red));
+                break;
+        }
+
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, TransactionDetailActivity.class);
             intent.putExtra("transaction", transaction);
@@ -77,15 +102,16 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
     }
 
     public static class TransactionViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTransactionId, tvTimestamp, tvTotalAmount, tvStatus, tvMethod;
+        TextView tvTransactionId, tvTimestamp, tvTotalAmount, tvPaymentStatus, tvOrderStatus, tvMethod;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTransactionId = itemView.findViewById(R.id.tvTransactionId);
             tvTimestamp = itemView.findViewById(R.id.tvTimestamp);
             tvTotalAmount = itemView.findViewById(R.id.tvTotalAmount);
-            tvStatus = itemView.findViewById(R.id.tvStatus);
-            tvMethod = itemView.findViewById(R.id.tvMethod);
+            tvPaymentStatus = itemView.findViewById(R.id.tvPaymentStatus);
+            tvOrderStatus = itemView.findViewById(R.id.tvOrderStatus);
+            tvMethod = itemView.findViewById(R.id.tvPaymentMethod);
         }
     }
 

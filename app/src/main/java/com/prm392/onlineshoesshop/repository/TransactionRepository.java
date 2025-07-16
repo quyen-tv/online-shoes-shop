@@ -36,7 +36,7 @@ public class TransactionRepository {
                 deliveryFee,
                 items,
                 Transaction.PaymentStatus.PENDING,          // 🔁 payment chưa hoàn tất
-                Transaction.OrderStatus.PENDING_CONFIRMATION, // 🔁 chờ xác nhận đơn hàng
+                Transaction.OrderStatus.WAITING_CONFIRMATION, // 🔁 chờ xác nhận đơn hàng
                 paymentMethod
         );
 

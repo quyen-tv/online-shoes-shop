@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- ID giao dịch -->
+        <!-- Transaction ID -->
         <TextView
             android:id="@+id/tvTransactionId"
             android:layout_width="0dp"
@@ -28,7 +28,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Thời gian -->
+        <!-- Timestamp -->
         <TextView
             android:id="@+id/tvTimestamp"
             android:layout_width="0dp"
@@ -41,7 +41,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="2dp" />
 
-        <!-- Tổng tiền -->
+        <!-- Total Amount -->
         <TextView
             android:id="@+id/tvTotalAmount"
             android:layout_width="0dp"
@@ -55,27 +55,39 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp" />
 
-        <!-- Trạng thái -->
+        <!-- Payment Status -->
         <TextView
-            android:id="@+id/tvStatus"
+            android:id="@+id/tvPaymentStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Status: PENDING"
-            android:textColor="@color/purple_700"
+            android:text="Payment: SUCCESS"
+            android:textColor="@color/green"
             android:textSize="13sp"
             app:layout_constraintTop_toBottomOf="@id/tvTotalAmount"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="6dp" />
 
-        <!-- Phương thức thanh toán -->
+        <!-- Order Status -->
         <TextView
-            android:id="@+id/tvMethod"
+            android:id="@+id/tvOrderStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Order: WAITING_CONFIRMATION"
+            android:textColor="@color/purple_700"
+            android:textSize="13sp"
+            app:layout_constraintTop_toBottomOf="@id/tvPaymentStatus"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="2dp" />
+
+        <!-- Payment Method -->
+        <TextView
+            android:id="@+id/tvPaymentMethod"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Method: ZaloPay"
             android:textColor="@color/black"
             android:textSize="13sp"
-            app:layout_constraintTop_toBottomOf="@id/tvStatus"
+            app:layout_constraintTop_toBottomOf="@id/tvOrderStatus"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="2dp" />
 

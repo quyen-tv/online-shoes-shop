@@ -31,8 +31,10 @@ import com.prm392.onlineshoesshop.model.Transaction;
 import com.prm392.onlineshoesshop.model.TransactionItem;
 import com.prm392.onlineshoesshop.repository.TransactionRepository;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 
@@ -112,9 +114,8 @@ public class PaymentActivity extends AppCompatActivity {
         }
 
         try {
-            double usd = totalAmount;
-            double rate = 25000;
-            long vnd = Math.round(usd * rate);
+
+            long vnd = Math.round(totalAmount);
 
             showLoading();
 
@@ -149,7 +150,7 @@ public class PaymentActivity extends AppCompatActivity {
                                     transactionRepository.createPendingTransaction(
                                             appTransId,
                                             FirebaseAuth.getInstance().getUid(),
-                                            usd, tax, deliveryFee,
+                                            vnd, tax, deliveryFee,
                                             simplifiedItems,
                                             "ZaloPay"
                                     );
@@ -324,10 +325,12 @@ public class PaymentActivity extends AppCompatActivity {
         binding.viewCart.setAdapter(adapter);
 
         // Cập nhật các thông tin tính tiền
-        binding.totalFeeTxt.setText("$" + String.format("%.2f", getSubtotal()));
-        binding.taxTxt.setText("$" + String.format("%.2f", tax));
-        binding.deliveryTxt.setText("$" + String.format("%.2f", deliveryFee));
-        binding.totalTxt.setText("$" + String.format("%.2f", totalAmount));
+        NumberFormat format = NumberFormat.getInstance(new Locale("vi", "VN"));
+        binding.totalFeeTxt.setText("₫" + format.format(getSubtotal()));
+        binding.taxTxt.setText("₫" + format.format(tax));
+        binding.deliveryTxt.setText("₫" + format.format(deliveryFee));
+        binding.totalTxt.setText("₫" + format.format(totalAmount));
+
     }
     private double getSubtotal() {
         double subtotal = 0.0;
