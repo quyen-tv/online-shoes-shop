@@ -24,6 +24,7 @@ import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.repository.ItemRepository;
 import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.utils.ChipStyleUtils;
+import com.prm392.onlineshoesshop.utils.PriceRangeDialog;
 import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
 
@@ -45,6 +46,7 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
     private boolean isDecorationAdded = false;
     private List<ItemModel> allFavoriteItems = new ArrayList<>();
     private String currentSearchQuery = "";
+    private PriceRangeDialog priceRangeDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,6 +61,13 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
                 getString(R.string.chip_price_range_100_200), // HUNDRED_TO_200
                 getString(R.string.chip_price_range_over_200) // OVER_200
         };
+
+        // Khởi tạo PriceRangeDialog giống AllItemsActivity
+        priceRangeDialog = new PriceRangeDialog(this, (minPrice, maxPrice, rangeType) -> {
+            filterState = filterState.setPriceRange(minPrice, maxPrice, rangeType);
+            updateAllChipsAppearance();
+            applyFilters();
+        });
 
         binding.btnBack.setVisibility(View.GONE);
 
@@ -186,55 +195,13 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
     private void initFilterChips() {
         binding.chipInStock.setOnClickListener(v -> {
             filterState = filterState.toggleInStock();
-            updateChipAppearance(binding.chipInStock, filterState.isInStockSelected());
+            updateAllChipsAppearance();
             applyFilters();
         });
 
         binding.chipPriceRange.setOnClickListener(v -> {
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-            builder.setTitle(getString(R.string.chip_price_range_default));
-            builder.setSingleChoiceItems(priceRanges, selectedPriceIndex, (dialog, which) -> {
-                selectedPriceIndex = which;
-
-                double minPrice = 0, maxPrice = Double.MAX_VALUE;
-                FilterState.PriceRangeType type = FilterState.PriceRangeType.NONE;
-
-                switch (which) {
-                    case 1:
-                        maxPrice = 50;
-                        type = FilterState.PriceRangeType.UNDER_50;
-                        break;
-                    case 2:
-                        minPrice = 50;
-                        maxPrice = 100;
-                        type = FilterState.PriceRangeType.FIFTY_TO_100;
-                        break;
-                    case 3:
-                        minPrice = 100;
-                        maxPrice = 200;
-                        type = FilterState.PriceRangeType.HUNDRED_TO_200;
-                        break;
-                    case 4:
-                        minPrice = 200;
-                        maxPrice = Double.MAX_VALUE;
-                        type = FilterState.PriceRangeType.OVER_200;
-                        break;
-                }
-
-                if (which == 0) {
-                    binding.chipPriceRange.setText(getString(R.string.chip_price_range_default));
-                    ChipStyleUtils.applyStyle(this, binding.chipPriceRange, false);
-                    filterState = filterState.togglePriceRange();
-                } else {
-                    binding.chipPriceRange.setText(priceRanges[which]);
-                    ChipStyleUtils.applyStyle(this, binding.chipPriceRange, true);
-                    filterState = filterState.setPriceRange(minPrice, maxPrice, type);
-                }
-
-                applyFilters();
-                dialog.dismiss();
-            });
-            builder.show();
+            priceRangeDialog.show(filterState.getPriceRangeType(), filterState.getMinPrice(),
+                    filterState.getMaxPrice());
         });
 
         binding.chipSortPriceLow.setOnClickListener(v -> {
@@ -245,7 +212,8 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             handleSortChipClick(FilterState.SortType.PRICE_HIGH);
         });
 
-        binding.chipSortPopular.setVisibility(View.GONE);
+        binding.chipSortPopular.setOnClickListener(v -> handleSortChipClick(FilterState.SortType.POPULAR));
+        binding.chipSortPopular.setVisibility(View.VISIBLE);
 
     }
 
@@ -255,7 +223,7 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         } else {
             filterState = filterState.setSortType(sortType);
         }
-        updateSortChipsAppearance();
+        updateAllChipsAppearance();
         applyFilters();
     }
 
@@ -263,6 +231,13 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         updateChipAppearance(binding.chipSortPriceLow, filterState.getSortType() == FilterState.SortType.PRICE_LOW);
         updateChipAppearance(binding.chipSortPriceHigh, filterState.getSortType() == FilterState.SortType.PRICE_HIGH);
         updateChipAppearance(binding.chipSortPopular, filterState.getSortType() == FilterState.SortType.POPULAR);
+    }
+
+    private void updateAllChipsAppearance() {
+        updateChipAppearance(binding.chipInStock, filterState.isInStockSelected());
+        // Cập nhật chipPriceRange: chỉ các mốc khác NONE mới tím
+        updatePriceRangeChipText(filterState.getMinPrice(), filterState.getMaxPrice(), filterState.getPriceRangeType());
+        updateSortChipsAppearance();
     }
 
     private void updateChipAppearance(@NonNull Chip chip, boolean isSelected) {
@@ -349,8 +324,11 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
             filtered = filterByPriceRange(filtered, filterState.getMinPrice(), filterState.getMaxPrice());
         }
 
-        if (filterState.getSortType() == FilterState.SortType.PRICE_LOW ||
-                filterState.getSortType() == FilterState.SortType.PRICE_HIGH) {
+        // Lọc sản phẩm bán chạy nếu chọn popular
+        if (filterState.getSortType() == FilterState.SortType.POPULAR) {
+            filtered = filterByPopular(filtered);
+        } else if (filterState.getSortType() == FilterState.SortType.PRICE_LOW
+                || filterState.getSortType() == FilterState.SortType.PRICE_HIGH) {
             filtered = sortByPrice(filtered, filterState.getSortType());
         }
 
@@ -407,4 +385,38 @@ public class FavoriteActivity extends AppCompatActivity implements FavoriteAdapt
         return sorted;
     }
 
+    private List<ItemModel> filterByPopular(List<ItemModel> items) {
+        List<ItemModel> filtered = new ArrayList<>();
+        for (ItemModel item : items) {
+            Integer sold = item.getSold();
+            if (sold != null && sold >= 1000) {
+                filtered.add(item);
+            }
+        }
+        return filtered;
+    }
+
+    private void updatePriceRangeChipText(double minPrice, double maxPrice, FilterState.PriceRangeType rangeType) {
+        String chipText;
+        switch (rangeType) {
+            case UNDER_50:
+                chipText = "Dưới 500K";
+                break;
+            case FIFTY_TO_100:
+                chipText = "500K - 1 triệu";
+                break;
+            case HUNDRED_TO_200:
+                chipText = "1 triệu - 2 triệu";
+                break;
+            case OVER_200:
+                chipText = "Trên 2 triệu";
+                break;
+            default:
+                chipText = getString(R.string.chip_price_range_default);
+                break;
+        }
+        binding.chipPriceRange.setText(chipText);
+        boolean isSelected = rangeType != FilterState.PriceRangeType.NONE;
+        ChipStyleUtils.applyStyle(this, binding.chipPriceRange, isSelected);
+    }
 }

@@ -32,16 +32,19 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import com.prm392.onlineshoesshop.repository.ItemRepository;
+import com.prm392.onlineshoesshop.helper.TinyDB;
 
 public class SearchActivity extends AppCompatActivity {
     // UI
     private AutoCompleteTextView etSearch;
     private ImageView ivBack;
+    private ImageView ivClearHistory;
+    private TextView tvClearHistory;
     private RecyclerView rvHistory;
     private HistoryAdapter historyAdapter;
 
     // Data
-    private List<String> historyList = new ArrayList<>();
+    private ArrayList<String> historyList = new ArrayList<>();
     private ArrayAdapter<String> suggestionAdapter;
     private List<String> suggestionList = new ArrayList<>();
 
@@ -51,11 +54,16 @@ public class SearchActivity extends AppCompatActivity {
 
     private ItemViewModel itemViewModel;
 
+    private TinyDB tinyDB;
+    private static final String KEY_HISTORY = "search_history";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySearchBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        tinyDB = new TinyDB(this);
 
         // ActivityResultLauncher để nhận lại search_text khi quay lại
         searchResultLauncher = registerForActivityResult(
@@ -72,6 +80,7 @@ public class SearchActivity extends AppCompatActivity {
 
         // Init UI bằng binding
         ivBack = binding.ivBackSearch;
+        tvClearHistory = binding.tvClearHistory;
         etSearch = binding.etSearch;
         rvHistory = binding.rvHistory;
         rvHistory.setLayoutManager(new LinearLayoutManager(this));
@@ -94,7 +103,7 @@ public class SearchActivity extends AppCompatActivity {
         }
 
         // Lịch sử tìm kiếm mẫu (có thể lưu vào SharedPreferences nếu muốn)
-        historyList = new ArrayList<>(Arrays.asList("Nike", "Adidas", "Puma"));
+        loadHistory();
         updateHistory();
 
         // Khởi tạo suggestionList rỗng và adapter
@@ -171,6 +180,11 @@ public class SearchActivity extends AppCompatActivity {
         });
 
         ivBack.setOnClickListener(v -> finish());
+        tvClearHistory.setOnClickListener(v -> {
+            historyList.clear();
+            updateHistory();
+            saveHistory();
+        });
     }
 
     @Override
@@ -194,6 +208,24 @@ public class SearchActivity extends AppCompatActivity {
         if (historyAdapter != null) {
             historyAdapter.setHistoryList(historyList);
         }
+        if (tvClearHistory != null) {
+            tvClearHistory.setVisibility(historyList.isEmpty() ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    // Đọc lịch sử từ TinyDB
+    private void loadHistory() {
+        historyList = tinyDB.getListString(KEY_HISTORY);
+        if (historyList == null)
+            historyList = new ArrayList<>();
+        if (historyList.size() > 10) {
+            historyList = new ArrayList<>(historyList.subList(0, 10));
+        }
+    }
+
+    // Lưu lịch sử vào TinyDB
+    private void saveHistory() {
+        tinyDB.putListString(KEY_HISTORY, historyList);
     }
 
     // Thêm vào lịch sử tìm kiếm (không trùng lặp, mới nhất lên đầu)
@@ -201,7 +233,8 @@ public class SearchActivity extends AppCompatActivity {
         historyList.remove(query);
         historyList.add(0, query);
         if (historyList.size() > 10)
-            historyList = historyList.subList(0, 10);
+            historyList = (ArrayList<String>) historyList.subList(0, 10);
         updateHistory();
+        saveHistory();
     }
 }

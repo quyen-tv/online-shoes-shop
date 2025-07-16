@@ -93,7 +93,7 @@
     <string name="sort_by_label">Sắp xếp theo:</string>
     <string name="chip_sort_price_low">Giá tăng dần</string>
     <string name="chip_sort_price_high">Giá giảm dần</string>
-    <string name="chip_sort_popular">Xem nhiều</string>
+    <string name="chip_sort_popular">Bán chạy</string>
 
     <string name="my_favorites">Lượt thích</string>
 

@@ -23,16 +23,6 @@
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/black" />
-
-        <ImageButton
-            android:id="@+id/btnClose"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="4dp"
-            app:srcCompat="@drawable/back"
-            android:rotation="45"
-            android:contentDescription="Đóng" />
     </LinearLayout>
 
     <!-- Price Range Options -->
@@ -45,6 +35,41 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <!-- All -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/light_grey">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="12dp"
+                        app:srcCompat="@drawable/ic_currency_notes"
+                        app:tint="@color/purple" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tất cả"
+                        android:textSize="16sp"
+                        android:textColor="@color/black" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Under $50 -->
             <com.google.android.material.card.MaterialCardView
@@ -68,23 +93,23 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
-                        app:srcCompat="@drawable/ic_price"
+                        app:srcCompat="@drawable/ic_currency_notes"
                         app:tint="@color/purple" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Dưới $50"
+                        android:text="Dưới 500K"
                         android:textSize="16sp"
                         android:textColor="@color/black" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0 - 50"
+                        android:text="0 - 500K"
                         android:textSize="14sp"
-                        android:textColor="@color/light_grey" />
+                        android:textColor="@color/grey" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -110,23 +135,23 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
-                        app:srcCompat="@drawable/ic_price"
+                        app:srcCompat="@drawable/ic_currency_notes"
                         app:tint="@color/purple" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="$50 - $100"
+                        android:text="500K - 1 triệu"
                         android:textSize="16sp"
                         android:textColor="@color/black" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="50 - 100"
+                        android:text="500K - 1 triệu"
                         android:textSize="14sp"
-                        android:textColor="@color/light_grey" />
+                        android:textColor="@color/grey" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -152,23 +177,23 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
-                        app:srcCompat="@drawable/ic_price"
+                        app:srcCompat="@drawable/ic_currency_notes"
                         app:tint="@color/purple" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="$100 - $200"
+                        android:text="1 triệu - 2 triệu"
                         android:textSize="16sp"
                         android:textColor="@color/black" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="100 - 200"
+                        android:text="1 triệu - 2 triệu"
                         android:textSize="14sp"
-                        android:textColor="@color/light_grey" />
+                        android:textColor="@color/grey" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -196,120 +221,23 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginEnd="12dp"
-                        app:srcCompat="@drawable/ic_price"
+                        app:srcCompat="@drawable/ic_currency_notes"
                         app:tint="@color/purple" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Trên $200"
+                        android:text="Trên 2 triệu"
                         android:textColor="@color/black"
                         android:textSize="16sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="500+"
+                        android:text="2 triệu+"
                         android:textSize="14sp"
-                        android:textColor="@color/light_grey" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Custom Range -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardCustomRange"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/light_grey">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginEnd="12dp"
-                            app:srcCompat="@drawable/ic_price"
-                            app:tint="@color/purple" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Khoảng giá tùy chỉnh"
-                            android:textSize="16sp"
-                            android:textColor="@color/black" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                            app:boxCornerRadiusTopStart="8dp"
-                            app:boxCornerRadiusTopEnd="8dp"
-                            app:boxCornerRadiusBottomStart="8dp"
-                            app:boxCornerRadiusBottomEnd="8dp"
-                            app:placeholderText="Từ">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etMinPrice"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="numberDecimal"
-                                android:hint="Từ" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="-"
-                            android:textSize="16sp"
-                            android:textColor="@color/black"
-                            android:layout_marginHorizontal="8dp" />
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                            app:boxCornerRadiusTopStart="8dp"
-                            app:boxCornerRadiusTopEnd="8dp"
-                            app:boxCornerRadiusBottomStart="8dp"
-                            app:boxCornerRadiusBottomEnd="8dp"
-                            app:placeholderText="Đến">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etMaxPrice"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="numberDecimal"
-                                android:hint="Đến" />
-                        </com.google.android.material.textfield.TextInputLayout>
-                    </LinearLayout>
+                        android:textColor="@color/grey" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
