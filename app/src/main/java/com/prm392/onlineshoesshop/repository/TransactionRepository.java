@@ -6,13 +6,13 @@ import androidx.annotation.NonNull;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.Transaction;
 import com.prm392.onlineshoesshop.model.TransactionItem;
 
 import java.util.List;
 
 public class TransactionRepository {
+
     private final DatabaseReference transactionRef;
 
     public TransactionRepository() {
@@ -35,27 +35,35 @@ public class TransactionRepository {
                 tax,
                 deliveryFee,
                 items,
-                Transaction.Status.PENDING,
+                Transaction.PaymentStatus.PENDING,          // 🔁 payment chưa hoàn tất
+                Transaction.OrderStatus.PENDING_CONFIRMATION, // 🔁 chờ xác nhận đơn hàng
                 paymentMethod
         );
 
         transactionRef.child(appTransId).setValue(transaction)
-                .addOnSuccessListener(unused -> Log.d("TransactionRepo", "Pending transaction saved"))
+                .addOnSuccessListener(unused -> Log.d("TransactionRepo", "Transaction created"))
                 .addOnFailureListener(e -> Log.e("TransactionRepo", "Error saving transaction", e));
     }
 
-    public void updateTransactionStatus(@NonNull String appTransId,
-                                        @NonNull Transaction.Status status,
-                                        String transactionId) {
-        transactionRef.child(appTransId).child("status").setValue(status);
-        if (transactionId != null) {
-            transactionRef.child(appTransId).child("transactionId").setValue(transactionId);
+    public void updatePaymentStatus(@NonNull String appTransId,
+                                    @NonNull Transaction.PaymentStatus paymentStatus,
+                                    String zaloTransactionId) {
+
+        transactionRef.child(appTransId).child("paymentStatus").setValue(paymentStatus);
+        if (zaloTransactionId != null) {
+            transactionRef.child(appTransId).child("transactionId").setValue(zaloTransactionId);
         }
     }
-    public void deleteTransaction(@NonNull String appTransId) {
-        transactionRef.child(appTransId).removeValue()
-                .addOnSuccessListener(unused -> Log.d("TransactionRepo", "Pending transaction deleted"))
-                .addOnFailureListener(e -> Log.e("TransactionRepo", "Error deleting transaction", e));
+
+    public void updateOrderStatus(@NonNull String appTransId,
+                                  @NonNull Transaction.OrderStatus orderStatus) {
+
+        transactionRef.child(appTransId).child("orderStatus").setValue(orderStatus);
     }
 
+    public void deleteTransaction(@NonNull String appTransId) {
+        transactionRef.child(appTransId).removeValue()
+                .addOnSuccessListener(unused -> Log.d("TransactionRepo", "Transaction deleted"))
+                .addOnFailureListener(e -> Log.e("TransactionRepo", "Error deleting transaction", e));
+    }
 }

@@ -9,26 +9,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Transaction implements Parcelable {
-    public enum Status {
+
+    public enum PaymentStatus {
         PENDING, SUCCESS, FAILED
     }
 
-    private String transactionId;    // Mã giao dịch từ ZaloPay (có sau khi thành công)
-    private String appTransId;       // Mã giao dịch nội bộ (từ createOrder)
-    private String userId;           // ID của người dùng
-    private long createdAt;          // Thời gian tạo giao dịch (timestamp)
-    private double totalAmount;      // Tổng tiền đơn hàng (USD)
-    private double tax;              // Thuế
-    private double deliveryFee;      // Phí giao hàng
-    private List<TransactionItem> items;// Danh sách sản phẩm trong đơn hàng
-    private Status status;           // Trạng thái giao dịch
-    private String paymentMethod;    // "ZaloPay" hoặc sau này bạn có thể thêm "COD", "Momo"...
+    public enum OrderStatus {
+        WAITING_CONFIRMATION, // Chờ xác nhận
+        WAITING_FOR_PICKUP,   // Chờ lấy hàng
+        DELIVERING,           // Chờ giao hàng
+        DELIVERED,            // Đã giao
+        CANCELLED             // Đã hủy
+    }
+
+    private String transactionId;
+    private String appTransId;
+    private String userId;
+    private long createdAt;
+    private double totalAmount;
+    private double tax;
+    private double deliveryFee;
+    private List<TransactionItem> items;
+    private PaymentStatus paymentStatus;
+    private OrderStatus orderStatus;
+    private String paymentMethod;
 
     public Transaction() {}
 
     public Transaction(String appTransId, String userId, long createdAt,
                        double totalAmount, double tax, double deliveryFee,
-                       List<TransactionItem> items, Status status, String paymentMethod) {
+                       List<TransactionItem> items,
+                       PaymentStatus paymentStatus,
+                       OrderStatus orderStatus,
+                       String paymentMethod) {
         this.appTransId = appTransId;
         this.userId = userId;
         this.createdAt = createdAt;
@@ -36,13 +49,12 @@ public class Transaction implements Parcelable {
         this.tax = tax;
         this.deliveryFee = deliveryFee;
         this.items = items;
-        this.status = status;
+        this.paymentStatus = paymentStatus;
+        this.orderStatus = orderStatus;
         this.paymentMethod = paymentMethod;
     }
 
-
-    // Getter/setter
-
+    // Getter & Setter
     public String getTransactionId() {
         return transactionId;
     }
@@ -98,11 +110,19 @@ public class Transaction implements Parcelable {
     public void setItems(List<TransactionItem> items) {
         this.items = items;
     }
-    public Status getStatus() {
-        return status;
+
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
     }
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public OrderStatus getOrderStatus() {
+        return orderStatus;
+    }
+    public void setOrderStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
     }
 
     public String getPaymentMethod() {
@@ -123,7 +143,8 @@ public class Transaction implements Parcelable {
         deliveryFee = in.readDouble();
         items = new ArrayList<>();
         in.readTypedList(items, TransactionItem.CREATOR);
-        status = Status.valueOf(in.readString());
+        paymentStatus = PaymentStatus.valueOf(in.readString());
+        orderStatus = OrderStatus.valueOf(in.readString());
         paymentMethod = in.readString();
     }
 
@@ -154,7 +175,8 @@ public class Transaction implements Parcelable {
         dest.writeDouble(tax);
         dest.writeDouble(deliveryFee);
         dest.writeTypedList(items);
-        dest.writeString(status.name());
+        dest.writeString(paymentStatus.name());
+        dest.writeString(orderStatus.name());
         dest.writeString(paymentMethod);
     }
 }
