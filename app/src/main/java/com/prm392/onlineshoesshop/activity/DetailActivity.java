@@ -175,8 +175,10 @@ public class DetailActivity extends AppCompatActivity {
             double price = Double.parseDouble(priceStr);
             NumberFormat format = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
             binding.tvPrice.setText(String.format("₫%s", format.format(price)));
+            binding.tvPriceBtn.setText(String.format("₫%s", format.format(price)));
         } catch (Exception e) {
             binding.tvPrice.setText(String.format("₫%s", item.getPrice()));
+            binding.tvPriceBtn.setText(String.format("₫%s", item.getPrice()));
         }
         binding.tvRating.setText(String.valueOf(item.getRating()));
         binding.btnAddToCart.setOnClickListener(v -> {
