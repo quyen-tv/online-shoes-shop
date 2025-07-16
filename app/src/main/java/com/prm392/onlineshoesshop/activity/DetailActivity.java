@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -28,6 +29,9 @@ import com.prm392.onlineshoesshop.repository.ItemRepository;
 import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.utils.UiUtils;
 import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
+import com.prm392.onlineshoesshop.adapter.AllItemAdapter;
+
+import androidx.recyclerview.widget.GridLayoutManager;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -84,6 +88,7 @@ public class DetailActivity extends AppCompatActivity {
         });
 
         setupSynchronization();
+        setupSimilarProducts();
     }
 
     @Override
@@ -153,6 +158,17 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         binding.tvTitle.setText(item.getTitle());
+        Integer sold = item.getSold();
+        String soldText;
+        if (sold == null) {
+            soldText = "Đã bán: 0";
+        } else if (sold >= 1000) {
+            int soldK = sold / 1000;
+            soldText = String.format("Đã bán %dk+", soldK);
+        } else {
+            soldText = String.format("Đã bán: %d", sold);
+        }
+        binding.tvSold.setText(soldText);
         binding.tvDescription.setText(item.getDescription());
         try {
             String priceStr = String.valueOf(item.getPrice());
@@ -173,8 +189,8 @@ public class DetailActivity extends AppCompatActivity {
                         getResources().getColor(R.color.orange));
                 return;
             }
-            item.setNumberInCart(numberOrder); // vẫn giữ
-            managementCart.insertItem(item, selectedSize, numberOrder); // ✅ dùng đúng hàm
+            item.setNumberInCart(numberOrder);
+            managementCart.insertItem(item, selectedSize, numberOrder);
             startActivity(new Intent(this, CartActivity.class));
             finish();
         });
@@ -182,9 +198,8 @@ public class DetailActivity extends AppCompatActivity {
         binding.btnBack.setOnClickListener(v -> {
             finish();
         });
-        // binding.btnFavorite.setOnClickListener(v -> {
-        // itemViewModel.toggleFavorite(item.getItemId());
-        // });
+
+        binding.btnFavorite.setOnClickListener(v -> itemViewModel.toggleFavorite(item.getItemId()));
     }
 
     /**
@@ -207,15 +222,15 @@ public class DetailActivity extends AppCompatActivity {
             }
         });
 
-        // itemViewModel.isItemFavorite(item.getItemId()).observe(this, isFav -> {
-        // if (isFav) {
-        // binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this,
-        // R.drawable.fav_icon_fill));
-        // } else {
-        // binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this,
-        // R.drawable.fav_icon));
-        // }
-        // });
+        itemViewModel.isItemFavorite(item.getItemId()).observe(this, isFav -> {
+            if (isFav) {
+                binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_fav_fill));
+                binding.btnFavorite.setImageTintList(getResources().getColorStateList(R.color.purple));
+            } else {
+                binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this,
+                        R.drawable.ic_fav));
+            }
+        });
     }
 
     private void setupSynchronization() {
@@ -228,6 +243,38 @@ public class DetailActivity extends AppCompatActivity {
                     binding.colorList.scrollToPosition(position);
                 }
             }
+        });
+    }
+
+    private void setupSimilarProducts() {
+        if (item == null)
+            return;
+        ItemRepository itemRepository = new ItemRepository();
+        UserRepository userRepository = new UserRepository();
+        ItemViewModelFactory factory = new ItemViewModelFactory(userRepository, itemRepository);
+        ItemViewModel itemViewModel = new ViewModelProvider(this, factory).get(ItemViewModel.class);
+        itemViewModel.allItems.observe(this, allProducts -> {
+            if (allProducts == null || allProducts.isEmpty())
+                return;
+            List<ItemModel> similar = new ArrayList<>();
+            for (ItemModel p : allProducts) {
+                if (p.getItemId().equals(item.getItemId()))
+                    continue;
+                if ((item.getCategory() != null && item.getCategory().equalsIgnoreCase(p.getCategory())) ||
+                        (item.getBrand() != null && item.getBrand().equalsIgnoreCase(p.getBrand()))) {
+                    similar.add(p);
+                }
+                if (similar.size() >= 10)
+                    break;
+            }
+            AllItemAdapter adapter = new AllItemAdapter(similar);
+            RecyclerView rv = findViewById(R.id.rvSimilar);
+            int spanCount = 2;
+            GridLayoutManager layoutManager = new GridLayoutManager(this, spanCount);
+            rv.setLayoutManager(layoutManager);
+            rv.setAdapter(adapter);
+            int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
+            rv.addItemDecoration(new com.prm392.onlineshoesshop.activity.SpaceItemDecoration(spacing, spanCount));
         });
     }
 

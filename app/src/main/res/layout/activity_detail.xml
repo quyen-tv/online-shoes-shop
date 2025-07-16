@@ -7,73 +7,67 @@
     android:layout_height="match_parent"
     tools:context=".activity.DetailActivity">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/back"
+            tools:ignore="ContentDescription" />
+
+        <!-- Icon giỏ hàng bên phải cùng -->
+        <FrameLayout
+            android:id="@+id/cartIconContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:id="@+id/ivBellIcon"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                app:srcCompat="@drawable/cart"
+                app:tint="@color/black" />
+
+            <TextView
+                android:id="@+id/tvCartBadge"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="end|top"
+                android:background="@drawable/badge_background"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:visibility="gone"
+                android:text="0"/>
+        </FrameLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/clHeader"
+        app:layout_constraintBottom_toTopOf="@+id/lnlButtons">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="32dp"
-                android:layout_marginEnd="16dp">
-
-                <ImageView
-                    android:id="@+id/btnBack"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/back"
-                    tools:ignore="ContentDescription" />
-
-<!--                <ImageView-->
-<!--                    android:id="@+id/btnFavorite"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                    app:layout_constraintEnd_toEndOf="parent"-->
-<!--                    app:layout_constraintTop_toTopOf="parent"-->
-<!--                    app:srcCompat="@drawable/fav_icon"-->
-<!--                    tools:ignore="ContentDescription" />-->
-
-                <!-- Icon giỏ hàng bên phải cùng -->
-                <FrameLayout
-                    android:id="@+id/cartIconContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent">
-
-                    <ImageView
-                        android:id="@+id/ivBellIcon"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        app:srcCompat="@drawable/cart"
-                        app:tint="@color/black" />
-
-                    <TextView
-                        android:id="@+id/tvCartBadge"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_gravity="end|top"
-                        android:background="@drawable/badge_background"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp"
-                        android:gravity="center"
-                        android:visibility="gone"
-                        android:text="0"/>
-                </FrameLayout>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/slider"
                 android:layout_width="match_parent"
@@ -108,28 +102,65 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="16dp"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
+                <!-- Row: Price (left), Sold + Favorite (right) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- Price: align left -->
+                    <TextView
+                        android:id="@+id/tvPrice"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        tools:text="$0"
+                        android:textColor="@color/black"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <!-- Sold + Favorite: align right -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvSold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            tools:text="Đã bán 7k+"
+                            android:textColor="@color/grey"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:layout_marginEnd="8dp" />
+
+                        <ImageView
+                            android:id="@+id/btnFavorite"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            app:srcCompat="@drawable/ic_fav"
+                            tools:ignore="ContentDescription"
+                            app:tint="@color/grey"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Title below -->
                 <TextView
                     android:id="@+id/tvTitle"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     tools:text="title"
                     android:textColor="@color/black"
-                    android:textSize="23sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvPrice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="$0"
-                    android:textColor="@color/black"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp" />
             </LinearLayout>
 
             <LinearLayout
@@ -150,28 +181,6 @@
                     android:textColor="@color/black"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-
-                <ImageView
-                    android:id="@+id/imageView5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    app:srcCompat="@drawable/star"
-                    tools:ignore="ContentDescription" />
-
-                <TextView
-                    android:id="@+id/tvRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="5"
-                    android:layout_marginEnd="8dp"
-                    android:textColor="@color/black" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/rating"
-                    android:textColor="@color/black" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -182,43 +191,192 @@
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"/>
 
+           <LinearLayout
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:orientation="horizontal"
+               android:layout_marginStart="16dp"
+               android:layout_marginEnd="16dp"
+               android:gravity="center_vertical">
+
+               <LinearLayout
+                   android:layout_width="0dp"
+                   android:layout_height="wrap_content"
+                   android:orientation="horizontal"
+                   android:gravity="center_vertical"
+                   android:layout_weight="1">
+
+                   <TextView
+                       android:id="@id/tvRating"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       tools:text="4.9"
+                       android:layout_marginEnd="4dp"
+                       android:textColor="@color/black"
+                       android:textSize="16sp"
+                       android:textStyle="bold" />
+
+                   <ImageView
+                       android:layout_width="13dp"
+                       android:layout_height="13dp"
+                       android:layout_marginEnd="4dp"
+                       app:srcCompat="@drawable/star"
+                       tools:ignore="ContentDescription" />
+
+                   <TextView
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:text="Đánh giá sản phẩm"
+                       android:textColor="@color/black"
+                       android:textSize="14sp"
+                       android:textStyle="bold" />
+
+                   <TextView
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       tools:text="(1,2k)"
+                       android:textColor="@color/dark_grey"
+                       android:textSize="14sp"
+                       android:textStyle="bold" />
+               </LinearLayout>
+
+               <TextView
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:text="Tất cả >"
+                   android:textColor="@color/dark_grey"
+                   android:textSize="12sp"
+                   android:textStyle="bold"/>
+           </LinearLayout>
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mô tả sản phẩm"
+                android:layout_marginStart="16dp"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
             <TextView
                 android:id="@+id/tvDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="Description"
-                android:layout_margin="16dp"/>
+                android:layout_marginStart="16dp"/>
 
             <LinearLayout
+                android:id="@+id/lnlRecommend"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_margin="8dp">
+                android:gravity="center_vertical"
+                android:layout_marginTop="32dp"
+                app:layout_constraintTop_toBottomOf="@id/lnlButtons"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
-                <androidx.appcompat.widget.AppCompatButton
-                    style="@style/Widget.AppCompat.Button"
-                    android:id="@+id/btnAddToCart"
+                <View
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="1dp"
                     android:layout_weight="1"
-                    android:textAllCaps="false"
-                    android:text="@string/buy_now"
-                    android:textColor="@color/white"
-                    android:textSize="18sp"
-                    android:layout_margin="8dp"
-                    android:background="@drawable/purple_button_bg"/>
+                    android:background="#DDD"
+                    android:layout_marginStart="50dp"
+                    android:layout_marginEnd="10dp"/>
 
-                <ImageButton
-                    android:id="@+id/btnCart"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/grey_bg"
-                    android:layout_margin="8dp"
-                    app:tint="@color/black"
-                    app:srcCompat="@drawable/btn_2"
-                    tools:ignore="ContentDescription" />
+                <TextView
+                    android:id="@+id/tvRecommendedTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Có thể bạn cũng thích"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:textColor="@color/dark_grey"/>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="#DDD"
+                    android:layout_marginEnd="50dp"
+                    android:layout_marginStart="10dp"/>
             </LinearLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvSimilar"
+                    android:layout_width="0dp"
+                    android:layout_height="500dp"
+                    android:clipToPadding="false"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
     </ScrollView>
 
+    <LinearLayout
+        android:id="@+id/lnlButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="18dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:id="@+id/btnAddToCart"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@color/teal_700"
+            android:padding="3dp">
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_cart_plus"
+                app:tint="@color/white"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thêm vào giỏ hàng"
+                android:textSize="12sp"
+                android:textColor="@color/white"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="@color/purple"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mua ngay"
+                android:textSize="14sp"
+                android:textColor="@color/white"/>
+
+            <TextView
+                android:id="@+id/tvPriceBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="₫125.000"
+                android:textSize="18sp"
+                android:textColor="@color/white"/>
+        </LinearLayout>
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
