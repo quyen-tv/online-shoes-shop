@@ -20,12 +20,15 @@ import java.util.Locale;
 import android.content.Context;
 import androidx.core.content.ContextCompat;
 import io.noties.markwon.Markwon;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<ChatbotActivity.ChatMessage> messages;
     private static final int TYPE_USER = 0;
     private static final int TYPE_BOT = 1;
     private static final int TYPE_PRODUCT = 2;
+    private static final int TYPE_TYPING = 3;
 
     public ChatAdapter(List<ChatbotActivity.ChatMessage> messages) {
         this.messages = messages;
@@ -38,7 +41,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return TYPE_USER;
         if (msg.type == ChatbotActivity.ChatMessage.Type.BOT)
             return TYPE_BOT;
-        return TYPE_PRODUCT;
+        if (msg.type == ChatbotActivity.ChatMessage.Type.PRODUCT)
+            return TYPE_PRODUCT;
+        return TYPE_TYPING;
     }
 
     @NonNull
@@ -50,9 +55,15 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         } else if (viewType == TYPE_BOT) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chat_bot, parent, false);
             return new BotViewHolder(view);
-        } else {
+        } else if (viewType == TYPE_PRODUCT) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chat_product, parent, false);
             return new ProductViewHolder(view);
+        } else if (viewType == TYPE_TYPING) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_typing_indicator, parent, false);
+            return new TypingViewHolder(view);
+        } else {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chat_bot, parent, false);
+            return new BotViewHolder(view);
         }
     }
 
@@ -108,12 +119,25 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 intent.putExtra("object", product);
                 context.startActivity(intent);
             });
+        } else if (holder instanceof TypingViewHolder) {
+            TypingViewHolder vh = (TypingViewHolder) holder;
+            animateDot(vh.dot1, 0);
+            animateDot(vh.dot2, 300);
+            animateDot(vh.dot3, 600);
         }
     }
 
     @Override
     public int getItemCount() {
         return messages.size();
+    }
+
+    private void animateDot(View dot, long delay) {
+        ObjectAnimator animator = ObjectAnimator.ofFloat(dot, "translationY", 0, -16, 0);
+        animator.setDuration(600);
+        animator.setStartDelay(delay);
+        animator.setRepeatCount(ValueAnimator.INFINITE);
+        animator.start();
     }
 
     static class UserViewHolder extends RecyclerView.ViewHolder {
@@ -139,6 +163,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     static class ProductViewHolder extends RecyclerView.ViewHolder {
         ImageView imgProduct, imgStar;
         TextView tvProductName, tvProductPrice, tvProductRating;
+        android.widget.Button btnAddToCart;
 
         ProductViewHolder(View itemView) {
             super(itemView);
@@ -147,6 +172,17 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             tvProductPrice = itemView.findViewById(R.id.tvProductPrice);
             tvProductRating = itemView.findViewById(R.id.tvProductRating);
             imgStar = itemView.findViewById(R.id.imgStar);
+        }
+    }
+
+    static class TypingViewHolder extends RecyclerView.ViewHolder {
+        View dot1, dot2, dot3;
+
+        TypingViewHolder(View itemView) {
+            super(itemView);
+            dot1 = itemView.findViewById(R.id.dot1);
+            dot2 = itemView.findViewById(R.id.dot2);
+            dot3 = itemView.findViewById(R.id.dot3);
         }
     }
 }
