@@ -21,6 +21,7 @@ import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.repository.ItemRepository;
 import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.utils.ChipStyleUtils;
+import com.prm392.onlineshoesshop.utils.PriceRangeDialog;
 import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
 import java.util.ArrayList;
@@ -48,6 +49,8 @@ public class SearchResultActivity extends AppCompatActivity {
     // ViewModels
     private ItemViewModel itemViewModel;
     private AuthViewModel authViewModel;
+
+    private PriceRangeDialog priceRangeDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,12 +83,19 @@ public class SearchResultActivity extends AppCompatActivity {
         chipSortPopular = binding.chipSortPopular;
 
         priceRanges = new String[] {
-                getString(R.string.price_range_all),        // vị trí index 0
-                getString(R.string.chip_price_range_under_50),                                 // UNDER_50
-                getString(R.string.chip_price_range_50_100),                               // FIFTY_TO_100
-                getString(R.string.chip_price_range_100_200),                              // HUNDRED_TO_200
-                getString(R.string.chip_price_range_over_200)                                 // OVER_200
+                getString(R.string.price_range_all), // vị trí index 0
+                getString(R.string.chip_price_range_under_50), // UNDER_50
+                getString(R.string.chip_price_range_50_100), // FIFTY_TO_100
+                getString(R.string.chip_price_range_100_200), // HUNDRED_TO_200
+                getString(R.string.chip_price_range_over_200) // OVER_200
         };
+
+        // Khởi tạo PriceRangeDialog giống AllItemsActivity
+        priceRangeDialog = new PriceRangeDialog(this, (minPrice, maxPrice, rangeType) -> {
+            filterState = filterState.setPriceRange(minPrice, maxPrice, rangeType);
+            updateAllChipsAppearance();
+            performSearch();
+        });
 
         // Set search query text
         etSearchResult.setText(searchQuery);
@@ -124,47 +134,8 @@ public class SearchResultActivity extends AppCompatActivity {
 
         // Filter: Price range
         chipPriceRange.setOnClickListener(v -> {
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-            builder.setTitle(getString(R.string.chip_price_range_default));
-            builder.setSingleChoiceItems(priceRanges, selectedPriceIndex, (dialog, which) -> {
-                selectedPriceIndex = which;
-                double minPrice = 0, maxPrice = Double.MAX_VALUE;
-                FilterState.PriceRangeType type = FilterState.PriceRangeType.NONE;
-
-                switch (which) {
-                    case 1:
-                        maxPrice = 50;
-                        type = FilterState.PriceRangeType.UNDER_50;
-                        break;
-                    case 2:
-                        minPrice = 50;
-                        maxPrice = 100;
-                        type = FilterState.PriceRangeType.FIFTY_TO_100;
-                        break;
-                    case 3:
-                        minPrice = 100;
-                        maxPrice = 200;
-                        type = FilterState.PriceRangeType.HUNDRED_TO_200;
-                        break;
-                    case 4:
-                        minPrice = 200;
-                        maxPrice = Double.MAX_VALUE;
-                        type = FilterState.PriceRangeType.OVER_200;
-                        break;
-                }
-
-                if (which == 0) {
-                    chipPriceRange.setText(getString(R.string.chip_price_range_default));
-                    filterState = filterState.togglePriceRange();
-                } else {
-                    chipPriceRange.setText(priceRanges[which]);
-                    filterState = filterState.setPriceRange(minPrice, maxPrice, type);
-                }
-                updateAllChipsAppearance();
-                performSearch();
-                dialog.dismiss();
-            });
-            builder.show();
+            priceRangeDialog.show(filterState.getPriceRangeType(), filterState.getMinPrice(),
+                    filterState.getMaxPrice());
         });
 
         // Sort: Price low to high
@@ -240,8 +211,11 @@ public class SearchResultActivity extends AppCompatActivity {
         }
 
         // Apply sorting
-        if (filterState.getSortType() == FilterState.SortType.PRICE_LOW ||
-                filterState.getSortType() == FilterState.SortType.PRICE_HIGH) {
+        // Lọc sản phẩm bán chạy nếu chọn popular
+        if (filterState.getSortType() == FilterState.SortType.POPULAR) {
+            filtered = filterByPopular(filtered);
+        } else if (filterState.getSortType() == FilterState.SortType.PRICE_LOW
+                || filterState.getSortType() == FilterState.SortType.PRICE_HIGH) {
             filtered = sortByPrice(filtered, filterState.getSortType());
         }
 
@@ -348,6 +322,17 @@ public class SearchResultActivity extends AppCompatActivity {
         return sorted;
     }
 
+    private List<ItemModel> filterByPopular(List<ItemModel> items) {
+        List<ItemModel> filtered = new ArrayList<>();
+        for (ItemModel item : items) {
+            Integer sold = item.getSold();
+            if (sold != null && sold >= 1000) {
+                filtered.add(item);
+            }
+        }
+        return filtered;
+    }
+
     private void updateChipAppearance(Chip chip, boolean isSelected) {
         chip.setChecked(isSelected);
         ChipStyleUtils.applyStyle(this, chip, isSelected);
@@ -369,32 +354,33 @@ public class SearchResultActivity extends AppCompatActivity {
 
     private void updateAllChipsAppearance() {
         updateChipAppearance(chipInStock, filterState.isInStockSelected());
-        updateChipAppearance(chipPriceRange, filterState.isPriceRangeSelected());
+        // Cập nhật chipPriceRange: chỉ các mốc khác NONE mới tím
+        updatePriceRangeChipText(filterState.getMinPrice(), filterState.getMaxPrice(), filterState.getPriceRangeType());
         updateSortChipsAppearance();
-
-        if (filterState.isPriceRangeSelected()) {
-            updatePriceRangeChipText(filterState.getMinPrice(), filterState.getMaxPrice());
-        } else {
-            chipPriceRange.setText(getString(R.string.chip_price_range_default));
-        }
     }
 
-    private void updatePriceRangeChipText(double minPrice, double maxPrice) {
+    private void updatePriceRangeChipText(double minPrice, double maxPrice, FilterState.PriceRangeType rangeType) {
         String chipText;
-        if (minPrice == 0 && maxPrice == Double.MAX_VALUE) {
-            chipText = getString(R.string.chip_price_range_default);
-        } else if (minPrice == 0 && maxPrice == 50) {
-            chipText = getString(R.string.chip_price_range_under_50);
-        } else if (minPrice == 50 && maxPrice == 100) {
-            chipText = getString(R.string.chip_price_range_50_100);
-        } else if (minPrice == 100 && maxPrice == 200) {
-            chipText = getString(R.string.chip_price_range_100_200);
-        } else if (minPrice == 200 && maxPrice == Double.MAX_VALUE) {
-            chipText = getString(R.string.chip_price_range_over_200);
-        } else {
-            chipText = getString(R.string.chip_price_range_custom_range, minPrice, maxPrice);
+        switch (rangeType) {
+            case UNDER_50:
+                chipText = "Dưới 500K";
+                break;
+            case FIFTY_TO_100:
+                chipText = "500K - 1 triệu";
+                break;
+            case HUNDRED_TO_200:
+                chipText = "1 triệu - 2 triệu";
+                break;
+            case OVER_200:
+                chipText = "Trên 2 triệu";
+                break;
+            default:
+                chipText = getString(R.string.chip_price_range_default);
+                break;
         }
         chipPriceRange.setText(chipText);
+        boolean isSelected = rangeType != FilterState.PriceRangeType.NONE;
+        ChipStyleUtils.applyStyle(this, chipPriceRange, isSelected);
     }
 
     @Override
