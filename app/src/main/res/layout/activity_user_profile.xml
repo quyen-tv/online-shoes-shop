@@ -57,7 +57,7 @@
                     android:id="@+id/textView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Profile"
+                    android:text="Hồ sơ cá nhân"
                     android:textColor="@color/white"
                     android:textSize="35sp"
                     app:layout_constraintBottom_toTopOf="@+id/imageView"
@@ -113,7 +113,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:hint="Full Name"
+                        android:hint="Họ và tên"
                         app:boxBackgroundColor="@color/light_gray_background"
                         app:boxBackgroundMode="outline">
 
@@ -146,7 +146,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:hint="Phone Number"
+                        android:hint="Số điện thoại"
                         app:boxBackgroundColor="@color/light_gray_background"
                         app:boxBackgroundMode="outline">
 
@@ -154,8 +154,8 @@
                             android:id="@+id/editTextPhone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="phone"
-                            android:enabled="false" />
+                            android:enabled="false"
+                            android:inputType="phone" />
                     </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -235,7 +235,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:hint="Street"
+                        android:hint="Số nhà, tên đường"
                         app:boxBackgroundColor="@color/light_gray_background"
                         app:boxBackgroundMode="outline">
 
@@ -263,28 +263,28 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonCancel"
-                        android:layout_weight="1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Cancel"
                         android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:text="Hủy"
                         android:visibility="gone" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonUpdate"
-                        android:layout_weight="1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Update"
-                        android:layout_marginStart="4dp" />
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:text="Chỉnh sửa" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonConfirm"
-                        android:layout_weight="1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Confirm"
                         android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:text="Xác nhận"
                         android:visibility="gone" />
                 </LinearLayout>
 

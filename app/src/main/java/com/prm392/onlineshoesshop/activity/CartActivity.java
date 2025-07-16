@@ -88,10 +88,10 @@ public class CartActivity extends AppCompatActivity {
 
         if (itemTotal == 0) {
             // Giỏ hàng trống
-            binding.totalFeeTxt.setText("₫0");
-            binding.taxTxt.setText("₫0");
-            binding.deliveryTxt.setText("₫0");
-            binding.totalTxt.setText("₫0");
+            binding.totalFeeTxt.setText("0₫");
+            binding.taxTxt.setText("0₫");
+            binding.deliveryTxt.setText("0₫");
+            binding.totalTxt.setText("0₫");
             binding.btnCheckOut.setEnabled(false);
             return;
         }
@@ -112,10 +112,10 @@ public class CartActivity extends AppCompatActivity {
 
         // Cập nhật UI (định dạng tiền Việt)
         NumberFormat format = NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
-        binding.totalFeeTxt.setText("₫" + format.format(itemTotal));
-        binding.taxTxt.setText("₫" + format.format(tax));
-        binding.deliveryTxt.setText("₫" + format.format(deliveryFee));
-        binding.totalTxt.setText("₫" + format.format(total));
+        binding.totalFeeTxt.setText(format.format(itemTotal) + "₫");
+        binding.taxTxt.setText( format.format(tax) + "₫");
+        binding.deliveryTxt.setText(format.format(deliveryFee) + "₫");
+        binding.totalTxt.setText(format.format(total) + "₫");
     }
 
     private void handleCheckOut() {

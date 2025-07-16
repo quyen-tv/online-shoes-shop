@@ -16,6 +16,7 @@ import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.activity.TransactionDetailActivity;
 import com.prm392.onlineshoesshop.model.Transaction;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -23,7 +24,7 @@ import java.util.Locale;
 
 public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder> {
 
-    private final List<Transaction> transactionList;
+    private List<Transaction> transactionList;
     private final Context context;
 
     public TransactionAdapter(List<Transaction> transactionList, Context context) {
@@ -42,28 +43,58 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
     public void onBindViewHolder(@NonNull TransactionViewHolder holder, int position) {
         Transaction transaction = transactionList.get(position);
 
-        holder.tvTransactionId.setText("ID: " + transaction.getAppTransId());
+        holder.tvTransactionId.setText("Mã đơn: " + transaction.getAppTransId());
         holder.tvTimestamp.setText(formatDate(transaction.getCreatedAt()));
-        holder.tvTotalAmount.setText("Total: $" + transaction.getTotalAmount());
-        holder.tvMethod.setText("Method: " + transaction.getPaymentMethod());
 
-        // Trạng thái
-        Transaction.Status status = transaction.getStatus();
-        holder.tvStatus.setText("Status: " + status.name());
+        // Format VNĐ
+        NumberFormat format = NumberFormat.getInstance(new Locale("vi", "VN"));
+        String formattedAmount = format.format(transaction.getTotalAmount())+"₫"  ;
+        holder.tvTotalAmount.setText("Tổng tiền: " + formattedAmount);
 
-        switch (status) {
+        holder.tvMethod.setText("Phương thức: " + transaction.getPaymentMethod());
+
+        // Trạng thái thanh toán
+        Transaction.PaymentStatus paymentStatus = transaction.getPaymentStatus();
+        switch (paymentStatus) {
             case PENDING:
-                holder.tvStatus.setTextColor(context.getColor(R.color.orange)); // define in colors.xml
+                holder.tvPaymentStatus.setText("Thanh toán: Đang xử lý");
+                holder.tvPaymentStatus.setTextColor(context.getColor(R.color.orange));
                 break;
             case SUCCESS:
-                holder.tvStatus.setTextColor(context.getColor(R.color.green)); // define in colors.xml
+                holder.tvPaymentStatus.setText("Thanh toán: Thành công");
+                holder.tvPaymentStatus.setTextColor(context.getColor(R.color.green));
                 break;
             case FAILED:
-                holder.tvStatus.setTextColor(context.getColor(R.color.red)); // define in colors.xml
+                holder.tvPaymentStatus.setText("Thanh toán: Thất bại");
+                holder.tvPaymentStatus.setTextColor(context.getColor(R.color.red));
                 break;
         }
 
-        // Add click listener to navigate to detail
+        // Trạng thái đơn hàng
+        Transaction.OrderStatus orderStatus = transaction.getOrderStatus();
+        switch (orderStatus) {
+            case WAITING_CONFIRMATION:
+                holder.tvOrderStatus.setText("Trạng thái: Chờ xác nhận");
+                holder.tvOrderStatus.setTextColor(context.getColor(R.color.purple_700));
+                break;
+            case WAITING_FOR_PICKUP:
+                holder.tvOrderStatus.setText("Trạng thái: Chờ lấy hàng");
+                holder.tvOrderStatus.setTextColor(context.getColor(R.color.orange));
+                break;
+            case DELIVERING:
+                holder.tvOrderStatus.setText("Trạng thái: Đang giao");
+                holder.tvOrderStatus.setTextColor(context.getColor(R.color.custom_blue));
+                break;
+            case DELIVERED:
+                holder.tvOrderStatus.setText("Trạng thái: Đã giao");
+                holder.tvOrderStatus.setTextColor(context.getColor(R.color.green));
+                break;
+            case CANCELLED:
+                holder.tvOrderStatus.setText("Trạng thái: Đã huỷ");
+                holder.tvOrderStatus.setTextColor(context.getColor(R.color.red));
+                break;
+        }
+
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, TransactionDetailActivity.class);
             intent.putExtra("transaction", transaction);
@@ -77,17 +108,24 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
     }
 
     public static class TransactionViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTransactionId, tvTimestamp, tvTotalAmount, tvStatus, tvMethod;
+        TextView tvTransactionId, tvTimestamp, tvTotalAmount, tvPaymentStatus, tvOrderStatus, tvMethod;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTransactionId = itemView.findViewById(R.id.tvTransactionId);
             tvTimestamp = itemView.findViewById(R.id.tvTimestamp);
             tvTotalAmount = itemView.findViewById(R.id.tvTotalAmount);
-            tvStatus = itemView.findViewById(R.id.tvStatus);
-            tvMethod = itemView.findViewById(R.id.tvMethod);
+            tvPaymentStatus = itemView.findViewById(R.id.tvPaymentStatus);
+            tvOrderStatus = itemView.findViewById(R.id.tvOrderStatus);
+            tvMethod = itemView.findViewById(R.id.tvPaymentMethod);
         }
     }
+    public void setData(List<Transaction> newList) {
+        this.transactionList.clear();
+        this.transactionList.addAll(newList);
+        notifyDataSetChanged();
+    }
+
 
     private String formatDate(long timestamp) {
         @SuppressLint("SimpleDateFormat")

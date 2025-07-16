@@ -2,10 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/lightGrey"
     tools:context=".activity.TransactionHistoryActivity">
 
     <!-- Toolbar -->
@@ -13,97 +14,319 @@
         android:id="@+id/toolbarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="35dp"
+        android:padding="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:foregroundGravity="center">
 
         <TextView
             android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="92dp"
-            android:text="Transaction History"
+            android:gravity="center"
+            android:text="Lịch sử giao dịch"
             android:textColor="@color/black"
-            android:textSize="22sp"
+            android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Progress Bar -->
+    <!--Tab filter-->
+    <!--Tab filter with buttons and badges-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/chipGroupWrapper"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbarLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fillViewport="true"
+            android:scrollbars="none"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:id="@+id/filterButtonLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="8dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
+
+                <!-- Button: Chờ xác nhận -->
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:padding="10dp">
+
+                    <Button
+                        android:id="@+id/btnWaiting"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="46dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="Chờ xác nhận"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"
+                        android:backgroundTint="#E6D4F0"
+                        android:stateListAnimator="@null" />
+
+                    <TextView
+                        android:id="@+id/badgeWaiting"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="end|top"
+                        android:layout_marginEnd="-2dp"
+                        android:layout_marginTop="-2dp"
+                        android:background="@drawable/trans_badge_background"
+                        android:text="0"
+                        android:textSize="10sp"
+                        android:gravity="center"
+                        android:textColor="@android:color/white"
+                        android:visibility="gone"
+                        android:elevation="6dp" />
+                </FrameLayout>
+
+                <!-- Button: Chờ lấy hàng -->
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:padding="10dp">
+
+                    <Button
+                        android:id="@+id/btnPickup"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="46dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="Chờ lấy hàng"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"
+                        android:backgroundTint="#E6D4F0"
+                        android:stateListAnimator="@null" />
+
+                    <TextView
+                        android:id="@+id/badgePickup"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="end|top"
+                        android:layout_marginEnd="-2dp"
+                        android:layout_marginTop="-2dp"
+                        android:background="@drawable/trans_badge_background"
+                        android:text="0"
+                        android:textSize="10sp"
+                        android:gravity="center"
+                        android:textColor="@android:color/white"
+                        android:visibility="gone"
+                        android:elevation="6dp" />
+                </FrameLayout>
+
+                <!-- Button: Đang giao -->
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:padding="10dp">
+
+                    <Button
+                        android:id="@+id/btnShipping"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="46dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="Đang giao"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"
+                        android:backgroundTint="#E6D4F0"
+                        android:stateListAnimator="@null" />
+
+                    <TextView
+                        android:id="@+id/badgeShipping"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="end|top"
+                        android:layout_marginEnd="-2dp"
+                        android:layout_marginTop="-2dp"
+                        android:background="@drawable/trans_badge_background"
+                        android:text="0"
+                        android:textSize="10sp"
+                        android:gravity="center"
+                        android:textColor="@android:color/white"
+                        android:visibility="gone"
+                        android:elevation="6dp" />
+                </FrameLayout>
+
+                <!-- Button: Đã giao -->
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:padding="10dp">
+
+                    <Button
+                        android:id="@+id/btnDelivered"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="46dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="Đã giao"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"
+                        android:backgroundTint="#E6D4F0"
+                        android:stateListAnimator="@null" />
+
+                    <TextView
+                        android:id="@+id/badgeDelivered"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="end|top"
+                        android:layout_marginEnd="-2dp"
+                        android:layout_marginTop="-2dp"
+                        android:background="@drawable/trans_badge_background"
+                        android:text="0"
+                        android:textSize="10sp"
+                        android:gravity="center"
+                        android:textColor="@android:color/white"
+                        android:visibility="gone"
+                        android:elevation="6dp" />
+                </FrameLayout>
+
+                <!-- Button: Đã huỷ -->
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:padding="10dp">
+
+                    <Button
+                        android:id="@+id/btnCancelled"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="46dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="Đã huỷ"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"
+                        android:backgroundTint="#E6D4F0"
+                        android:stateListAnimator="@null" />
+
+                    <TextView
+                        android:id="@+id/badgeCancelled"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="end|top"
+                        android:layout_marginEnd="-2dp"
+                        android:layout_marginTop="-2dp"
+                        android:background="@drawable/trans_badge_background"
+                        android:text="0"
+                        android:textSize="10sp"
+                        android:gravity="center"
+                        android:textColor="@android:color/white"
+                        android:visibility="gone"
+                        android:elevation="6dp" />
+                </FrameLayout>
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <!-- RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/transactionRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="100dp"
+        app:layout_constraintTop_toBottomOf="@id/chipGroupWrapper"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+
+    <!-- Progress bar -->
     <ProgressBar
         android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/toolbarLayout"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- Empty message -->
     <TextView
         android:id="@+id/emptyTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No transactions found"
-        android:visibility="gone"
-        android:textSize="16sp"
+        android:text="Không có giao dịch nào"
         android:textColor="@color/grey"
-        app:layout_constraintTop_toBottomOf="@id/toolbarLayout"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/purple_button_bg"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        app:itemIconTint="@color/white"
+        app:itemRippleColor="@color/purple_500"
+        app:itemTextColor="@color/white"
+        app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Scrollable content -->
-    <ScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/toolbarLayout"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:orientation="vertical">
-
-            <!-- Transaction list -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/transactionRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingBottom="100dp"/>
-        </LinearLayout>
-    </ScrollView>
-    <!-- Navigation bar -->
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginBottom="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNavigationView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:background="@drawable/purple_button_bg"
-            app:itemIconTint="@color/white"
-            app:itemRippleColor="@color/purple_500"
-            app:itemTextColor="@color/white"
-            app:menu="@menu/bottom_nav_menu"/>
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

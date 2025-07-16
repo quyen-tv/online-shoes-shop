@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,8 +28,20 @@ import java.util.List;
 public class TransactionHistoryActivity extends AppCompatActivity {
 
     private ActivityTransactionHistoryBinding binding;
-    private final List<Transaction> transactionList = new ArrayList<>();
     private TransactionAdapter transactionAdapter;
+
+    // danh sách gốc
+    private final List<Transaction> allTransactions   = new ArrayList<>();
+    // 5 “view”-list đã lọc sẵn
+    private final List<Transaction> waitingList       = new ArrayList<>();
+    private final List<Transaction> pickupList        = new ArrayList<>();
+    private final List<Transaction> shippingList      = new ArrayList<>();
+    private final List<Transaction> deliveredList     = new ArrayList<>();
+    private final List<Transaction> cancelledList     = new ArrayList<>();
+
+    // trạng thái nút hiện hành (mặc định “Chờ xác nhận”)
+    private enum Filter {WAITING, PICKUP, SHIPPING, DELIVERED, CANCELLED}
+    private Filter currentFilter = Filter.WAITING;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,57 +50,175 @@ public class TransactionHistoryActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setupRecyclerView();
+        setupButtons();
         loadTransactions();
         initBottomNavigation();
     }
 
+    /* ------------------------------------------------------------------ */
+    /* RecyclerView                                                       */
+    /* ------------------------------------------------------------------ */
     private void setupRecyclerView() {
-        transactionAdapter = new TransactionAdapter(transactionList, this);
+        transactionAdapter = new TransactionAdapter(new ArrayList<>(), this);
         binding.transactionRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         binding.transactionRecyclerView.setAdapter(transactionAdapter);
     }
 
+    /* ------------------------------------------------------------------ */
+    /* Firebase fetch + chuẩn bị 5 list con                               */
+    /* ------------------------------------------------------------------ */
     private void loadTransactions() {
-        String currentUserId = FirebaseAuth.getInstance().getUid();
-        if (currentUserId == null) {
-            Log.w("TransactionActivity", "User chưa đăng nhập. Không thể load transactions.");
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) {
+            Log.w("TransactionHistory", "Chưa đăng nhập");
             return;
         }
 
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("transactions");
-        ref.orderByChild("userId").equalTo(currentUserId)
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("transactions");
+
+        ref.orderByChild("userId").equalTo(uid)
                 .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        transactionList.clear();
-                        for (DataSnapshot child : snapshot.getChildren()) {
-                            Transaction transaction = child.getValue(Transaction.class);
-                            if (transaction != null) {
-                                // ✅ Không còn xoá PENDING nữa, thêm tất cả các giao dịch
-                                transactionList.add(transaction);
+                    @Override public void onDataChange(@NonNull DataSnapshot snap) {
+                        // reset
+                        allTransactions.clear();
+                        waitingList.clear();
+                        pickupList.clear();
+                        shippingList.clear();
+                        deliveredList.clear();
+                        cancelledList.clear();
+
+                        for (DataSnapshot child : snap.getChildren()) {
+                            Transaction t = child.getValue(Transaction.class);
+                            if (t == null) continue;
+
+                            allTransactions.add(t);
+
+                            switch (t.getOrderStatus()) {
+                                case WAITING_CONFIRMATION:
+                                    waitingList.add(t);
+                                    break;
+                                case WAITING_FOR_PICKUP:
+                                    pickupList.add(t);
+                                    break;
+                                case DELIVERING:
+                                    shippingList.add(t);
+                                    break;
+                                case DELIVERED:
+                                    deliveredList.add(t);
+                                    break;
+                                case CANCELLED:
+                                    cancelledList.add(t);
+                                    break;
                             }
+
                         }
 
-                        // Sắp xếp theo thời gian mới nhất
-                        Collections.sort(transactionList, (a, b) -> Long.compare(b.getCreatedAt(), a.getCreatedAt()));
+                        // sort mới-nhất → cũ-nhất cho mọi list
+                        sortDesc(waitingList);  sortDesc(pickupList);
+                        sortDesc(shippingList); sortDesc(deliveredList);
+                        sortDesc(cancelledList);
 
-                        transactionAdapter.notifyDataSetChanged();
-                        binding.emptyTxt.setVisibility(transactionList.isEmpty() ? View.VISIBLE : View.GONE);
-
-                        Log.d("TransactionActivity", "Loaded " + transactionList.size() + " transactions (bao gồm PENDING/FAILED/SUCCESS).");
+                        updateBadges();
+                        showCurrentList();   // refresh màn hình
                     }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("TransactionActivity", "Lỗi khi load transactions: " + error.getMessage());
+                    @Override public void onCancelled(@NonNull DatabaseError e) {
+                        Log.e("TransactionHistory", "Firebase error: " + e.getMessage());
                     }
                 });
     }
 
-    private void initBottomNavigation() {
-        binding.bottomNavigationView.setSelectedItemId(R.id.navigation_my_order);
+    private void sortDesc(List<Transaction> list) {
+        Collections.sort(list, (a, b) -> Long.compare(b.getCreatedAt(), a.getCreatedAt()));
+    }
 
-        binding.bottomNavigationView.setOnItemSelectedListener(item -> {
+    /* ------------------------------------------------------------------ */
+    /* Badge = số + hiển/ẩn                                               */
+    /* ------------------------------------------------------------------ */
+    private void updateBadges() {
+        setBadge(binding.badgeWaiting,          waitingList.size());
+        setBadge(binding.badgePickup, pickupList.size());
+        setBadge(binding.badgeShipping,         shippingList.size());
+        setBadge(binding.badgeDelivered,        deliveredList.size());
+        setBadge(binding.badgeCancelled,        cancelledList.size());
+    }
+
+    private void setBadge(TextView badgeView, int count) {
+        badgeView.setText(String.valueOf(count));
+        badgeView.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Hiển thị list theo currentFilter                                   */
+    /* ------------------------------------------------------------------ */
+    private void showCurrentList() {
+        List<Transaction> toShow = new ArrayList<>();
+
+        switch (currentFilter) {
+            case WAITING:
+                toShow = waitingList;
+                break;
+            case PICKUP:
+                toShow = pickupList;
+                break;
+            case SHIPPING:
+                toShow = shippingList;
+                break;
+            case DELIVERED:
+                toShow = deliveredList;
+                break;
+            case CANCELLED:
+                toShow = cancelledList;
+                break;
+        }
+
+        transactionAdapter.setData(toShow);
+        binding.emptyTxt.setVisibility(toShow.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    /* Button click events                                                */
+    /* ------------------------------------------------------------------ */
+    private void setupButtons() {
+
+        binding.btnWaiting.setOnClickListener(v -> {
+            currentFilter = Filter.WAITING;
+            showCurrentList();
+        });
+
+        binding.btnPickup.setOnClickListener(v -> {
+            currentFilter = Filter.PICKUP;
+            showCurrentList();
+        });
+
+        binding.btnShipping.setOnClickListener(v -> {
+            currentFilter = Filter.SHIPPING;
+            showCurrentList();
+        });
+
+        binding.btnDelivered.setOnClickListener(v -> {
+            currentFilter = Filter.DELIVERED;
+            showCurrentList();
+        });
+
+        binding.btnCancelled.setOnClickListener(v -> {
+            currentFilter = Filter.CANCELLED;
+            showCurrentList();
+        });
+
+        // hiển thị mặc định
+        showCurrentList();
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* BottomNavigation                                                   */
+    /* ------------------------------------------------------------------ */
+    private void initBottomNavigation() {
+        binding.bottomNavigation.setSelectedItemId(R.id.navigation_my_order);
+
+        binding.bottomNavigation.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_notification) {
                 startActivity(new Intent(this, CartActivity.class));
                 return true;

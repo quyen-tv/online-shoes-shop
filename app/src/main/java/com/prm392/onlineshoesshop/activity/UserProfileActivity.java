@@ -227,7 +227,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
         // City
         List<String> cityOptions = new ArrayList<>();
-        cityOptions.add("Select City");
+        cityOptions.add("Chọn Thành phố");
         if (userAddress != null && !userAddress.getCity().getName().isEmpty()) {
             cityOptions.clear();
             cityOptions.add(userAddress.getCity().getName());
@@ -239,7 +239,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
         // District
         List<String> districtOptions = new ArrayList<>();
-        districtOptions.add("Select District");
+        districtOptions.add("Chọn Quận/Huyện");
         if (userAddress != null && !userAddress.getDistrict().getName().isEmpty()) {
             districtOptions.clear();
             districtOptions.add(userAddress.getDistrict().getName());
@@ -251,7 +251,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
         // Ward
         List<String> wardOptions = new ArrayList<>();
-        wardOptions.add("Select Ward");
+        wardOptions.add("Chọn Phường/Xã");
         if (userAddress != null && !userAddress.getWard().getName().isEmpty()) {
             wardOptions.clear();
             wardOptions.add(userAddress.getWard().getName());
@@ -267,7 +267,7 @@ public class UserProfileActivity extends AppCompatActivity {
         addressViewModel.fetchCities();
         addressViewModel.getCities().observe(this, cities -> {
             List<String> cityNames = new ArrayList<>();
-            cityNames.add("Select City");
+            cityNames.add("Chọn Thành phố");
             for (Address.City c : cities) cityNames.add(c.getName());
 
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, cityNames);
@@ -297,7 +297,7 @@ public class UserProfileActivity extends AppCompatActivity {
         // District
         addressViewModel.getDistricts().observe(this, districts -> {
             List<String> names = new ArrayList<>();
-            names.add("Select District");
+            names.add("Chọn Quận/Huyện"); // for districts
             for (Address.District d : districts) names.add(d.getName());
 
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, names);
@@ -327,7 +327,7 @@ public class UserProfileActivity extends AppCompatActivity {
         // Ward
         addressViewModel.getWards().observe(this, wards -> {
             List<String> names = new ArrayList<>();
-            names.add("Select Ward");
+            names.add("Chọn Phường/Xã"); // for wards
             for (Address.Ward w : wards) names.add(w.getName());
 
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, names);

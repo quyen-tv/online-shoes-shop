@@ -31,8 +31,10 @@ import com.prm392.onlineshoesshop.model.Transaction;
 import com.prm392.onlineshoesshop.model.TransactionItem;
 import com.prm392.onlineshoesshop.repository.TransactionRepository;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 
@@ -49,8 +51,8 @@ public class PaymentActivity extends AppCompatActivity {
     private double tax, deliveryFee, totalAmount;
     private String orderToken;
     private ManagementCart managementCart;
-    private String appTransId;// Lưu appTransId từ ZaloPay
-    private boolean hasCreatedTransaction = false; // Kiểm tra đã tạo Firebase transaction chưa
+    private String appTransId;
+    private boolean hasCreatedTransaction = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,22 +66,80 @@ public class PaymentActivity extends AppCompatActivity {
             hasCreatedTransaction = savedInstanceState.getBoolean("hasCreatedTransaction", false);
         }
 
+        transactionRepository = new TransactionRepository();
         setupBtn();
         fetchAndBindUserInfo();
-
-        // Nhận dữ liệu từ Intent
-        Intent intent = getIntent();
-        cartItems = getIntent().getParcelableArrayListExtra("cartItems");
-        tax = intent.getDoubleExtra("tax", 0.0);
-        deliveryFee = intent.getDoubleExtra("deliveryFee", 0.0);
-        totalAmount = intent.getDoubleExtra("totalAmount", 0.0);
-        updateUIWithPaymentInfo();
         managementCart = new ManagementCart(this);
 
-        transactionRepository = new TransactionRepository();
+        Intent intent = getIntent();
+        String passedAppTransId = intent.getStringExtra("appTransId");
 
-        // TODO: setup RecyclerView với PaymentCartAdapter
+        if (passedAppTransId != null) {
+            // Retry payment
+            appTransId = passedAppTransId;
+            hasCreatedTransaction = true;
+            fetchTransactionDataAndBuildCart(appTransId);
+
+            // 👉 Set radio ZaloPay và disable chọn lại
+            binding.zaloPayRadio.setChecked(true);
+            binding.zaloPayRadio.setEnabled(false);
+            binding.cashRadio.setEnabled(false);
+        } else {
+            // Đặt hàng mới
+            cartItems = intent.getParcelableArrayListExtra("cartItems");
+            tax = intent.getDoubleExtra("tax", 0.0);
+            deliveryFee = intent.getDoubleExtra("deliveryFee", 0.0);
+            totalAmount = intent.getDoubleExtra("totalAmount", 0.0);
+
+            updateUIWithPaymentInfo();
+        }
+
     }
+    private void fetchTransactionDataAndBuildCart(String appTransId) {
+        DatabaseReference transRef = FirebaseDatabase.getInstance()
+                .getReference("transactions")
+                .child(appTransId);
+
+        transRef.get().addOnSuccessListener(snapshot -> {
+            if (!snapshot.exists()) {
+                Toast.makeText(this, "Không tìm thấy giao dịch để thanh toán lại", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
+
+            // Lấy các trường cần thiết
+            tax = snapshot.child("tax").getValue(Double.class);
+            deliveryFee = snapshot.child("deliveryFee").getValue(Double.class);
+            totalAmount = snapshot.child("totalAmount").getValue(Double.class);
+
+            List<TransactionItem> transactionItems = new ArrayList<>();
+            for (DataSnapshot itemSnap : snapshot.child("items").getChildren()) {
+                TransactionItem item = itemSnap.getValue(TransactionItem.class);
+                if (item != null) {
+                    transactionItems.add(item);
+                }
+            }
+
+            cartItems = new ArrayList<>();
+            for (TransactionItem ti : transactionItems) {
+                ItemModel item = new ItemModel();
+                item.setItemId(ti.getItemId());
+                item.setTitle(ti.getName());
+                item.setPrice(ti.getPrice());
+                List<String> pics = new ArrayList<>();
+                pics.add(ti.getPicUrl());
+                item.setPicUrl(pics);
+
+                cartItems.add(new CartItem(item, ti.getSize(), ti.getQuantity()));
+            }
+
+            updateUIWithPaymentInfo(); // render lại
+        }).addOnFailureListener(e -> {
+            Toast.makeText(this, "Lỗi khi tải lại đơn hàng", Toast.LENGTH_SHORT).show();
+            finish();
+        });
+    }
+
 
     private void setupBtn() {
         binding.backBtn.setOnClickListener(v -> finish());
@@ -105,6 +165,7 @@ public class PaymentActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("SetTextI18n")
     private void handleCheckOut() {
+
         if (appTransId != null && orderToken != null) {
             // Đã tạo trước đó => chỉ gọi thanh toán
             handlePayOrder();
@@ -112,9 +173,8 @@ public class PaymentActivity extends AppCompatActivity {
         }
 
         try {
-            double usd = totalAmount;
-            double rate = 25000;
-            long vnd = Math.round(usd * rate);
+
+            long vnd = Math.round(totalAmount);
 
             showLoading();
 
@@ -149,10 +209,12 @@ public class PaymentActivity extends AppCompatActivity {
                                     transactionRepository.createPendingTransaction(
                                             appTransId,
                                             FirebaseAuth.getInstance().getUid(),
-                                            usd, tax, deliveryFee,
+                                            vnd, tax, deliveryFee,
                                             simplifiedItems,
                                             "ZaloPay"
                                     );
+                                    decreaseStock(cartItems);
+
                                 }
 
                                 handlePayOrder(); // luôn gọi
@@ -207,10 +269,13 @@ public class PaymentActivity extends AppCompatActivity {
                         simplifiedItems,
                         "CashOnDelivery"
                 );
-                transactionRepository.updateTransactionStatus(appTransId, Transaction.Status.PENDING, appTransId);
+                transactionRepository.updatePaymentStatus(appTransId, Transaction.PaymentStatus.PENDING, appTransId);
+                transactionRepository.updateOrderStatus(appTransId, Transaction.OrderStatus.WAITING_CONFIRMATION);
 
                 managementCart.clearCart();
-                updateStockInFirebase(cartItems);
+                decreaseStock(cartItems);
+                increaseSold(cartItems);
+
                 runOnUiThread(() -> {
                     hideLoading();
                     Toast.makeText(this, "Đặt hàng thành công. Vui lòng thanh toán khi nhận hàng.", Toast.LENGTH_LONG).show();
@@ -236,8 +301,10 @@ public class PaymentActivity extends AppCompatActivity {
             public void onPaymentSucceeded(String zaloTransId, String transToken, String ignoredAppTransID) {
                 runOnUiThread(() -> {
                     hideLoading();
-                    updateStockInFirebase(cartItems);
-                    transactionRepository.updateTransactionStatus(appTransId, Transaction.Status.SUCCESS, zaloTransId);
+                    increaseSold(cartItems);
+                    transactionRepository.updatePaymentStatus(appTransId, Transaction.PaymentStatus.SUCCESS, zaloTransId);
+                    transactionRepository.updateOrderStatus(appTransId, Transaction.OrderStatus.WAITING_CONFIRMATION);
+
                     managementCart.clearCart();
 
                     Intent intent = new Intent(PaymentActivity.this, OrderSuccessActivity.class);
@@ -264,7 +331,7 @@ public class PaymentActivity extends AppCompatActivity {
         });
     }
 
-    private void updateStockInFirebase(List<CartItem> cartItems) {
+    private void decreaseStock(List<CartItem> cartItems) {
         DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference("Items");
 
         for (CartItem cartItem : cartItems) {
@@ -277,17 +344,33 @@ public class PaymentActivity extends AppCompatActivity {
             stockRef.get().addOnSuccessListener(dataSnapshot -> {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     ItemModel.StockEntry entry = snapshot.getValue(ItemModel.StockEntry.class);
-                    if (entry == null || entry.getSize() == null) continue;
-
-                    if (entry.getSize().equals(selectedSize)) {
+                    if (entry != null && selectedSize.equals(entry.getSize())) {
                         int newQty = Math.max(entry.getQuantity() - quantityToSubtract, 0);
                         snapshot.getRef().child("quantity").setValue(newQty);
                         break;
                     }
                 }
-            }).addOnFailureListener(e -> Log.e("StockUpdate", "Lỗi cập nhật tồn kho: " + e.getMessage()));
+            }).addOnFailureListener(e -> Log.e("StockUpdate", "Lỗi giảm tồn kho: " + e.getMessage()));
         }
     }
+
+    private void increaseSold(List<CartItem> cartItems) {
+        DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference("Items");
+
+        for (CartItem cartItem : cartItems) {
+            String itemId = cartItem.getItem().getItemId();
+            int quantityToAdd = cartItem.getQuantity();
+
+            DatabaseReference itemRef = itemsRef.child(itemId);
+
+            itemRef.child("sold").get().addOnSuccessListener(snap -> {
+                Long currentSold = snap.getValue(Long.class);
+                long newSold = (currentSold != null ? currentSold : 0) + quantityToAdd;
+                itemRef.child("sold").setValue(newSold);
+            }).addOnFailureListener(e -> Log.e("StockUpdate", "Lỗi tăng sold: " + e.getMessage()));
+        }
+    }
+
 
     private void showAlertDialog(String title, String message) {
         new AlertDialog.Builder(this)
@@ -321,10 +404,12 @@ public class PaymentActivity extends AppCompatActivity {
         binding.viewCart.setAdapter(adapter);
 
         // Cập nhật các thông tin tính tiền
-        binding.totalFeeTxt.setText("$" + String.format("%.2f", getSubtotal()));
-        binding.taxTxt.setText("$" + String.format("%.2f", tax));
-        binding.deliveryTxt.setText("$" + String.format("%.2f", deliveryFee));
-        binding.totalTxt.setText("$" + String.format("%.2f", totalAmount));
+        NumberFormat format = NumberFormat.getInstance(new Locale("vi", "VN"));
+        binding.totalFeeTxt.setText("₫" + format.format(getSubtotal()));
+        binding.taxTxt.setText("₫" + format.format(tax));
+        binding.deliveryTxt.setText("₫" + format.format(deliveryFee));
+        binding.totalTxt.setText("₫" + format.format(totalAmount));
+
     }
     private double getSubtotal() {
         double subtotal = 0.0;

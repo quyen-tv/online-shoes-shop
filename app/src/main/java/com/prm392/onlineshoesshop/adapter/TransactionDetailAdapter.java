@@ -16,7 +16,9 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.model.TransactionItem;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class TransactionDetailAdapter extends RecyclerView.Adapter<TransactionDetailAdapter.ViewHolder> {
 
@@ -42,15 +44,16 @@ public class TransactionDetailAdapter extends RecyclerView.Adapter<TransactionDe
 
         holder.itemTitle.setText(item.getName());
         holder.itemQuantity.setText("Qty: " + item.getQuantity());
-        holder.itemPrice.setText("$" + String.format("%.2f", item.getPrice()));
-        holder.itemSize.setText("Size: " + item.getSize()); // ✅ Hiển thị size
+        holder.itemSize.setText("Size: " + item.getSize());
 
-        // Load image
+        // ✅ Format giá tiền (VND)
+        NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
+        holder.itemPrice.setText(currencyFormat.format(item.getPrice()) +"₫" );
+
         Glide.with(context)
                 .load(item.getPicUrl())
                 .apply(new RequestOptions().transform(new CenterCrop()))
                 .into(holder.itemImage);
-
     }
 
     @Override
