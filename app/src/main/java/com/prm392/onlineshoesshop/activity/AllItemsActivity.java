@@ -3,7 +3,6 @@ package com.prm392.onlineshoesshop.activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,6 +38,10 @@ import android.content.Intent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import android.os.Handler;
+import android.os.Looper;
 
 public class AllItemsActivity extends AppCompatActivity {
 
@@ -58,6 +61,9 @@ public class AllItemsActivity extends AppCompatActivity {
     private AuthViewModel authViewModel;
     private String selectedBrandFilter;
     private String searchQuery = "";
+    private PriceRangeDialog priceRangeDialog;
+    private final ExecutorService filterExecutor = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,18 +108,13 @@ public class AllItemsActivity extends AppCompatActivity {
         authViewModel = new ViewModelProvider(this, authViewModelFactory).get(AuthViewModel.class);
 
         // Initialize price range dialog
-        PriceRangeDialog priceRangeDialog = new PriceRangeDialog(this, (minPrice, maxPrice, rangeType) -> {
+        priceRangeDialog = new PriceRangeDialog(this, (minPrice, maxPrice, rangeType) -> {
             filterState = filterState.setPriceRange(minPrice, maxPrice, rangeType);
             updateChipAppearance(binding.chipPriceRange, true);
             updatePriceRangeChipText(minPrice, maxPrice, rangeType);
-
             if (itemViewModel.allItems.getValue() != null) {
                 setupItemsList(itemViewModel.allItems.getValue());
             }
-
-            // Show feedback to user
-            String message = getPriceRangeMessage(minPrice, maxPrice, rangeType);
-            Toast.makeText(this, "Đã áp dụng: " + message, Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -157,7 +158,10 @@ public class AllItemsActivity extends AppCompatActivity {
 
         });
 
-        binding.chipPriceRange.setOnClickListener(v -> showPriceRangeDialog());
+        binding.chipPriceRange.setOnClickListener(v -> {
+            priceRangeDialog.show(filterState.getPriceRangeType(), filterState.getMinPrice(),
+                    filterState.getMaxPrice());
+        });
     }
 
     private void showPriceRangeDialog() {
@@ -286,7 +290,6 @@ public class AllItemsActivity extends AppCompatActivity {
     }
 
     private List<ItemModel> applyFilters(List<ItemModel> allItems) {
-        // TODO: Implement actual filtering logic based on filterState
         List<ItemModel> result = new ArrayList<>(allItems);
 
         if (filterState.isInStockSelected()) {
@@ -300,16 +303,16 @@ public class AllItemsActivity extends AppCompatActivity {
 
         result = filterItemsByBrand(result, selectedBrandFilter);
 
-        if (filterState.getSortType() == FilterState.SortType.PRICE_LOW ||
-                filterState.getSortType() == FilterState.SortType.PRICE_HIGH) {
+        // Lọc sản phẩm bán chạy nếu chọn popular
+        if (filterState.getSortType() == FilterState.SortType.POPULAR) {
+            result = filterByPopular(result);
+        } else if (filterState.getSortType() == FilterState.SortType.PRICE_LOW
+                || filterState.getSortType() == FilterState.SortType.PRICE_HIGH) {
             result = sortByPrice(result, filterState.getSortType());
         }
         result = filterByName(result, searchQuery);
 
         return result;
-
-        // For now, just log the filter state
-        // System.out.println("Applied filters: " + filterState.toString());
     }
 
     private void updatePriceRangeChipText(double minPrice, double maxPrice, FilterState.PriceRangeType rangeType) {
@@ -317,23 +320,22 @@ public class AllItemsActivity extends AppCompatActivity {
 
         switch (rangeType) {
             case UNDER_50:
-                chipText = "Dưới $50";
+                chipText = "Dưới 500K";
                 break;
             case FIFTY_TO_100:
-                chipText = "$50 - $100";
+                chipText = "500K - 1 triệu";
                 break;
             case HUNDRED_TO_200:
-                chipText = "$100 - $200";
+                chipText = "1 triệu - 2 triệu";
                 break;
             case OVER_200:
-                chipText = "Trên $200";
+                chipText = "Trên 2 triệu";
                 break;
-
             case CUSTOM:
                 if (maxPrice == Double.MAX_VALUE) {
-                    chipText = String.format("Từ $%.0f+", minPrice);
+                    chipText = String.format("Từ %s+", formatVnCurrency(minPrice));
                 } else {
-                    chipText = String.format("$%.0f - $%.0f", minPrice, maxPrice);
+                    chipText = String.format("%s - %s", formatVnCurrency(minPrice), formatVnCurrency(maxPrice));
                 }
                 break;
             default:
@@ -342,26 +344,40 @@ public class AllItemsActivity extends AppCompatActivity {
         }
 
         binding.chipPriceRange.setText(chipText);
+
+        // Đổi màu chip: chỉ các mốc khác NONE mới tím
+        boolean isSelected = rangeType != FilterState.PriceRangeType.NONE;
+        ChipStyleUtils.applyStyle(this, binding.chipPriceRange, isSelected);
     }
 
     private String getPriceRangeMessage(double minPrice, double maxPrice, FilterState.PriceRangeType rangeType) {
         switch (rangeType) {
             case UNDER_50:
-                return "Dưới $50";
+                return "Dưới 500K";
             case FIFTY_TO_100:
-                return "$50 - $100";
+                return "500K - 1 triệu";
             case HUNDRED_TO_200:
-                return "$100 - $200";
+                return "1 triệu - 2 triệu";
             case OVER_200:
-                return "Trên $200";
+                return "Trên 2 triệu";
             case CUSTOM:
                 if (maxPrice == Double.MAX_VALUE) {
-                    return String.format("Từ $%.0f trở lên", minPrice);
+                    return String.format("Từ %s trở lên", formatVnCurrency(minPrice));
                 } else {
-                    return String.format("$%.0f - $%.0f", minPrice, maxPrice);
+                    return String.format("%s - %s", formatVnCurrency(minPrice), formatVnCurrency(maxPrice));
                 }
             default:
                 return "Chọn khoảng giá";
+        }
+    }
+
+    private String formatVnCurrency(double value) {
+        if (value >= 1_000_000) {
+            return String.format("%.0f triệu", value / 1_000_000);
+        } else if (value >= 1_000) {
+            return String.format("%.0fK", value / 1_000);
+        } else {
+            return String.format("%.0f", value);
         }
     }
 
@@ -441,33 +457,36 @@ public class AllItemsActivity extends AppCompatActivity {
         // CAST list
         List<ItemModel> allItems = (List<ItemModel>) itemModels;
 
-        // 💡 Áp dụng filter theo selectedBrandFilter
-        List<ItemModel> filteredItems = applyFilters(allItems);
+        // 💡 Áp dụng filter theo selectedBrandFilter trên background thread
+        filterExecutor.execute(() -> {
+            List<ItemModel> filteredItems = applyFilters(allItems);
+            mainHandler.post(() -> {
+                if (allItemAdapter == null) {
+                    allItemAdapter = new AllItemAdapter(filteredItems);
+                    allItemAdapter.setFavoriteIds(favoriteIds);
+                    allItemAdapter.setOnChangeListener(new AllItemAdapter.OnChangeListener() {
+                        @Override
+                        public void onToggleFavorite(String itemId) {
+                            // Gọi ViewModel để toggle favorite
+                            itemViewModel.toggleFavorite(itemId);
+                        }
 
-        if (allItemAdapter == null) {
-            allItemAdapter = new AllItemAdapter(filteredItems);
-            allItemAdapter.setFavoriteIds(favoriteIds);
-            allItemAdapter.setOnChangeListener(new AllItemAdapter.OnChangeListener() {
-                @Override
-                public void onToggleFavorite(String itemId) {
-                    // Gọi ViewModel để toggle favorite
-                    itemViewModel.toggleFavorite(itemId);
-                }
-
-                @Override
-                public void onClick(ItemModel item) {
-                    Intent intent = new Intent(AllItemsActivity.this, DetailActivity.class);
-                    intent.putExtra("object", item);
-                    startActivity(intent);
+                        @Override
+                        public void onClick(ItemModel item) {
+                            Intent intent = new Intent(AllItemsActivity.this, DetailActivity.class);
+                            intent.putExtra("object", item);
+                            startActivity(intent);
+                        }
+                    });
+                    binding.viewAllItems.setAdapter(allItemAdapter);
+                    int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
+                    binding.viewAllItems.addItemDecoration(new SpaceItemDecoration(spacing, GRID_SPAN_COUNT));
+                } else {
+                    allItemAdapter.updateData(filteredItems);
+                    allItemAdapter.setFavoriteIds(favoriteIds);
                 }
             });
-            binding.viewAllItems.setAdapter(allItemAdapter);
-            int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
-            binding.viewAllItems.addItemDecoration(new SpaceItemDecoration(spacing, GRID_SPAN_COUNT));
-        } else {
-            allItemAdapter.updateData(filteredItems);
-            allItemAdapter.setFavoriteIds(favoriteIds);
-        }
+        });
     }
 
     private void setupCategoryList(@NonNull List<?> itemModels) {
@@ -479,7 +498,7 @@ public class AllItemsActivity extends AppCompatActivity {
             selectedBrandFilter = selectedBrand;
             Log.d("BrandFilter", selectedBrandFilter);
             if (itemViewModel.allItems.getValue() != null) {
-                setupItemsList(itemViewModel.allItems.getValue()); // refresh lại danh sách theo brand
+                setupItemsList(itemViewModel.allItems.getValue());
             }
         });
 
@@ -590,4 +609,14 @@ public class AllItemsActivity extends AppCompatActivity {
         return filtered;
     }
 
+    private List<ItemModel> filterByPopular(List<ItemModel> items) {
+        List<ItemModel> filtered = new ArrayList<>();
+        for (ItemModel item : items) {
+            Integer sold = item.getSold();
+            if (sold != null && sold >= 1000) {
+                filtered.add(item);
+            }
+        }
+        return filtered;
+    }
 }

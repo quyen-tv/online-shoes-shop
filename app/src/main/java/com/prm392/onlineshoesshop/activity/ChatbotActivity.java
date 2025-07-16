@@ -121,9 +121,8 @@ public class ChatbotActivity extends AppCompatActivity {
     }
 
     // Tạo prompt sản phẩm chi tiết cho Gemini
-    private String buildProductPrompt(List<ItemModel> products, int maxProducts) {
+    private String buildProductPrompt(List<ItemModel> products) {
         StringBuilder productInfo = new StringBuilder();
-        int count = 0;
         for (ItemModel item : products) {
             if (item.getTitle() != null && item.getPrice() != null) {
                 productInfo.append("- Tên: ").append(item.getTitle()).append("\n");
@@ -156,9 +155,6 @@ public class ChatbotActivity extends AppCompatActivity {
                 }
                 // Nếu có trường tag hoặc các trường khác, bổ sung ở đây
                 productInfo.append("\n");
-                count++;
-                if (count >= maxProducts)
-                    break;
             }
         }
         return productInfo.toString();
@@ -180,48 +176,25 @@ public class ChatbotActivity extends AppCompatActivity {
     // Lấy danh sách sản phẩm gợi ý dựa trên message và reply
     private List<ItemModel> getSuggestedProducts(String message, String botReply) {
         List<ItemModel> suggestions = new ArrayList<>();
-        if (allProducts == null || allProducts.isEmpty())
+        if (allProducts == null || allProducts.isEmpty() || botReply == null)
             return suggestions;
-        String lowerMsg = message.toLowerCase();
-        String lowerReply = botReply != null ? botReply.toLowerCase() : "";
-        // Nếu khách hỏi muốn xem sản phẩm cụ thể
-        if (lowerMsg.startsWith("xem sản phẩm") || lowerMsg.startsWith("chi tiết sản phẩm")) {
-            String[] keywords = lowerMsg.replace("xem sản phẩm", "").replace("chi tiết sản phẩm", "").trim()
-                    .split(",| và | hoặc | ");
-            for (String kw : keywords) {
-                String kwTrim = kw.trim();
-                for (ItemModel item : allProducts) {
-                    if (item.getTitle() != null && item.getTitle().toLowerCase().contains(kwTrim)
-                            && !suggestions.contains(item)) {
-                        suggestions.add(item);
+        String lowerReply = botReply.toLowerCase();
+        for (ItemModel item : allProducts) {
+            String title = item.getTitle() != null ? item.getTitle().toLowerCase() : "";
+            boolean inStock = false;
+            if (item.getSizeQuantityMap() != null) {
+                for (int qty : item.getSizeQuantityMap().values()) {
+                    if (qty > 0) {
+                        inStock = true;
                         break;
                     }
                 }
             }
-        }
-        // Nếu không phải dạng "xem sản phẩm", vẫn gợi ý như cũ (theo từ khóa trong
-        // tên/mô tả/brand)
-        if (suggestions.isEmpty()) {
-            for (ItemModel item : allProducts) {
-                boolean matched = false;
-                if (item.getTitle() != null && item.getTitle().toLowerCase().contains(lowerMsg))
-                    matched = true;
-                else if (item.getDescription() != null && item.getDescription().toLowerCase().contains(lowerMsg))
-                    matched = true;
-                else if (item.getBrand() != null && item.getBrand().toLowerCase().contains(lowerMsg))
-                    matched = true;
-                if (matched && !suggestions.contains(item))
-                    suggestions.add(item);
-                if (suggestions.size() >= 3)
-                    break;
-            }
-        }
-        // Parse tên sản phẩm từ reply của Gemini
-        for (ItemModel item : allProducts) {
-            String title = item.getTitle() != null ? item.getTitle().toLowerCase() : "";
-            if (title.length() > 0 && lowerReply.contains(title) && !suggestions.contains(item)) {
+            if (title.length() > 0 && lowerReply.contains(title) && inStock) {
                 suggestions.add(item);
             }
+            if (suggestions.size() >= 3)
+                break;
         }
         return suggestions;
     }
@@ -241,10 +214,21 @@ public class ChatbotActivity extends AppCompatActivity {
         chatAdapter.notifyItemInserted(userMsgIndex);
         binding.recyclerViewChat.scrollToPosition(userMsgIndex);
         binding.etMessage.setText("");
-        saveChatHistory(); // Lưu lại sau khi gửi
+        saveChatHistory();
+
+        // Thêm typing indicator
+        ChatMessage typingMsg = new ChatMessage(ChatMessage.Type.TYPING);
+        chatMessages.add(typingMsg);
+        chatAdapter.notifyItemInserted(chatMessages.size() - 1);
+        binding.recyclerViewChat.scrollToPosition(chatMessages.size() - 1);
 
         sendMessageToGemini(message, reply -> runOnUiThread(() -> {
-            if (reply.startsWith("Lỗi") || reply.startsWith("Không có")) {
+            // Xóa typing indicator nếu có
+            if (!chatMessages.isEmpty() && chatMessages.get(chatMessages.size() - 1).type == ChatMessage.Type.TYPING) {
+                chatMessages.remove(chatMessages.size() - 1);
+                chatAdapter.notifyItemRemoved(chatMessages.size());
+            }
+            if (reply.startsWith("Lỗi") ||   reply.startsWith("Không có")) {
                 userMsg.status = ChatMessage.Status.FAILED;
                 chatAdapter.notifyItemChanged(userMsgIndex);
             } else {
@@ -260,7 +244,7 @@ public class ChatbotActivity extends AppCompatActivity {
                 if (!suggestions.isEmpty()) {
                     binding.recyclerViewChat.scrollToPosition(chatMessages.size() - 1);
                 }
-                saveChatHistory(); // Lưu lại sau khi bot trả lời và gợi ý
+                saveChatHistory();
             }
         }));
     }
@@ -270,16 +254,20 @@ public class ChatbotActivity extends AppCompatActivity {
         String shopInfo = "Shop giày Solemate - 123 Lê Lợi, Q.1, TP.HCM. Hotline: 0909030111. Mở cửa 8h-21h mỗi ngày. "
                 +
                 "Chính sách: Đổi trả 7 ngày, bảo hành 12 tháng, freeship khi mua 2 đôi trở lên";
-        String prompt = "Bạn là nhân viên bán hàng của shop giày. Hãy trả lời ngắn gọn, súc tích, đủ ý, tập trung vào gợi ý sản phẩm phù hợp nhất với nhu cầu khách hàng.\n"
-                + "- Chỉ nêu lý do chọn sản phẩm (ưu điểm, phù hợp nhu cầu, giá tốt, khuyến mãi nếu có).\n"
-                + "- Nếu khách hỏi ngoài phạm vi shop, hãy từ chối lịch sự và hướng lại về sản phẩm.\n"
-                + "- Không quảng cáo dài dòng, không lặp lại thông tin.\n"
-                + "- Nếu có thể, hãy gợi ý tối đa 2-3 sản phẩm phù hợp nhất.\n"
-                + "Thông tin về shop: " + shopInfo + "\n"
-                + "Dưới đây là thông tin sản phẩm của shop:\n" + buildProductPrompt(allProducts, 10)
-                + "\nLịch sử hội thoại:\n" + buildChatHistory(chatMessages)
-                + "Khách: " + message + "\nSale:"
-                + "*Lưu ý: Format response đẹp và thân thiện";
+        String prompt = "Bạn là nhân viên bán hàng thân thiện, chuyên nghiệp của shop giày Solemate. " +
+                "Nhiệm vụ của bạn là tư vấn cho khách hàng sản phẩm phù hợp nhất dựa trên nhu cầu họ hỏi. " +
+                "Hãy trả lời tự nhiên, ngắn gọn, giống như hội thoại thật ngoài đời, tập trung vào lợi ích và sự phù hợp của sản phẩm với khách. "
+                +
+                "Chỉ gợi ý tối đa 2-3 sản phẩm phù hợp nhất, ưu tiên sản phẩm còn hàng, bán chạy, đánh giá cao. " +
+                "Với mỗi sản phẩm, hãy nêu tên, giá, ưu điểm nổi bật hoặc lý do nên chọn (ví dụ: phù hợp nhu cầu, giá tốt, đang khuyến mãi, chất liệu, thương hiệu, v.v). "
+                +
+                "Nếu khách hỏi ngoài phạm vi shop, hãy từ chối lịch sự và hướng lại về sản phẩm. " +
+                "Nếu không có sản phẩm phù hợp, hãy trả lời lịch sự và gợi ý khách thử từ khóa khác. " +
+                "Không quảng cáo quá đà, không lặp lại thông tin, không thêm ký tự thừa. " +
+                "Thông tin về shop: " + shopInfo + "\n" +
+                "Dưới đây là thông tin sản phẩm của shop:\n" + buildProductPrompt(allProducts) +
+                "\nLịch sử hội thoại:\n" + buildChatHistory(chatMessages) +
+                "Khách: " + message + "\nSale:";
 
         try {
             JSONObject content = new JSONObject();
@@ -340,7 +328,7 @@ public class ChatbotActivity extends AppCompatActivity {
     // Model tin nhắn
     public static class ChatMessage {
         public enum Type {
-            USER, BOT, PRODUCT
+            USER, BOT, PRODUCT, TYPING
         }
 
         public enum Status {
@@ -366,6 +354,11 @@ public class ChatbotActivity extends AppCompatActivity {
             this.type = Type.PRODUCT;
             this.status = Status.NONE;
             this.product = product;
+        }
+
+        public ChatMessage(Type type) {
+            this.type = type;
+            this.status = Status.NONE;
         }
     }
 }

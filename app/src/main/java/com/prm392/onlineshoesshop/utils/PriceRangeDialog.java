@@ -74,11 +74,6 @@ public class PriceRangeDialog {
         if (currentRangeType != FilterState.PriceRangeType.NONE) {
             selectedRangeType = currentRangeType;
             highlightSelectedCard(currentRangeType);
-
-            if (currentRangeType == FilterState.PriceRangeType.CUSTOM) {
-                binding.etMinPrice.setText(String.valueOf((int) currentMinPrice));
-                binding.etMaxPrice.setText(String.valueOf((int) currentMaxPrice));
-            }
         }
 
         // Set dialog width to 90% of screen width
@@ -99,9 +94,6 @@ public class PriceRangeDialog {
     }
 
     private void setupListeners() {
-        // Close button
-        binding.btnClose.setOnClickListener(v -> dialog.dismiss());
-
         // Cancel button
         binding.btnCancel.setOnClickListener(v -> dialog.dismiss());
 
@@ -109,46 +101,38 @@ public class PriceRangeDialog {
         binding.btnApply.setOnClickListener(v -> applyPriceRange());
 
         // Price range cards
-        binding.cardUnder50.setOnClickListener(v -> selectPriceRange(FilterState.PriceRangeType.UNDER_50, 0, 50));
-        binding.card50to100.setOnClickListener(v -> selectPriceRange(FilterState.PriceRangeType.FIFTY_TO_100, 50, 100));
+        binding.cardAll.setOnClickListener(v -> selectPriceRange(FilterState.PriceRangeType.NONE, 0, Double.MAX_VALUE));
+        binding.cardUnder50.setOnClickListener(v -> selectPriceRange(FilterState.PriceRangeType.UNDER_50, 0, 500_000));
+        binding.card50to100
+                .setOnClickListener(v -> selectPriceRange(FilterState.PriceRangeType.FIFTY_TO_100, 500_000, 1_000_000));
         binding.card100to200
-                .setOnClickListener(v -> selectPriceRange(FilterState.PriceRangeType.HUNDRED_TO_200, 100, 200));
-        binding.cardOver200.setOnClickListener(v ->
-                selectPriceRange(FilterState.PriceRangeType.OVER_200, 200, Double.MAX_VALUE));
-
-        // Custom range card
-        binding.cardCustomRange.setOnClickListener(v -> selectCustomRange());
+                .setOnClickListener(
+                        v -> selectPriceRange(FilterState.PriceRangeType.HUNDRED_TO_200, 1_000_000, 2_000_000));
+        binding.cardOver200.setOnClickListener(
+                v -> selectPriceRange(FilterState.PriceRangeType.OVER_200, 2_000_000, Double.MAX_VALUE));
     }
 
     private void selectPriceRange(FilterState.PriceRangeType rangeType, double minPrice, double maxPrice) {
         selectedRangeType = rangeType;
         resetAllCards();
         highlightSelectedCard(rangeType);
-
-        // Clear custom range inputs
-        binding.etMinPrice.setText("");
-        binding.etMaxPrice.setText("");
-    }
-
-    private void selectCustomRange() {
-        selectedRangeType = FilterState.PriceRangeType.CUSTOM;
-        resetAllCards();
-        highlightSelectedCard(FilterState.PriceRangeType.CUSTOM);
     }
 
     private void resetAllCards() {
+        binding.cardAll.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
         binding.cardUnder50.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
         binding.card50to100.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
         binding.card100to200.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
         binding.cardOver200.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
-
-        binding.cardCustomRange.setStrokeColor(ContextCompat.getColor(context, R.color.light_grey));
     }
 
     private void highlightSelectedCard(FilterState.PriceRangeType rangeType) {
         MaterialCardView selectedCard = null;
 
         switch (rangeType) {
+            case NONE:
+                selectedCard = binding.cardAll;
+                break;
             case UNDER_50:
                 selectedCard = binding.cardUnder50;
                 break;
@@ -161,10 +145,6 @@ public class PriceRangeDialog {
             case OVER_200:
                 selectedCard = binding.cardOver200;
                 break;
-
-            case CUSTOM:
-                selectedCard = binding.cardCustomRange;
-                break;
         }
 
         if (selectedCard != null) {
@@ -176,61 +156,35 @@ public class PriceRangeDialog {
         double minPrice = 0;
         double maxPrice = 0;
 
-        if (selectedRangeType == FilterState.PriceRangeType.CUSTOM) {
-            // Get values from custom range inputs
-            String minPriceStr = binding.etMinPrice.getText().toString().trim();
-            String maxPriceStr = binding.etMaxPrice.getText().toString().trim();
-
-            if (minPriceStr.isEmpty() || maxPriceStr.isEmpty()) {
-                Toast.makeText(context, "Vui lòng nhập đầy đủ khoảng giá", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            try {
-                minPrice = Double.parseDouble(minPriceStr);
-                maxPrice = Double.parseDouble(maxPriceStr);
-
-                if (minPrice < 0 || maxPrice < 0) {
-                    Toast.makeText(context, "Giá không được âm", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (minPrice >= maxPrice) {
-                    Toast.makeText(context, "Giá tối thiểu phải nhỏ hơn giá tối đa", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            } catch (NumberFormatException e) {
-                Toast.makeText(context, "Vui lòng nhập giá hợp lệ", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        } else {
-            // Use predefined ranges
-            switch (selectedRangeType) {
-                case UNDER_50:
-                    minPrice = 0;
-                    maxPrice = 50;
-                    break;
-                case FIFTY_TO_100:
-                    minPrice = 50;
-                    maxPrice = 100;
-                    break;
-                case HUNDRED_TO_200:
-                    minPrice = 100;
-                    maxPrice = 200;
-                    break;
-                case OVER_200:
-                    minPrice = 200;
-                    maxPrice = Double.MAX_VALUE;
-                    break;
-            }
-
+        // Use predefined ranges
+        switch (selectedRangeType) {
+            case NONE:
+                minPrice = 0;
+                maxPrice = Double.MAX_VALUE;
+                break;
+            case UNDER_50:
+                minPrice = 0;
+                maxPrice = 500_000;
+                break;
+            case FIFTY_TO_100:
+                minPrice = 500_000;
+                maxPrice = 1_000_000;
+                break;
+            case HUNDRED_TO_200:
+                minPrice = 1_000_000;
+                maxPrice = 2_000_000;
+                break;
+            case OVER_200:
+                minPrice = 2_000_000;
+                maxPrice = Double.MAX_VALUE;
+                break;
         }
 
-        if (selectedRangeType != FilterState.PriceRangeType.NONE) {
+        if (selectedRangeType != FilterState.PriceRangeType.NONE || (minPrice == 0 && maxPrice == Double.MAX_VALUE)) {
             listener.onPriceRangeSelected(minPrice, maxPrice, selectedRangeType);
             dialog.dismiss();
         } else {
-            Toast.makeText(context, "Vui lòng chọn khoảng giá", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Vui lòng chọn khoảng giá (VNĐ)", Toast.LENGTH_SHORT).show();
         }
     }
 

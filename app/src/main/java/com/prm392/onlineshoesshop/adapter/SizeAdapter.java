@@ -21,6 +21,7 @@ public class SizeAdapter extends RecyclerView.Adapter<SizeAdapter.SizeViewHolder
     private int selectedPosition = -1;
     private int lastSelectedPosition = -1;
     private Context context;
+    private OnSizeSelectedListener onSizeSelectedListener;
 
     public SizeAdapter(Map<String, Integer> sizeQuantityMap) {
         this.items = new ArrayList<>(sizeQuantityMap.entrySet()); // preserve order
@@ -64,6 +65,9 @@ public class SizeAdapter extends RecyclerView.Adapter<SizeAdapter.SizeViewHolder
                 selectedPosition = position;
                 notifyItemChanged(lastSelectedPosition);
                 notifyItemChanged(selectedPosition);
+                if (onSizeSelectedListener != null) {
+                    onSizeSelectedListener.onSizeSelected(getSelectedSize());
+                }
             });
         }
     }
@@ -88,5 +92,13 @@ public class SizeAdapter extends RecyclerView.Adapter<SizeAdapter.SizeViewHolder
             return items.get(selectedPosition).getKey();
         }
         return null;
+    }
+
+    public void setOnSizeSelectedListener(OnSizeSelectedListener listener) {
+        this.onSizeSelectedListener = listener;
+    }
+
+    public interface OnSizeSelectedListener {
+        void onSizeSelected(String selectedSize);
     }
 }
