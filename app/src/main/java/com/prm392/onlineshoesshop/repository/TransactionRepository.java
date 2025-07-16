@@ -27,23 +27,34 @@ public class TransactionRepository {
                                          @NonNull List<TransactionItem> items,
                                          @NonNull String paymentMethod) {
 
-        Transaction transaction = new Transaction(
-                appTransId,
-                userId,
-                System.currentTimeMillis(),
-                totalAmount,
-                tax,
-                deliveryFee,
-                items,
-                Transaction.PaymentStatus.PENDING,          // 🔁 payment chưa hoàn tất
-                Transaction.OrderStatus.WAITING_CONFIRMATION, // 🔁 chờ xác nhận đơn hàng
-                paymentMethod
-        );
+        transactionRef.child(appTransId).get().addOnSuccessListener(snapshot -> {
+            if (snapshot.exists()) {
+                Log.d("TransactionRepo", "Transaction already exists, skipping creation to preserve createdAt");
+                return; // ❌ Không ghi đè nếu đã tồn tại
+            }
 
-        transactionRef.child(appTransId).setValue(transaction)
-                .addOnSuccessListener(unused -> Log.d("TransactionRepo", "Transaction created"))
-                .addOnFailureListener(e -> Log.e("TransactionRepo", "Error saving transaction", e));
+            // ✅ Giao dịch mới → tạo mới với thời gian hiện tại
+            Transaction transaction = new Transaction(
+                    appTransId,
+                    userId,
+                    System.currentTimeMillis(),
+                    totalAmount,
+                    tax,
+                    deliveryFee,
+                    items,
+                    Transaction.PaymentStatus.PENDING,
+                    Transaction.OrderStatus.WAITING_CONFIRMATION,
+                    paymentMethod
+            );
+
+            transactionRef.child(appTransId).setValue(transaction)
+                    .addOnSuccessListener(unused -> Log.d("TransactionRepo", "Transaction created"))
+                    .addOnFailureListener(e -> Log.e("TransactionRepo", "Error saving transaction", e));
+        }).addOnFailureListener(e -> {
+            Log.e("TransactionRepo", "Error checking existing transaction: " + e.getMessage());
+        });
     }
+
 
     public void updatePaymentStatus(@NonNull String appTransId,
                                     @NonNull Transaction.PaymentStatus paymentStatus,

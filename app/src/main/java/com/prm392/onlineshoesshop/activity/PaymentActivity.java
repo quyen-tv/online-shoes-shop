@@ -77,6 +77,7 @@ public class PaymentActivity extends AppCompatActivity {
         if (passedAppTransId != null) {
             // Retry payment
             appTransId = passedAppTransId;
+            hasCreatedTransaction = true;
             fetchTransactionDataAndBuildCart(appTransId);
 
             // 👉 Set radio ZaloPay và disable chọn lại
@@ -164,6 +165,7 @@ public class PaymentActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("SetTextI18n")
     private void handleCheckOut() {
+
         if (appTransId != null && orderToken != null) {
             // Đã tạo trước đó => chỉ gọi thanh toán
             handlePayOrder();

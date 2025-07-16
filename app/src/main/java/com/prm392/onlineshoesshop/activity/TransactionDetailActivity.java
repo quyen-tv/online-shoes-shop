@@ -103,7 +103,7 @@ public class TransactionDetailActivity extends AppCompatActivity {
 
 
         if (transaction.getPaymentStatus() == Transaction.PaymentStatus.PENDING
-                && transaction.getOrderStatus() != Transaction.OrderStatus.CANCELLED) {
+                && transaction.getOrderStatus() == Transaction.OrderStatus.WAITING_CONFIRMATION) {
 
             binding.actionButtonsLayout.setVisibility(View.VISIBLE);
 

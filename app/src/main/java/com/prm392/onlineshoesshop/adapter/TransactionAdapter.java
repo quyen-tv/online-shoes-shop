@@ -24,7 +24,7 @@ import java.util.Locale;
 
 public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder> {
 
-    private final List<Transaction> transactionList;
+    private List<Transaction> transactionList;
     private final Context context;
 
     public TransactionAdapter(List<Transaction> transactionList, Context context) {
@@ -114,6 +114,12 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             tvMethod = itemView.findViewById(R.id.tvPaymentMethod);
         }
     }
+    public void setData(List<Transaction> newList) {
+        this.transactionList.clear();
+        this.transactionList.addAll(newList);
+        notifyDataSetChanged();
+    }
+
 
     private String formatDate(long timestamp) {
         @SuppressLint("SimpleDateFormat")
