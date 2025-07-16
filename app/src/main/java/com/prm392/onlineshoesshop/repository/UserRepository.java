@@ -87,7 +87,7 @@ public class UserRepository {
                         } else {
                             // Người dùng chưa tồn tại trong DB
                             Log.d(TAG, "User not found in DB, creating new user");
-                            String phone = firebaseUser.getPhoneNumber() != null ? firebaseUser.getPhoneNumber() : null;
+                            String phone = firebaseUser.getPhoneNumber() != null ? firebaseUser.getPhoneNumber() : "";
 
                             User basicUser = new User(
                                     firebaseUser.getUid(),

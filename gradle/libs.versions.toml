@@ -2,6 +2,7 @@
 agp = "8.9.0"
 chipNavigationBar = "1.4.0"
 
+core = "4.6.2"
 credentialsPlayServicesAuth = "1.5.0"
 firebaseBom = "33.15.0"
 
@@ -24,6 +25,7 @@ firebaseAuth = "23.2.1"
 
 [libraries]
 chip-navigation-bar = { module = "com.github.ismaeldivita:chip-navigation-bar", version.ref = "chipNavigationBar" }
+core = { module = "io.noties.markwon:core", version.ref = "core" }
 credentials = { module = "androidx.credentials:credentials", version.ref = "credentialsPlayServicesAuth" }
 credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }

@@ -49,10 +49,10 @@
 
     <!-- Navigation related strings -->
     <string name="explorer">Explorer</string>
-    <string name="cart">Cart</string>
+    <string name="notification">Notification</string>
     <string name="favorite">Favorite</string>
     <string name="my_order">My Order</string>
-    <string name="profile">Profile</string>
+    <string name="profile">Me</string>
 
     <!-- Item detail related strings -->
     <string name="select_size">Select size</string>
@@ -66,12 +66,11 @@
 
     <!-- Settings related strings -->
     <string name="settings_profile">User profile</string>
-    <string name="settings_notification">Notification</string>
+    <string name="settings_view_history">Recently viewed</string>
     <string name="settings_tos">Term of services</string>
     <string name="settings_logout">Log out</string>
 
     <!-- Price range filter strings -->
-    <string name="title_select_price_range">Select price range</string>
     <string name="price_range_all">All</string>
     <string name="price_range_under_10m">Under 10 million</string>
     <string name="price_range_10_16m">10 – 16 million</string>
@@ -79,13 +78,13 @@
     <string name="price_range_over_22m">Over 22 million</string>
 
     <!-- AllItemsActivity text -->
+    <string name="all_products">All products</string>
     <string name="msg_applied">Applied: %1$s</string>
     <string name="chip_price_range_default">Select price range</string>
     <string name="chip_price_range_under_50">Under $50</string>
     <string name="chip_price_range_50_100">$50 - $100</string>
     <string name="chip_price_range_100_200">$100 - $200</string>
-    <string name="chip_price_range_200_500">$200 - $500</string>
-    <string name="chip_price_range_over_500">Over $500</string>
+    <string name="chip_price_range_over_200">Over $200</string>
     <string name="chip_price_range_custom_from">From $%1$.0f+</string>
     <string name="chip_price_range_custom_range">$%1$.0f - $%2$.0f</string>
     <string name="log_applied_filters">Applied filters: %1$s</string>
@@ -99,4 +98,31 @@
 
     <!-- Favorite related text -->
     <string name="my_favorites">My favorites</string>
+    <string name="search_history_title">Search history</string>
+    <string name="search_result_title">Search results</string>
+    <string name="search_no_result">No matching products found</string>
+    <string name="search_empty_query">Please enter a search keyword</string>
+    <string name="search_found_count">Found %1$d products</string>
+    <!-- Payment related text -->
+
+
+    <string name="payment_checkout_title">Checkout</string>
+    <string name="payment_user_title">Receiver Information</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="payment_zalopay">ZaloPay</string>
+    <string name="payment_cash">Cash on Delivery</string>
+    <string name="payment_subtotal">Subtotal</string>
+    <string name="payment_delivery_fee">Delivery Fee</string>
+    <string name="payment_tax">Tax</string>
+    <string name="payment_total">Total Payment</string>
+    <string name="payment_place_order">Place Order</string>
+
+    <!-- Payment Cart Item -->
+    <string name="item_size_label">Size: %1$s</string>
+    <string name="item_quantity_label">x%1$d</string>
+    <string name="item_no_name">Empty Name</string>
+    <string name="payment_label_email">Email</string>
+    <string name="payment_label_name">Name</string>
+    <string name="payment_label_address">Address</string>
+    <string name="payment_lable_phone">Phone Number:</string>
 </resources>

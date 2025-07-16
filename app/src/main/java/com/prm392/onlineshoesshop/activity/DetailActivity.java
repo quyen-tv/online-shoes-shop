@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -21,15 +22,21 @@ import com.prm392.onlineshoesshop.adapter.SliderAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityDetailBinding;
 import com.prm392.onlineshoesshop.factory.ItemViewModelFactory;
 import com.prm392.onlineshoesshop.helper.ManagementCart;
+import com.prm392.onlineshoesshop.helper.TinyDB;
 import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.SliderModel;
 import com.prm392.onlineshoesshop.repository.ItemRepository;
 import com.prm392.onlineshoesshop.repository.UserRepository;
 import com.prm392.onlineshoesshop.utils.UiUtils;
 import com.prm392.onlineshoesshop.viewmodel.ItemViewModel;
+import com.prm392.onlineshoesshop.adapter.AllItemAdapter;
 
+import androidx.recyclerview.widget.GridLayoutManager;
+
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class DetailActivity extends AppCompatActivity {
@@ -44,6 +51,7 @@ public class DetailActivity extends AppCompatActivity {
     private SliderAdapter sliderAdapter;
 
     private ItemViewModel itemViewModel;
+    private TinyDB tinyDB; // Thêm biến TinyDB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +60,7 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         managementCart = new ManagementCart(this);
+        tinyDB = new TinyDB(this);
         UserRepository userRepository = new UserRepository();
         ItemRepository itemRepository = new ItemRepository();
         ItemViewModelFactory itemViewModelFactory = new ItemViewModelFactory(userRepository, itemRepository);
@@ -60,8 +69,11 @@ public class DetailActivity extends AppCompatActivity {
                 itemViewModelFactory)
                 .get(ItemViewModel.class);
 
-        getBundle(); // ⬅ Đảm bảo gọi ngay từ đầu
-        if (item == null) return; // ⛔ Nếu null thì dừng
+        getBundle();
+        if (item == null)
+            return;
+
+        saveViewHistory(item);
 
         banners();
         initLists();
@@ -69,12 +81,34 @@ public class DetailActivity extends AppCompatActivity {
         initLists();
         setupObservers();
 
-        binding.btnCart.setOnClickListener(v -> {
-            startActivity(new Intent(this, CartActivity.class));
-            finish();
+        // Sự kiện click icon cart: mở CartActivity
+        binding.cartIconContainer.setOnClickListener(v -> {
+            Intent intent = new Intent(DetailActivity.this, CartActivity.class);
+            startActivity(intent);
         });
 
         setupSynchronization();
+        setupSimilarProducts();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateCartBadge();
+    }
+
+    private void updateCartBadge() {
+        ManagementCart managementCart = new ManagementCart(this);
+        int count = managementCart.getCartItems().size();
+        android.widget.TextView tvCartBadge = findViewById(R.id.tvCartBadge);
+        if (tvCartBadge != null) {
+            if (count > 0) {
+                tvCartBadge.setText(String.valueOf(count));
+                tvCartBadge.setVisibility(android.view.View.VISIBLE);
+            } else {
+                tvCartBadge.setVisibility(android.view.View.GONE);
+            }
+        }
     }
 
     private void initLists() {
@@ -117,16 +151,33 @@ public class DetailActivity extends AppCompatActivity {
     private void getBundle() {
         item = getIntent().getParcelableExtra("object");
         if (item == null || item.getItemId() == null) {
-            Log.e("DetailActivity", "Received null item or itemId from intent"+item.getItemId());
+            Log.e("DetailActivity", "Received null item or itemId from intent" + item.getItemId());
             Toast.makeText(this, "Error: Item is null or missing ID", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-
         binding.tvTitle.setText(item.getTitle());
+        Integer sold = item.getSold();
+        String soldText;
+        if (sold == null) {
+            soldText = "Đã bán: 0";
+        } else if (sold >= 1000) {
+            int soldK = sold / 1000;
+            soldText = String.format("Đã bán %dk+", soldK);
+        } else {
+            soldText = String.format("Đã bán: %d", sold);
+        }
+        binding.tvSold.setText(soldText);
         binding.tvDescription.setText(item.getDescription());
-        binding.tvPrice.setText(String.format("$%.2f", item.getPrice()));
+        try {
+            String priceStr = String.valueOf(item.getPrice());
+            double price = Double.parseDouble(priceStr);
+            NumberFormat format = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
+            binding.tvPrice.setText(String.format("₫%s", format.format(price)));
+        } catch (Exception e) {
+            binding.tvPrice.setText(String.format("₫%s", item.getPrice()));
+        }
         binding.tvRating.setText(String.valueOf(item.getRating()));
         binding.btnAddToCart.setOnClickListener(v -> {
             String selectedSize = sizeAdapter.getSelectedSize();
@@ -135,23 +186,20 @@ public class DetailActivity extends AppCompatActivity {
                         binding.getRoot(),
                         "Please select a size!",
                         Snackbar.LENGTH_SHORT,
-                        getResources().getColor(R.color.orange)
-                );
+                        getResources().getColor(R.color.orange));
                 return;
             }
-            item.setNumberInCart(numberOrder); // vẫn giữ
-            managementCart.insertItem(item, selectedSize, numberOrder); // ✅ dùng đúng hàm
+            item.setNumberInCart(numberOrder);
+            managementCart.insertItem(item, selectedSize, numberOrder);
+            startActivity(new Intent(this, CartActivity.class));
+            finish();
         });
 
         binding.btnBack.setOnClickListener(v -> {
             finish();
         });
-        binding.btnFavorite.setOnClickListener(v -> {
-            itemViewModel.toggleFavorite(item.getItemId());
-        });
 
-
-
+        binding.btnFavorite.setOnClickListener(v -> itemViewModel.toggleFavorite(item.getItemId()));
     }
 
     /**
@@ -159,7 +207,8 @@ public class DetailActivity extends AppCompatActivity {
      * - isLoading: Hiển thị/ẩn ProgressBar và vô hiệu hóa/kích hoạt các phần tử UI.
      * - errorMessage: Hiển thị Snackbar với thông báo lỗi nếu có.
      * - authSuccess: Đặt lại form nếu đăng nhập/đăng ký thành công.
-     * - currentUserData: Nếu đăng nhập thành công và có dữ liệu người dùng, chuyển đến MainActivity.
+     * - currentUserData: Nếu đăng nhập thành công và có dữ liệu người dùng, chuyển
+     * đến MainActivity.
      */
     private void setupObservers() {
 
@@ -175,9 +224,11 @@ public class DetailActivity extends AppCompatActivity {
 
         itemViewModel.isItemFavorite(item.getItemId()).observe(this, isFav -> {
             if (isFav) {
-                binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.fav_icon_fill));
+                binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_fav_fill));
+                binding.btnFavorite.setImageTintList(getResources().getColorStateList(R.color.purple));
             } else {
-                binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.fav_icon));
+                binding.btnFavorite.setImageDrawable(AppCompatResources.getDrawable(this,
+                        R.drawable.ic_fav));
             }
         });
     }
@@ -193,5 +244,58 @@ public class DetailActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void setupSimilarProducts() {
+        if (item == null)
+            return;
+        ItemRepository itemRepository = new ItemRepository();
+        UserRepository userRepository = new UserRepository();
+        ItemViewModelFactory factory = new ItemViewModelFactory(userRepository, itemRepository);
+        ItemViewModel itemViewModel = new ViewModelProvider(this, factory).get(ItemViewModel.class);
+        itemViewModel.allItems.observe(this, allProducts -> {
+            if (allProducts == null || allProducts.isEmpty())
+                return;
+            List<ItemModel> similar = new ArrayList<>();
+            for (ItemModel p : allProducts) {
+                if (p.getItemId().equals(item.getItemId()))
+                    continue;
+                if ((item.getCategory() != null && item.getCategory().equalsIgnoreCase(p.getCategory())) ||
+                        (item.getBrand() != null && item.getBrand().equalsIgnoreCase(p.getBrand()))) {
+                    similar.add(p);
+                }
+                if (similar.size() >= 10)
+                    break;
+            }
+            AllItemAdapter adapter = new AllItemAdapter(similar);
+            RecyclerView rv = findViewById(R.id.rvSimilar);
+            int spanCount = 2;
+            GridLayoutManager layoutManager = new GridLayoutManager(this, spanCount);
+            rv.setLayoutManager(layoutManager);
+            rv.setAdapter(adapter);
+            int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
+            rv.addItemDecoration(new com.prm392.onlineshoesshop.activity.SpaceItemDecoration(spacing, spanCount));
+        });
+    }
+
+    // Thêm hàm lưu lịch sử xem sản phẩm
+    private void saveViewHistory(ItemModel viewedItem) {
+        ArrayList<ItemModel> historyList = tinyDB.getListObject("ViewHistoryList");
+        if (historyList == null)
+            historyList = new ArrayList<>();
+        // Xóa sản phẩm nếu đã có trong lịch sử (tránh trùng lặp)
+        for (int i = 0; i < historyList.size(); i++) {
+            if (historyList.get(i).getItemId().equals(viewedItem.getItemId())) {
+                historyList.remove(i);
+                break;
+            }
+        }
+        // Thêm sản phẩm mới vào đầu danh sách
+        historyList.add(0, viewedItem);
+        // Giới hạn số lượng lịch sử (20 sản phẩm)
+        if (historyList.size() > 20) {
+            historyList = new ArrayList<>(historyList.subList(0, 20));
+        }
+        tinyDB.putListObject("ViewHistoryList", historyList);
     }
 }

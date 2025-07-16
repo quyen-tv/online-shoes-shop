@@ -33,11 +33,12 @@
                     android:id="@+id/layoutNormalHeader"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center"
                     android:orientation="horizontal">
 
                     <LinearLayout
                         android:layout_width="0dp"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
@@ -59,84 +60,44 @@
 
                     <ImageView
                         android:id="@+id/ivSearchIcon"
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
                         android:layout_marginEnd="16dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
-                        app:srcCompat="@drawable/search_icon" />
+                        app:tint="@color/dark_grey"
+                        app:srcCompat="@drawable/search" />
+
+                    <FrameLayout
+                        android:id="@+id/cartIconContainer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp">
+
+                        <ImageView
+                            android:id="@+id/ivBellIcon"
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            app:srcCompat="@drawable/cart"
+                            app:tint="@color/dark_grey" />
+
+                        <TextView
+                            android:id="@+id/tvCartBadge"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="end|top"
+                            android:background="@drawable/badge_background"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp"
+                            android:gravity="center"
+                            android:visibility="gone"
+                            android:text="0"/>
+                    </FrameLayout>
 
                     <ImageView
-                        android:id="@+id/ivBellIcon"
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
-                        app:srcCompat="@drawable/bell_icon" />
-                </LinearLayout>
-
-                <!-- Expanded search bar (hidden by default) -->
-                <LinearLayout
-                    android:id="@+id/layoutSearchExpanded"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:visibility="gone"
-                    android:layout_marginTop="8dp">
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="0dp"
-                        android:layout_height="42dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="16dp"
-                        app:cardCornerRadius="21dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="@color/white">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:paddingStart="16dp"
-                            android:paddingEnd="12dp">
-
-                            <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:layout_marginEnd="8dp"
-                                app:srcCompat="@drawable/search_icon" />
-
-                            <EditText
-                                android:id="@+id/etSearchQuery"
-                                android:layout_width="0dp"
-                                android:layout_height="match_parent"
-                                android:layout_weight="1"
-                                android:background="@android:color/transparent"
-                                android:hint="Search shoes..."
-                                android:textSize="14sp"
-                                android:textColorHint="@color/grey"
-                                android:maxLines="1"
-                                android:imeOptions="actionSearch"
-                                android:inputType="text" />
-
-                            <ImageView
-                                android:id="@+id/ivClearSearch"
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:clickable="true"
-                                android:focusable="true"
-                                android:background="?android:attr/selectableItemBackgroundBorderless"
-                                android:padding="2dp"
-                                app:srcCompat="@drawable/ic_close"
-                                app:tint="@color/grey" />
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
-
-                    <ImageView
-                        android:id="@+id/ivBellIconExpanded"
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
-                        app:srcCompat="@drawable/bell_icon" />
+                        android:id="@+id/ivChat"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        app:tint="@color/grey"
+                        app:srcCompat="@drawable/ic_message_circle_dots" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -203,13 +164,6 @@
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvSeeAllBrand"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/see_all"
-                    android:textColor="@color/purple" />
             </LinearLayout>
 
             <!-- Brand list-->
