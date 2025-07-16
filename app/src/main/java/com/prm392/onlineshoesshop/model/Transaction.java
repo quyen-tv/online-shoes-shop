@@ -33,6 +33,7 @@ public class Transaction implements Parcelable {
     private PaymentStatus paymentStatus;
     private OrderStatus orderStatus;
     private String paymentMethod;
+    private Long paidAt; // nullable - chỉ có khi thanh toán thành công
 
     public Transaction() {}
 
@@ -60,6 +61,13 @@ public class Transaction implements Parcelable {
     }
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+    public Long getPaidAt() {
+        return paidAt;
+    }
+
+    public void setPaidAt(Long paidAt) {
+        this.paidAt = paidAt;
     }
 
     public String getAppTransId() {
@@ -146,6 +154,8 @@ public class Transaction implements Parcelable {
         paymentStatus = PaymentStatus.valueOf(in.readString());
         orderStatus = OrderStatus.valueOf(in.readString());
         paymentMethod = in.readString();
+        paidAt = (Long) in.readValue(Long.class.getClassLoader());
+
     }
 
     public static final Creator<Transaction> CREATOR = new Creator<Transaction>() {
@@ -178,5 +188,7 @@ public class Transaction implements Parcelable {
         dest.writeString(paymentStatus.name());
         dest.writeString(orderStatus.name());
         dest.writeString(paymentMethod);
+        dest.writeValue(paidAt); // dùng writeValue vì có thể null
+
     }
 }

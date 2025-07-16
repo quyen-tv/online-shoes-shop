@@ -50,10 +50,16 @@ public class TransactionRepository {
                                     String zaloTransactionId) {
 
         transactionRef.child(appTransId).child("paymentStatus").setValue(paymentStatus);
+
         if (zaloTransactionId != null) {
             transactionRef.child(appTransId).child("transactionId").setValue(zaloTransactionId);
         }
+
+        if (paymentStatus == Transaction.PaymentStatus.SUCCESS) {
+            transactionRef.child(appTransId).child("paidAt").setValue(System.currentTimeMillis());
+        }
     }
+
 
     public void updateOrderStatus(@NonNull String appTransId,
                                   @NonNull Transaction.OrderStatus orderStatus) {

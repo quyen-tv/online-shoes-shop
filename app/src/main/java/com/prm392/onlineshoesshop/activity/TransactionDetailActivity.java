@@ -1,5 +1,6 @@
 package com.prm392.onlineshoesshop.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -8,11 +9,16 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.adapter.TransactionDetailAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityTransactionDetailBinding;
+import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.Transaction;
 import com.prm392.onlineshoesshop.model.TransactionItem;
+import com.prm392.onlineshoesshop.repository.TransactionRepository;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -89,27 +95,60 @@ public class TransactionDetailActivity extends AppCompatActivity {
         binding.tvTax.setText("₫" + currencyFormat.format(transaction.getTax()));
         binding.tvDeliveryFee.setText("₫" + currencyFormat.format(transaction.getDeliveryFee()));
         binding.tvTotal.setText("₫" + currencyFormat.format(transaction.getTotalAmount()));
+        if (transaction.getPaymentStatus() == Transaction.PaymentStatus.SUCCESS && transaction.getPaidAt() > 0) {
+            binding.tvPaidAt.setText(formatDate(transaction.getPaidAt()));
+        } else {
+            binding.tvPaidAt.setText("Chưa thanh toán");
+        }
 
-        if (transaction.getPaymentStatus() == Transaction.PaymentStatus.PENDING) {
+
+        if (transaction.getPaymentStatus() == Transaction.PaymentStatus.PENDING
+                && transaction.getOrderStatus() != Transaction.OrderStatus.CANCELLED) {
+
             binding.actionButtonsLayout.setVisibility(View.VISIBLE);
 
-            binding.btnRetryPayment.setOnClickListener(v -> {
-                Toast.makeText(this, "Chức năng thanh toán lại đang được phát triển", Toast.LENGTH_SHORT).show();
-            });
+            if ("ZaloPay".equalsIgnoreCase(transaction.getPaymentMethod())) {
+                binding.btnRetryPayment.setVisibility(View.VISIBLE);
+                binding.btnRetryPayment.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, PaymentActivity.class);
+                    intent.putExtra("appTransId", transaction.getAppTransId()); // truyền id
+                    startActivity(intent);
+                });
+            } else {
+                binding.btnRetryPayment.setVisibility(View.GONE);
+            }
 
+            binding.btnCancelOrder.setVisibility(View.VISIBLE);
             binding.btnCancelOrder.setOnClickListener(v -> {
                 new AlertDialog.Builder(this)
                         .setTitle("Xác nhận huỷ đơn")
                         .setMessage("Bạn có chắc muốn huỷ đơn hàng này không?")
                         .setPositiveButton("Huỷ đơn", (dialog, which) -> {
-                            Toast.makeText(this, "Đã huỷ đơn (giả lập)", Toast.LENGTH_SHORT).show();
+                            TransactionRepository repo = new TransactionRepository();
+                            String transId = transaction.getAppTransId();
+
+                            repo.updateOrderStatus(transId, Transaction.OrderStatus.CANCELLED);
+
+                            // 👇 Nếu là COD thì cần rollback stock và sold
+                            if ("CashOnDelivery".equalsIgnoreCase(transaction.getPaymentMethod())) {
+                                increaseStock(transaction.getItems());
+                                decreaseSold(transaction.getItems());
+                            }
+
+                            Toast.makeText(this, "Đơn hàng đã được huỷ", Toast.LENGTH_SHORT).show();
+                            binding.actionButtonsLayout.setVisibility(View.GONE);
+                            binding.tvOrderStatus.setText("CANCELLED");
+                            binding.tvOrderStatus.setTextColor(getColor(R.color.red));
                         })
                         .setNegativeButton("Không", null)
                         .show();
             });
+
+
         } else {
             binding.actionButtonsLayout.setVisibility(View.GONE);
         }
+
     }
 
     private void setupRecyclerView() {
@@ -125,5 +164,46 @@ public class TransactionDetailActivity extends AppCompatActivity {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
                 .format(new Date(timestamp));
     }
+
+    private void increaseStock(List<TransactionItem> items) {
+        DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference("Items");
+
+        for (TransactionItem item : items) {
+            String itemId = item.getItemId();
+            String size = item.getSize();
+            int quantity = item.getQuantity();
+
+            DatabaseReference stockRef = itemsRef.child(itemId).child("stockEntries");
+
+            stockRef.get().addOnSuccessListener(dataSnapshot -> {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    ItemModel.StockEntry entry = snapshot.getValue(ItemModel.StockEntry.class);
+                    if (entry != null && size.equals(entry.getSize())) {
+                        int newQty = entry.getQuantity() + quantity;
+                        snapshot.getRef().child("quantity").setValue(newQty);
+                        break;
+                    }
+                }
+            });
+        }
+    }
+
+    private void decreaseSold(List<TransactionItem> items) {
+        DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference("Items");
+
+        for (TransactionItem item : items) {
+            String itemId = item.getItemId();
+            int quantity = item.getQuantity();
+
+            DatabaseReference itemRef = itemsRef.child(itemId);
+
+            itemRef.child("sold").get().addOnSuccessListener(snap -> {
+                Long currentSold = snap.getValue(Long.class);
+                long newSold = Math.max((currentSold != null ? currentSold : 0) - quantity, 0);
+                itemRef.child("sold").setValue(newSold);
+            });
+        }
+    }
+
 }
 
