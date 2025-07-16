@@ -228,7 +228,7 @@ public class ChatbotActivity extends AppCompatActivity {
                 chatMessages.remove(chatMessages.size() - 1);
                 chatAdapter.notifyItemRemoved(chatMessages.size());
             }
-            if (reply.startsWith("Lỗi") || reply.startsWith("Không có")) {
+            if (reply.startsWith("Lỗi") ||   reply.startsWith("Không có")) {
                 userMsg.status = ChatMessage.Status.FAILED;
                 chatAdapter.notifyItemChanged(userMsgIndex);
             } else {
