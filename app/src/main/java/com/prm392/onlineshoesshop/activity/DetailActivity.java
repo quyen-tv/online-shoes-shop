@@ -50,6 +50,7 @@ import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
 import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
 import com.prm392.onlineshoesshop.adapter.ReviewAdapter;
 import com.prm392.onlineshoesshop.model.Review;
+import com.prm392.onlineshoesshop.repository.ReviewRepository;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -78,6 +79,7 @@ public class DetailActivity extends AppCompatActivity {
     private ReviewAdapter reviewAdapter;
     private List<Review> reviewList = new ArrayList<>();
     private boolean showAllReviews = false;
+    private ReviewRepository reviewRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +99,9 @@ public class DetailActivity extends AppCompatActivity {
 
         AuthViewModelFactory authFactory = new AuthViewModelFactory(new UserRepository());
         authViewModel = new ViewModelProvider(this, authFactory).get(AuthViewModel.class);
+
+        // Khởi tạo ReviewRepository tránh null
+        reviewRepository = new ReviewRepository();
 
         getBundle();
         if (item == null)
@@ -121,7 +126,7 @@ public class DetailActivity extends AppCompatActivity {
         setupSimilarProducts(); // Gọi setup chỉ 1 lần ở đây
         // Sự kiện click nút Mua ngay
         binding.lnlButtons.findViewById(R.id.btnBuyNow).setOnClickListener(v -> {
-            showAddToCartBottomSheet(true);
+            showBuyNowBottomSheet();
         });
     }
 
@@ -330,25 +335,16 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void setupReviewSection() {
-        // Mock dữ liệu review
-        reviewList = new ArrayList<>();
-        reviewList.add(new Review("1", item.getItemId(), "u1", "Nguyễn Văn A", "", 5.0, "Giày đẹp, giao nhanh!",
-                System.currentTimeMillis() - 86400000L));
-        reviewList.add(new Review("2", item.getItemId(), "u2", "Trần Thị B", "", 4.5,
-                "Hàng chất lượng, sẽ ủng hộ tiếp.", System.currentTimeMillis() - 172800000L));
-        reviewList.add(new Review("3", item.getItemId(), "u3", "Lê Văn C", "", 4.0, "Đúng mô tả, đóng gói cẩn thận.",
-                System.currentTimeMillis() - 259200000L));
-        reviewList.add(new Review("4", item.getItemId(), "u4", "Phạm Thị D", "", 5.0, "Rất hài lòng!",
-                System.currentTimeMillis() - 345600000L));
-        // ... có thể thêm nhiều review hơn nếu muốn
-        reviewAdapter = new ReviewAdapter(reviewList);
+        reviewAdapter = new ReviewAdapter(new ArrayList<>());
         binding.rvReviews.setLayoutManager(new LinearLayoutManager(this));
         binding.rvReviews.setAdapter(reviewAdapter);
-        // Xử lý chevron để hiện hết review
+        // Lấy review từ Firebase
+        reviewRepository.getReviewsByItemId(item.getItemId()).observe(this, reviews -> {
+            reviewAdapter.setReviews(reviews);
+        });
         binding.imgChevronProfile.setOnClickListener(v -> {
             showAllReviews = !showAllReviews;
             reviewAdapter.setShowAll(showAllReviews);
-            // Đổi icon chevron nếu muốn
             binding.imgChevronProfile.setRotation(showAllReviews ? 90f : 0f);
         });
     }
@@ -377,6 +373,130 @@ public class DetailActivity extends AppCompatActivity {
     // Thêm tham số isBuyNow để phân biệt giữa Thêm vào giỏ hàng và Mua ngay
     private void showAddToCartBottomSheet() {
         showAddToCartBottomSheet(false);
+    }
+
+    private void showBuyNowBottomSheet() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        View sheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_add_to_cart, null);
+        bottomSheetDialog.setContentView(sheetView);
+        // Bo tròn 2 góc trên cho bottom sheet
+        sheetView.post(() -> {
+            View parent = (View) sheetView.getParent();
+            if (parent != null) {
+                parent.setBackgroundResource(R.drawable.bottom_sheet_bg);
+            }
+        });
+
+        ImageView imgProduct = sheetView.findViewById(R.id.imgProduct);
+        TextView tvPrice = sheetView.findViewById(R.id.tvPrice);
+        TextView tvStock = sheetView.findViewById(R.id.tvStock);
+        RecyclerView sizeList = sheetView.findViewById(R.id.sizeList);
+        TextView plusCartBtn = sheetView.findViewById(R.id.plusCartBtn);
+        TextView minusCartBtn = sheetView.findViewById(R.id.minusCartBtn);
+        TextView numberItemTxt = sheetView.findViewById(R.id.numberItemTxt);
+        Button btnAddToCartConfirm = sheetView.findViewById(R.id.btnAddToCartConfirm);
+
+        // Đổi text nút thành "Mua ngay"
+        btnAddToCartConfirm.setText("Mua ngay");
+
+        // Load ảnh sản phẩm (ảnh đầu tiên)
+        if (item.getPicUrl() != null && !item.getPicUrl().isEmpty()) {
+            com.bumptech.glide.Glide.with(this)
+                    .load(item.getPicUrl().get(0))
+                    .placeholder(R.drawable.placeholder)
+                    .into(imgProduct);
+        } else {
+            imgProduct.setImageResource(R.drawable.placeholder);
+        }
+
+        // Hiển thị giá
+        try {
+            String priceStr = String.valueOf(item.getPrice());
+            double price = Double.parseDouble(priceStr);
+            java.text.NumberFormat format = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+            tvPrice.setText(String.format("₫%s", format.format(price)));
+        } catch (Exception e) {
+            tvPrice.setText(String.format("₫%s", item.getPrice()));
+        }
+
+        // Tính tổng kho (tổng số lượng các size còn hàng)
+        int totalStock = 0;
+        if (item.getSizeQuantityMap() != null) {
+            for (int qty : item.getSizeQuantityMap().values()) {
+                totalStock += qty;
+            }
+        }
+        tvStock.setText("Kho: " + totalStock);
+
+        // Setup size adapter cho modal
+        SizeAdapter sheetSizeAdapter = new SizeAdapter(item.getSizeQuantityMap());
+        sizeList.setAdapter(sheetSizeAdapter);
+        sizeList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+
+        // Số lượng mặc định
+        final int[] quantity = { 1 };
+        numberItemTxt.setText(String.valueOf(quantity[0]));
+
+        // Ban đầu disable số lượng và nút xác nhận
+        plusCartBtn.setEnabled(false);
+        minusCartBtn.setEnabled(false);
+        btnAddToCartConfirm.setEnabled(false);
+        btnAddToCartConfirm.setAlpha(0.5f);
+
+        // Lắng nghe chọn size để enable controls
+        sheetSizeAdapter.setOnSizeSelectedListener(selectedSize -> {
+            boolean enable = selectedSize != null;
+            plusCartBtn.setEnabled(enable);
+            minusCartBtn.setEnabled(enable);
+            btnAddToCartConfirm.setEnabled(enable);
+            btnAddToCartConfirm.setAlpha(enable ? 1f : 0.5f);
+            // Reset số lượng về 1 khi chọn size mới
+            quantity[0] = 1;
+            numberItemTxt.setText("1");
+        });
+
+        plusCartBtn.setOnClickListener(v -> {
+            String selectedSize = sheetSizeAdapter.getSelectedSize();
+            if (selectedSize == null)
+                return;
+            int maxStock = 0;
+            if (item.getSizeQuantityMap() != null && item.getSizeQuantityMap().containsKey(selectedSize)) {
+                maxStock = item.getSizeQuantityMap().get(selectedSize);
+            }
+            if (quantity[0] < maxStock) {
+                quantity[0]++;
+                numberItemTxt.setText(String.valueOf(quantity[0]));
+            }
+        });
+        minusCartBtn.setOnClickListener(v -> {
+            if (quantity[0] > 1) {
+                quantity[0]--;
+                numberItemTxt.setText(String.valueOf(quantity[0]));
+            }
+        });
+
+        btnAddToCartConfirm.setOnClickListener(v -> {
+            String selectedSize = sheetSizeAdapter.getSelectedSize();
+            // Kiểm tra tồn kho size
+            int maxStock = 0;
+            if (item.getSizeQuantityMap() != null && item.getSizeQuantityMap().containsKey(selectedSize)) {
+                maxStock = item.getSizeQuantityMap().get(selectedSize);
+            }
+            if (quantity[0] > maxStock) {
+                UiUtils.showSnackbarWithBackground(
+                        binding.getRoot(),
+                        "Không đủ số lượng yêu cầu!",
+                        Snackbar.LENGTH_LONG,
+                        getResources().getColor(R.color.warning_orange));
+                return;
+            }
+            item.setNumberInCart(quantity[0]);
+            managementCart.insertItem(item, selectedSize, quantity[0]);
+            bottomSheetDialog.dismiss();
+            startActivity(new Intent(this, CartActivity.class));
+        });
+
+        bottomSheetDialog.show();
     }
 
     private void showAddToCartBottomSheet(boolean isBuyNow) {
