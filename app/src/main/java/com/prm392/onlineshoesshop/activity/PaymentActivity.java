@@ -13,6 +13,8 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
@@ -30,6 +32,7 @@ import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.Transaction;
 import com.prm392.onlineshoesshop.model.TransactionItem;
 import com.prm392.onlineshoesshop.repository.TransactionRepository;
+import com.prm392.onlineshoesshop.utils.UiUtils;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -147,7 +150,11 @@ public class PaymentActivity extends AppCompatActivity {
         binding.placeOrderBtn.setOnClickListener(v -> {
             String paymentMethod = getSelectedPaymentMethod();
             if (paymentMethod.equals("Unknown")) {
-                Toast.makeText(this, "Vui lòng chọn phương thức thanh toán", Toast.LENGTH_SHORT).show();
+                UiUtils.showSnackbarWithBackground(
+                        binding.getRoot(),
+                        "Vui lòng chọn phương thức thanh toán",
+                        Snackbar.LENGTH_LONG,
+                        getResources().getColor(R.color.warning_orange));
                 return;
             }
             if (paymentMethod.equals("ZaloPay")) {
@@ -156,7 +163,7 @@ public class PaymentActivity extends AppCompatActivity {
                 }
             }
             if (paymentMethod.equals("CashOnDelivery")) {
-                    handleCheckOutWithCash();
+                handleCheckOutWithCash();
             }
         });
 
@@ -202,8 +209,9 @@ public class PaymentActivity extends AppCompatActivity {
                                         simplifiedItems.add(new TransactionItem(
                                                 item.getItemId(), item.getTitle(), ci.getQuantity(),
                                                 item.getPrice(), ci.getSelectedSize(),
-                                                item.getPicUrl() != null && !item.getPicUrl().isEmpty() ? item.getPicUrl().get(0) : ""
-                                        ));
+                                                item.getPicUrl() != null && !item.getPicUrl().isEmpty()
+                                                        ? item.getPicUrl().get(0)
+                                                        : ""));
                                     }
 
                                     transactionRepository.createPendingTransaction(
@@ -211,8 +219,7 @@ public class PaymentActivity extends AppCompatActivity {
                                             FirebaseAuth.getInstance().getUid(),
                                             vnd, tax, deliveryFee,
                                             simplifiedItems,
-                                            "ZaloPay"
-                                    );
+                                            "ZaloPay");
                                     decreaseStock(cartItems);
 
                                 }
@@ -220,7 +227,11 @@ public class PaymentActivity extends AppCompatActivity {
                                 handlePayOrder(); // luôn gọi
                             } else {
                                 hideLoading();
-                                Toast.makeText(getApplicationContext(), "Tạo đơn ZaloPay thất bại", Toast.LENGTH_SHORT).show();
+                                UiUtils.showSnackbarWithBackground(
+                                        binding.getRoot(),
+                                        "Tạo đơn ZaloPay thất bại",
+                                        Snackbar.LENGTH_LONG,
+                                        getResources().getColor(R.color.error_red));
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -233,7 +244,11 @@ public class PaymentActivity extends AppCompatActivity {
                 }
             });
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Giá trị không hợp lệ: " + totalAmount, Toast.LENGTH_SHORT).show();
+            UiUtils.showSnackbarWithBackground(
+                    binding.getRoot(),
+                    "Giá trị không hợp lệ: " + totalAmount,
+                    Snackbar.LENGTH_LONG,
+                    getResources().getColor(R.color.warning_orange));
         }
     }
 
@@ -252,8 +267,7 @@ public class PaymentActivity extends AppCompatActivity {
                             ci.getQuantity(),
                             item.getPrice(),
                             ci.getSelectedSize(),
-                            item.getPicUrl() != null && !item.getPicUrl().isEmpty() ? item.getPicUrl().get(0) : ""
-                    ));
+                            item.getPicUrl() != null && !item.getPicUrl().isEmpty() ? item.getPicUrl().get(0) : ""));
                 }
 
                 // Tạo appTransId thủ công (hoặc có thể dùng timestamp, UUID,...)
@@ -278,7 +292,6 @@ public class PaymentActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     hideLoading();
-                    Toast.makeText(this, "Đặt hàng thành công. Vui lòng thanh toán khi nhận hàng.", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(PaymentActivity.this, OrderSuccessActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
@@ -289,7 +302,11 @@ public class PaymentActivity extends AppCompatActivity {
                 e.printStackTrace();
                 runOnUiThread(() -> {
                     hideLoading();
-                    Toast.makeText(this, "Lỗi khi tạo đơn hàng", Toast.LENGTH_SHORT).show();
+                    UiUtils.showSnackbarWithBackground(
+                            binding.getRoot(),
+                            "Lỗi khi tạo đơn hàng",
+                            Snackbar.LENGTH_LONG,
+                            getResources().getColor(R.color.error_red));
                 });
             }
         });
@@ -373,7 +390,7 @@ public class PaymentActivity extends AppCompatActivity {
 
 
     private void showAlertDialog(String title, String message) {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
@@ -394,7 +411,11 @@ public class PaymentActivity extends AppCompatActivity {
     private void updateUIWithPaymentInfo() {
         if (cartItems == null || cartItems.isEmpty()) {
             binding.scrollView2.setVisibility(View.GONE);
-            Toast.makeText(this, "Không có sản phẩm nào để thanh toán", Toast.LENGTH_SHORT).show();
+            UiUtils.showSnackbarWithBackground(
+                    binding.getRoot(),
+                    "Không có sản phẩm nào để thanh toán",
+                    Snackbar.LENGTH_LONG,
+                    getResources().getColor(R.color.warning_orange));
             return;
         }
 
@@ -411,6 +432,7 @@ public class PaymentActivity extends AppCompatActivity {
         binding.totalTxt.setText("₫" + format.format(totalAmount));
 
     }
+
     private double getSubtotal() {
         double subtotal = 0.0;
         for (CartItem item : cartItems) {
@@ -418,6 +440,7 @@ public class PaymentActivity extends AppCompatActivity {
         }
         return subtotal;
     }
+
     private String getSelectedPaymentMethod() {
         int selectedId = binding.paymentMethodGroup.getCheckedRadioButtonId();
 
@@ -443,7 +466,8 @@ public class PaymentActivity extends AppCompatActivity {
 
     private void fetchAndBindUserInfo() {
         String uid = FirebaseAuth.getInstance().getUid();
-        if (uid == null) return;
+        if (uid == null)
+            return;
 
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
         userRef.get().addOnSuccessListener(snapshot -> {
@@ -471,13 +495,22 @@ public class PaymentActivity extends AppCompatActivity {
                 binding.userPhoneTxt.setText(phone != null ? phone : "...");
                 binding.userAddressTxt.setText(fullAddress.length() > 0 ? fullAddress.toString() : "...");
             } else {
-                Toast.makeText(this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+                UiUtils.showSnackbarWithBackground(
+                        binding.getRoot(),
+                        "Không tìm thấy thông tin người dùng",
+                        Snackbar.LENGTH_LONG,
+                        getResources().getColor(R.color.error_red));
             }
         }).addOnFailureListener(e -> {
             Log.e("UserInfo", "Lỗi khi lấy thông tin người dùng: " + e.getMessage());
-            Toast.makeText(this, "Lỗi khi tải thông tin người dùng", Toast.LENGTH_SHORT).show();
+            UiUtils.showSnackbarWithBackground(
+                    binding.getRoot(),
+                    "Lỗi khi tải thông tin người dùng",
+                    Snackbar.LENGTH_LONG,
+                    getResources().getColor(R.color.error_red));
         });
     }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);

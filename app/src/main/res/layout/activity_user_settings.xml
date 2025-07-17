@@ -65,27 +65,15 @@
                         <!-- Avatar hình tròn -->
                         <ImageView
                             android:id="@+id/avatarImage"
-                            android:layout_width="96dp"
-                            android:layout_height="96dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:background="@drawable/avatar_circle"
                             android:clipToOutline="true"
+                            android:padding="10dp"
                             android:outlineProvider="background"
                             android:scaleType="centerCrop"
-                            android:src="@drawable/backiee_102533_landscape" />
-
-                        <!-- Nút upload avatar -->
-                        <ImageButton
-                            android:id="@+id/btnUploadAvatar"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_gravity="bottom|end"
-                            android:layout_margin="2dp"
-                            android:background="@drawable/bg_circle_button"
-                            android:contentDescription="Tải ảnh đại diện"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/ic_upload"
-                            app:tint="@color/white" />
+                            android:src="@drawable/default_user" />
                     </FrameLayout>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -253,7 +241,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="28dp"
-                    android:text="Lịch sử giao dịch"
+                    android:text="@string/settings_view_history"
                     android:textSize="20sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/ctrlAnnouncement"
