@@ -15,6 +15,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.adapter.TransactionDetailAdapter;
 import com.prm392.onlineshoesshop.databinding.ActivityTransactionDetailBinding;
+import com.prm392.onlineshoesshop.fragment.CancelOrderDialogFragment;
 import com.prm392.onlineshoesshop.model.ItemModel;
 import com.prm392.onlineshoesshop.model.Transaction;
 import com.prm392.onlineshoesshop.model.TransactionItem;
@@ -131,27 +132,8 @@ public class TransactionDetailActivity extends AppCompatActivity {
 
             binding.btnCancelOrder.setVisibility(View.VISIBLE);
             binding.btnCancelOrder.setOnClickListener(v -> {
-                new AlertDialog.Builder(this)
-                        .setTitle("Xác nhận huỷ đơn")
-                        .setMessage("Bạn có chắc chắn muốn huỷ đơn hàng này không?")
-                        .setPositiveButton("Huỷ đơn", (dialog, which) -> {
-                            TransactionRepository repo = new TransactionRepository();
-                            String transId = transaction.getAppTransId();
-
-                            repo.updateOrderStatus(transId, Transaction.OrderStatus.CANCELLED);
-
-                            if ("CashOnDelivery".equalsIgnoreCase(transaction.getPaymentMethod())) {
-                                increaseStock(transaction.getItems());
-                                decreaseSold(transaction.getItems());
-                            }
-
-                            Toast.makeText(this, "Đơn hàng đã được huỷ", Toast.LENGTH_SHORT).show();
-                            binding.actionButtonsLayout.setVisibility(View.GONE);
-                            binding.tvOrderStatus.setText("Đã huỷ");
-                            binding.tvOrderStatus.setTextColor(getColor(R.color.red));
-                        })
-                        .setNegativeButton("Không", null)
-                        .show();
+                CancelOrderDialogFragment dialog = CancelOrderDialogFragment.newInstance(transaction);
+                dialog.show(getSupportFragmentManager(), "CancelOrderDialog");
             });
 
         } else {
