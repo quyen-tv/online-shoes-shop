@@ -34,6 +34,7 @@ public class Transaction implements Parcelable {
     private OrderStatus orderStatus;
     private String paymentMethod;
     private Long paidAt; // nullable - chỉ có khi thanh toán thành công
+    private List<Cancellation> cancellations = new ArrayList<>();
 
     public Transaction() {}
 
@@ -156,6 +157,7 @@ public class Transaction implements Parcelable {
         orderStatus = OrderStatus.valueOf(in.readString());
         paymentMethod = in.readString();
         paidAt = (Long) in.readValue(Long.class.getClassLoader());
+        cancellations = in.createTypedArrayList(Cancellation.CREATOR);
 
     }
 
@@ -190,6 +192,7 @@ public class Transaction implements Parcelable {
         dest.writeString(orderStatus.name());
         dest.writeString(paymentMethod);
         dest.writeValue(paidAt); // dùng writeValue vì có thể null
+        dest.writeTypedList(cancellations);
 
     }
 }

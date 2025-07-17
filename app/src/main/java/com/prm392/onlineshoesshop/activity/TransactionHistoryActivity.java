@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -53,6 +54,13 @@ public class TransactionHistoryActivity extends AppCompatActivity {
         setupButtons();
         loadTransactions();
         initBottomNavigation();
+
+        Button btnCancelled = findViewById(R.id.btnCancelled);
+
+        boolean selectCancelled = getIntent().getBooleanExtra("select_cancelled_tab", false);
+        if (selectCancelled) {
+            btnCancelled.performClick(); // click nút "Đã huỷ" nếu flag được bật
+        }
     }
 
     /* ------------------------------------------------------------------ */
