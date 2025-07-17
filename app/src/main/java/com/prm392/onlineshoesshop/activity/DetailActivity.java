@@ -44,6 +44,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import android.widget.FrameLayout;
+import android.view.MenuItem;
+import android.widget.PopupMenu;
+import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
+import com.prm392.onlineshoesshop.factory.AuthViewModelFactory;
+import com.prm392.onlineshoesshop.adapter.ReviewAdapter;
+import com.prm392.onlineshoesshop.model.Review;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -57,6 +63,21 @@ public class DetailActivity extends AppCompatActivity {
 
     private ItemViewModel itemViewModel;
     private TinyDB tinyDB;
+
+    private boolean isDecorationAdded = false;
+
+    // Thêm biến toàn cục cho adapter
+    private AllItemAdapter similarAdapter;
+
+    // Thêm biến toàn cục favoriteIds
+    private List<String> favoriteIds = new ArrayList<>();
+    private List<ItemModel> currentSimilarList = new ArrayList<>();
+
+    private AuthViewModel authViewModel;
+
+    private ReviewAdapter reviewAdapter;
+    private List<Review> reviewList = new ArrayList<>();
+    private boolean showAllReviews = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +95,9 @@ public class DetailActivity extends AppCompatActivity {
                 itemViewModelFactory)
                 .get(ItemViewModel.class);
 
+        AuthViewModelFactory authFactory = new AuthViewModelFactory(new UserRepository());
+        authViewModel = new ViewModelProvider(this, authFactory).get(AuthViewModel.class);
+
         getBundle();
         if (item == null)
             return;
@@ -85,14 +109,16 @@ public class DetailActivity extends AppCompatActivity {
         banners();
         initLists();
         setupObservers();
+        setupReviewSection();
 
         binding.cartIconContainer.setOnClickListener(v -> {
             Intent intent = new Intent(DetailActivity.this, CartActivity.class);
             startActivity(intent);
         });
 
+        binding.ivDots.setOnClickListener(v -> showMoreMenu(v));
         setupSynchronization();
-        setupSimilarProducts();
+        setupSimilarProducts(); // Gọi setup chỉ 1 lần ở đây
         // Sự kiện click nút Mua ngay
         binding.lnlButtons.findViewById(R.id.btnBuyNow).setOnClickListener(v -> {
             showAddToCartBottomSheet(true);
@@ -103,6 +129,9 @@ public class DetailActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateCartBadge();
+        authViewModel.reloadCurrentUser(); // Gọi reloadCurrentUser giống AllItemsActivity
+        // Xoá gọi setupSimilarProducts() trong onResume để tránh tạo lại observer nhiều
+        // lần
     }
 
     private void updateCartBadge() {
@@ -237,15 +266,40 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void setupSimilarProducts() {
-        if (item == null)
-            return;
-        ItemRepository itemRepository = new ItemRepository();
-        UserRepository userRepository = new UserRepository();
-        ItemViewModelFactory factory = new ItemViewModelFactory(userRepository, itemRepository);
-        ItemViewModel itemViewModel = new ViewModelProvider(this, factory).get(ItemViewModel.class);
+        RecyclerView rv = findViewById(R.id.rvSimilar);
+        int spanCount = 2;
+        GridLayoutManager layoutManager = new GridLayoutManager(this, spanCount);
+        rv.setLayoutManager(layoutManager);
+        int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
+        rv.addItemDecoration(new com.prm392.onlineshoesshop.activity.SpaceItemDecoration(spacing, spanCount));
+
+        if (similarAdapter == null) {
+            similarAdapter = new AllItemAdapter(new ArrayList<>());
+            similarAdapter.setOnChangeListener(new AllItemAdapter.OnChangeListener() {
+                @Override
+                public void onToggleFavorite(String itemId) {
+                    itemViewModel.toggleFavorite(itemId);
+                    authViewModel.reloadCurrentUser();
+                }
+
+                @Override
+                public void onClick(ItemModel item) {
+                    Intent intent = new Intent(DetailActivity.this, DetailActivity.class);
+                    intent.putExtra("object", item);
+                    startActivity(intent);
+                }
+            });
+            rv.setAdapter(similarAdapter);
+        }
+
+        // Lắng nghe thay đổi danh sách sản phẩm để update adapter và favoriteIds
         itemViewModel.allItems.observe(this, allProducts -> {
-            if (allProducts == null || allProducts.isEmpty())
+            if (allProducts == null || allProducts.isEmpty()) {
+                currentSimilarList = new ArrayList<>();
+                similarAdapter.updateData(currentSimilarList);
+                similarAdapter.setFavoriteIds(favoriteIds);
                 return;
+            }
             List<ItemModel> similar = new ArrayList<>();
             for (ItemModel p : allProducts) {
                 if (p.getItemId().equals(item.getItemId()))
@@ -257,14 +311,45 @@ public class DetailActivity extends AppCompatActivity {
                 if (similar.size() >= 10)
                     break;
             }
-            AllItemAdapter adapter = new AllItemAdapter(similar);
-            RecyclerView rv = findViewById(R.id.rvSimilar);
-            int spanCount = 2;
-            GridLayoutManager layoutManager = new GridLayoutManager(this, spanCount);
-            rv.setLayoutManager(layoutManager);
-            rv.setAdapter(adapter);
-            int spacing = getResources().getDimensionPixelSize(R.dimen.item_spacing);
-            rv.addItemDecoration(new com.prm392.onlineshoesshop.activity.SpaceItemDecoration(spacing, spanCount));
+            currentSimilarList = similar;
+            similarAdapter.updateData(currentSimilarList);
+            similarAdapter.setFavoriteIds(favoriteIds);
+        });
+
+        // Lắng nghe thay đổi danh sách yêu thích để update adapter
+        authViewModel.currentUserData.observe(this, user -> {
+            if (user != null && user.getFavoriteItems() != null) {
+                favoriteIds = new ArrayList<>(user.getFavoriteItems().keySet());
+            } else {
+                favoriteIds = new ArrayList<>();
+            }
+            similarAdapter.setFavoriteIds(favoriteIds);
+            // Đảm bảo UI luôn đồng bộ, có thể gọi lại updateData nếu cần
+            similarAdapter.updateData(currentSimilarList);
+        });
+    }
+
+    private void setupReviewSection() {
+        // Mock dữ liệu review
+        reviewList = new ArrayList<>();
+        reviewList.add(new Review("1", item.getItemId(), "u1", "Nguyễn Văn A", "", 5.0, "Giày đẹp, giao nhanh!",
+                System.currentTimeMillis() - 86400000L));
+        reviewList.add(new Review("2", item.getItemId(), "u2", "Trần Thị B", "", 4.5,
+                "Hàng chất lượng, sẽ ủng hộ tiếp.", System.currentTimeMillis() - 172800000L));
+        reviewList.add(new Review("3", item.getItemId(), "u3", "Lê Văn C", "", 4.0, "Đúng mô tả, đóng gói cẩn thận.",
+                System.currentTimeMillis() - 259200000L));
+        reviewList.add(new Review("4", item.getItemId(), "u4", "Phạm Thị D", "", 5.0, "Rất hài lòng!",
+                System.currentTimeMillis() - 345600000L));
+        // ... có thể thêm nhiều review hơn nếu muốn
+        reviewAdapter = new ReviewAdapter(reviewList);
+        binding.rvReviews.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvReviews.setAdapter(reviewAdapter);
+        // Xử lý chevron để hiện hết review
+        binding.imgChevronProfile.setOnClickListener(v -> {
+            showAllReviews = !showAllReviews;
+            reviewAdapter.setShowAll(showAllReviews);
+            // Đổi icon chevron nếu muốn
+            binding.imgChevronProfile.setRotation(showAllReviews ? 90f : 0f);
         });
     }
 
@@ -478,5 +563,26 @@ public class DetailActivity extends AppCompatActivity {
                             .start();
                 })
                 .start();
+    }
+
+    private void showMoreMenu(View anchor) {
+        PopupMenu popup = new PopupMenu(this, anchor);
+        popup.getMenu().add(0, 1, 0, "Trở về trang chủ");
+        popup.getMenu().add(0, 2, 1, "Bạn cần giúp đỡ?");
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 1) {
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (item.getItemId() == 2) {
+                Intent intent = new Intent(this, ChatbotActivity.class);
+                startActivity(intent);
+                return true;
+            }
+            return false;
+        });
+        popup.show();
     }
 }

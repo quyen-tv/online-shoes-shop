@@ -24,6 +24,7 @@
         android:layout_marginStart="16dp"
         android:text="title"
         android:textColor="@color/black"
+        android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/pic"
         app:layout_constraintTop_toTopOf="parent" />
     <TextView
