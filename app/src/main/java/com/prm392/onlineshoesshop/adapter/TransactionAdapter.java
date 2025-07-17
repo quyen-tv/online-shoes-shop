@@ -8,10 +8,12 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.activity.TransactionDetailActivity;
 import com.prm392.onlineshoesshop.model.Transaction;
@@ -72,6 +74,20 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
         // Trạng thái đơn hàng
         Transaction.OrderStatus orderStatus = transaction.getOrderStatus();
+        // Hiển thị nút "Đánh giá" nếu đã giao hàng và thanh toán thành công
+        if (paymentStatus == Transaction.PaymentStatus.SUCCESS &&
+                orderStatus == Transaction.OrderStatus.DELIVERED) {
+            holder.btnReview.setVisibility(View.VISIBLE);
+
+            holder.btnReview.setOnClickListener(v -> {
+                // TODO: mở dialog đánh giá / chuyển sang ReviewActivity
+                // Ví dụ placeholder:
+                Toast.makeText(context, "Mở giao diện đánh giá", Toast.LENGTH_SHORT).show();
+            });
+        } else {
+            holder.btnReview.setVisibility(View.GONE);
+        }
+
         switch (orderStatus) {
             case WAITING_CONFIRMATION:
                 holder.tvOrderStatus.setText("Trạng thái: Chờ xác nhận");
@@ -109,6 +125,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     public static class TransactionViewHolder extends RecyclerView.ViewHolder {
         TextView tvTransactionId, tvTimestamp, tvTotalAmount, tvPaymentStatus, tvOrderStatus, tvMethod;
+        MaterialButton btnReview;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -118,6 +135,8 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             tvPaymentStatus = itemView.findViewById(R.id.tvPaymentStatus);
             tvOrderStatus = itemView.findViewById(R.id.tvOrderStatus);
             tvMethod = itemView.findViewById(R.id.tvPaymentMethod);
+            btnReview = itemView.findViewById(R.id.btnReview);
+
         }
     }
     public void setData(List<Transaction> newList) {

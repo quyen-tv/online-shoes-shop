@@ -42,7 +42,7 @@ public class Transaction implements Parcelable {
                        List<TransactionItem> items,
                        PaymentStatus paymentStatus,
                        OrderStatus orderStatus,
-                       String paymentMethod) {
+                       String paymentMethod, long paidAt) {
         this.appTransId = appTransId;
         this.userId = userId;
         this.createdAt = createdAt;
@@ -53,6 +53,7 @@ public class Transaction implements Parcelable {
         this.paymentStatus = paymentStatus;
         this.orderStatus = orderStatus;
         this.paymentMethod = paymentMethod;
+        this.paidAt = paidAt;
     }
 
     // Getter & Setter
