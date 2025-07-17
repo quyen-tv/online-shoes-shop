@@ -52,7 +52,9 @@ public class TransactionDetailActivity extends AppCompatActivity {
 
     private void setupViews() {
         binding.tvTransactionId.setText("" + transaction.getAppTransId());
-        binding.tvDate.setText("" + formatDate(transaction.getCreatedAt()));
+        Long createdAt = transaction.getCreatedAt();
+        binding.tvDate.setText(createdAt != null ? formatDate(createdAt) : "Không rõ");
+
         binding.tvPaymentMethod.setText("" + transaction.getPaymentMethod());
 
         // Trạng thái thanh toán
@@ -103,11 +105,13 @@ public class TransactionDetailActivity extends AppCompatActivity {
         binding.tvDeliveryFee.setText(currencyFormat.format(transaction.getDeliveryFee())+  "₫" );
         binding.tvTotal.setText(currencyFormat.format(transaction.getTotalAmount())  + "₫");
 
-        if (transaction.getPaymentStatus() == Transaction.PaymentStatus.SUCCESS && transaction.getPaidAt() > 0) {
-            binding.tvPaidAt.setText("" + formatDate(transaction.getPaidAt()));
+        Long paidAt = transaction.getPaidAt();
+        if (transaction.getPaymentStatus() == Transaction.PaymentStatus.SUCCESS && paidAt != null && paidAt > 0) {
+            binding.tvPaidAt.setText(formatDate(paidAt));
         } else {
             binding.tvPaidAt.setText("Chưa thanh toán");
         }
+
 
         if (transaction.getPaymentStatus() == Transaction.PaymentStatus.PENDING
                 && transaction.getOrderStatus() == Transaction.OrderStatus.WAITING_CONFIRMATION) {

@@ -8,13 +8,20 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.activity.TransactionDetailActivity;
+import com.prm392.onlineshoesshop.fragment.ReviewDialogFragment;
 import com.prm392.onlineshoesshop.model.Transaction;
+import com.prm392.onlineshoesshop.model.TransactionItem;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -72,6 +79,39 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
         // Trạng thái đơn hàng
         Transaction.OrderStatus orderStatus = transaction.getOrderStatus();
+        // Hiển thị nút "Đánh giá" nếu đã giao hàng và thanh toán thành công
+        if (paymentStatus == Transaction.PaymentStatus.SUCCESS &&
+                orderStatus == Transaction.OrderStatus.DELIVERED) {
+            holder.btnReview.setVisibility(View.VISIBLE);
+
+            holder.btnReview.setOnClickListener(v -> {
+                Transaction currentTransaction = transactionList.get(holder.getAdapterPosition());
+
+                List<TransactionItem> items = currentTransaction.getItems();
+                if (items != null && !items.isEmpty()) {
+                    String itemId = items.get(0).getItemId(); // Lấy item đầu tiên
+
+                    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+                    if (currentUser != null) {
+                        String userId = currentUser.getUid();
+                        String userName = currentUser.getDisplayName(); // Có thể null nếu user chưa đặt tên
+
+                        ReviewDialogFragment dialog = ReviewDialogFragment.newInstance(itemId, userId, userName);
+                        if (context instanceof AppCompatActivity) {
+                            dialog.show(((AppCompatActivity) context).getSupportFragmentManager(), "ReviewDialog");
+                        }
+                    } else {
+                        Toast.makeText(context, "Không tìm thấy thông tin người dùng!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
+
+
+        } else {
+            holder.btnReview.setVisibility(View.GONE);
+        }
+
         switch (orderStatus) {
             case WAITING_CONFIRMATION:
                 holder.tvOrderStatus.setText("Trạng thái: Chờ xác nhận");
@@ -109,6 +149,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     public static class TransactionViewHolder extends RecyclerView.ViewHolder {
         TextView tvTransactionId, tvTimestamp, tvTotalAmount, tvPaymentStatus, tvOrderStatus, tvMethod;
+        MaterialButton btnReview;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -118,6 +159,8 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             tvPaymentStatus = itemView.findViewById(R.id.tvPaymentStatus);
             tvOrderStatus = itemView.findViewById(R.id.tvOrderStatus);
             tvMethod = itemView.findViewById(R.id.tvPaymentMethod);
+            btnReview = itemView.findViewById(R.id.btnReview);
+
         }
     }
     public void setData(List<Transaction> newList) {

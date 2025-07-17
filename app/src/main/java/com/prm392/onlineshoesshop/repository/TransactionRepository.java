@@ -44,7 +44,8 @@ public class TransactionRepository {
                     items,
                     Transaction.PaymentStatus.PENDING,
                     Transaction.OrderStatus.WAITING_CONFIRMATION,
-                    paymentMethod
+                    paymentMethod,
+                    0
             );
 
             transactionRef.child(appTransId).setValue(transaction)
