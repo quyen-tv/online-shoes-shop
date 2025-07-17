@@ -26,13 +26,14 @@ public class ItemModel implements Parcelable {
     private String features;
     private String targetUser;
     private Integer sold;
+    private List<Review> reviewList; // 🔥 Danh sách đánh giá
 
     public ItemModel() {
     }
 
     public ItemModel(String itemId, String title, String description, List<String> picUrl,
-            List<StockEntry> stockEntries, Double price, Double rating, Integer numberInCart, String brand,
-            String category, String color, String features, String targetUser, Integer sold) {
+                     List<StockEntry> stockEntries, Double price, Double rating, Integer numberInCart, String brand,
+                     String category, String color, String features, String targetUser, Integer sold, List<Review> reviewList) {
         this.itemId = itemId;
         this.title = title;
         this.description = description;
@@ -47,6 +48,7 @@ public class ItemModel implements Parcelable {
         this.features = features;
         this.targetUser = targetUser;
         this.sold = sold;
+        this.reviewList = reviewList;
     }
 
     public String getItemId() {
@@ -55,6 +57,13 @@ public class ItemModel implements Parcelable {
 
     public void setItemId(String itemId) {
         this.itemId = itemId;
+    }
+    public List<Review> getReviewList() {
+        return reviewList;
+    }
+
+    public void setReviewList(List<Review> reviewList) {
+        this.reviewList = reviewList;
     }
 
     public String getTitle() {
@@ -161,6 +170,9 @@ public class ItemModel implements Parcelable {
         price = in.readByte() == 0 ? null : in.readDouble();
         rating = in.readByte() == 0 ? null : in.readDouble();
         numberInCart = in.readByte() == 0 ? null : in.readInt();
+        reviewList = new ArrayList<>();
+        in.readTypedList(reviewList, Review.CREATOR);
+
     }
 
     public static final Creator<ItemModel> CREATOR = new Creator<>() {
@@ -216,6 +228,8 @@ public class ItemModel implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeInt(numberInCart);
         }
+        dest.writeTypedList(reviewList);
+
     }
 
     public static class StockEntry implements Parcelable {

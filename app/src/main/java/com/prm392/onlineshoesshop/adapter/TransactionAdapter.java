@@ -11,12 +11,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.prm392.onlineshoesshop.R;
 import com.prm392.onlineshoesshop.activity.TransactionDetailActivity;
+import com.prm392.onlineshoesshop.fragment.ReviewDialogFragment;
 import com.prm392.onlineshoesshop.model.Transaction;
+import com.prm392.onlineshoesshop.model.TransactionItem;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -80,10 +85,29 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             holder.btnReview.setVisibility(View.VISIBLE);
 
             holder.btnReview.setOnClickListener(v -> {
-                // TODO: mở dialog đánh giá / chuyển sang ReviewActivity
-                // Ví dụ placeholder:
-                Toast.makeText(context, "Mở giao diện đánh giá", Toast.LENGTH_SHORT).show();
+                Transaction currentTransaction = transactionList.get(holder.getAdapterPosition());
+
+                List<TransactionItem> items = currentTransaction.getItems();
+                if (items != null && !items.isEmpty()) {
+                    String itemId = items.get(0).getItemId(); // Lấy item đầu tiên
+
+                    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+                    if (currentUser != null) {
+                        String userId = currentUser.getUid();
+                        String userName = currentUser.getDisplayName(); // Có thể null nếu user chưa đặt tên
+
+                        ReviewDialogFragment dialog = ReviewDialogFragment.newInstance(itemId, userId, userName);
+                        if (context instanceof AppCompatActivity) {
+                            dialog.show(((AppCompatActivity) context).getSupportFragmentManager(), "ReviewDialog");
+                        }
+                    } else {
+                        Toast.makeText(context, "Không tìm thấy thông tin người dùng!", Toast.LENGTH_SHORT).show();
+                    }
+                }
             });
+
+
+
         } else {
             holder.btnReview.setVisibility(View.GONE);
         }
