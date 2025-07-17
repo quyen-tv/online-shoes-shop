@@ -60,14 +60,14 @@
                     android:text="Hồ sơ cá nhân"
                     android:textColor="@color/white"
                     android:textSize="35sp"
-                    app:layout_constraintBottom_toTopOf="@+id/imageView"
+                    app:layout_constraintBottom_toBottomOf="@+id/constraintLayout4"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.498"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/constraintLayout4"
                     app:layout_constraintVertical_bias="0.192" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/constraintLayout4"
                     android:layout_width="56dp"
                     android:layout_height="56dp"
                     android:layout_marginStart="32dp"
@@ -154,8 +154,8 @@
                             android:id="@+id/editTextPhone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:enabled="false"
-                            android:inputType="phone" />
+                            android:inputType="phone"
+                            android:enabled="false" />
                     </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -263,28 +263,28 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonCancel"
+                        android:layout_weight="1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:layout_weight="1"
                         android:text="Hủy"
+                        android:layout_marginStart="4dp"
                         android:visibility="gone" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonUpdate"
+                        android:layout_weight="1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:layout_weight="1"
-                        android:text="Chỉnh sửa" />
+                        android:text="Cập nhật"
+                        android:layout_marginStart="4dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonConfirm"
+                        android:layout_weight="1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:text="Lưu"
                         android:layout_marginStart="4dp"
-                        android:layout_weight="1"
-                        android:text="Xác nhận"
                         android:visibility="gone" />
                 </LinearLayout>
 

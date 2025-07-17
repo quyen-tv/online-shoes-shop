@@ -4,16 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.prm392.onlineshoesshop.R;
@@ -21,6 +19,7 @@ import com.prm392.onlineshoesshop.databinding.ActivityUserProfileBinding;
 import com.prm392.onlineshoesshop.model.Address;
 import com.prm392.onlineshoesshop.model.User;
 import com.prm392.onlineshoesshop.repository.UserRepository;
+import com.prm392.onlineshoesshop.utils.UiUtils;
 import com.prm392.onlineshoesshop.utils.ValidationUtils;
 import com.prm392.onlineshoesshop.viewmodel.AddressViewModel;
 import com.prm392.onlineshoesshop.viewmodel.AuthViewModel;
@@ -162,8 +161,16 @@ public class UserProfileActivity extends AppCompatActivity {
         updates.put("address", addressMap);
 
         new UserRepository().updateUserProfile(user.getUid(), updates)
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnSuccessListener(aVoid -> UiUtils.showSnackbarWithBackground(
+                        binding.getRoot(),
+                        "Cập nhật thành công!",
+                        Snackbar.LENGTH_LONG,
+                        getResources().getColor(R.color.success_green)))
+                .addOnFailureListener(e -> UiUtils.showSnackbarWithBackground(
+                        binding.getRoot(),
+                        "Lỗi: " + e.getMessage(),
+                        Snackbar.LENGTH_LONG,
+                        getResources().getColor(R.color.warning_orange)));
     }
 
     private boolean validateInputs() {
@@ -200,21 +207,33 @@ public class UserProfileActivity extends AppCompatActivity {
         // Kiểm tra thành phố
         Address.City selectedCity = addressViewModel.getSelectedCity().getValue();
         if (selectedCity == null || selectedCity.getCode() <= 0) {
-            Toast.makeText(this, "Vui lòng chọn Thành phố", Toast.LENGTH_SHORT).show();
+            UiUtils.showSnackbarWithBackground(
+                    binding.getRoot(),
+                    "Vui lòng chọn Thành phố",
+                    Snackbar.LENGTH_LONG,
+                    getResources().getColor(R.color.warning_orange));
             valid = false;
         }
 
         // Kiểm tra quận/huyện
         Address.District selectedDistrict = addressViewModel.getSelectedDistrict().getValue();
         if (selectedDistrict == null || selectedDistrict.getCode() <= 0) {
-            Toast.makeText(this, "Vui lòng chọn Quận/Huyện", Toast.LENGTH_SHORT).show();
+            UiUtils.showSnackbarWithBackground(
+                    binding.getRoot(),
+                    "Vui lòng chọn Quận/Huyện",
+                    Snackbar.LENGTH_LONG,
+                    getResources().getColor(R.color.warning_orange));
             valid = false;
         }
 
         // Kiểm tra phường/xã
         Address.Ward selectedWard = addressViewModel.getSelectedWard().getValue();
         if (selectedWard == null || selectedWard.getCode() <= 0) {
-            Toast.makeText(this, "Vui lòng chọn Phường/Xã", Toast.LENGTH_SHORT).show();
+            UiUtils.showSnackbarWithBackground(
+                    binding.getRoot(),
+                    "Vui lòng chọn Phường/Xã",
+                    Snackbar.LENGTH_LONG,
+                    getResources().getColor(R.color.warning_orange));
             valid = false;
         }
 

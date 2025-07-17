@@ -32,9 +32,9 @@
             android:id="@+id/cartIconContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintEnd_toStartOf="@id/ivDots"
+            app:layout_constraintTop_toTopOf="@id/ivDots"
+            app:layout_constraintBottom_toBottomOf="@id/ivDots">
 
             <ImageView
                 android:id="@+id/ivBellIcon"
@@ -55,6 +55,16 @@
                 android:visibility="gone"
                 android:text="0"/>
         </FrameLayout>
+
+        <ImageView
+            android:id="@+id/ivDots"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            app:srcCompat="@drawable/ic_dots_vertical_rounded"
+            app:tint="@color/black"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -242,6 +252,16 @@
                    app:layout_constraintTop_toTopOf="parent"
                    app:srcCompat="@drawable/chevron_right" />
            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvReviews"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:nestedScrollingEnabled="false" />
 
             <View
                 android:layout_width="match_parent"

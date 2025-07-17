@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -86,18 +87,23 @@ public class CartActivity extends AppCompatActivity {
         double percentTax = 0.02;
         double itemTotal = managementCart.getTotalFee();
 
-        if (itemTotal == 0) {
+        ArrayList<CartItem> cartList = managementCart.getCartItems();
+        if (cartList.isEmpty() || itemTotal == 0) {
             // Giỏ hàng trống
             binding.totalFeeTxt.setText("0₫");
             binding.taxTxt.setText("0₫");
             binding.deliveryTxt.setText("0₫");
             binding.totalTxt.setText("0₫");
             binding.btnCheckOut.setEnabled(false);
+            binding.emptyTxt.setVisibility(View.VISIBLE);
+            binding.scrollView2.setVisibility(View.GONE);
             return;
         }
 
         // Giỏ hàng có hàng
         binding.btnCheckOut.setEnabled(true);
+        binding.emptyTxt.setVisibility(View.GONE);
+        binding.scrollView2.setVisibility(View.VISIBLE);
 
         tax = Math.round((itemTotal * percentTax) * 100.0) / 100.0;
 
@@ -162,7 +168,7 @@ public class CartActivity extends AppCompatActivity {
                     || addressObj.getWard() == null || addressObj.getWard().getCode() == -1);
 
             if (name == null || name.trim().isEmpty() || isAddressIncomplete) {
-                new AlertDialog.Builder(this)
+                new MaterialAlertDialogBuilder(this)
                         .setTitle("Thiếu thông tin cá nhân")
                         .setMessage("Bạn cần cập nhật họ tên và địa chỉ giao hàng trước khi thanh toán.")
                         .setPositiveButton("Cập nhật ngay", (dialog, which) -> {
